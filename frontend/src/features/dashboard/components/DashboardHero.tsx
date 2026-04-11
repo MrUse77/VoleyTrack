@@ -1,16 +1,13 @@
-import type {
-  ScreenOneDashboardVm,
-  ScreenOneHeroVm,
-} from "../screen-one.models";
+import type { DashboardHeroVm } from "../dashboard.models";
 import { Badge } from "../../../components/ui/Badge";
 import { Surface } from "../../../components/ui/Surface";
 
-interface ScreenOneHeroProps {
-  hero: ScreenOneHeroVm;
-  utility: ScreenOneDashboardVm["utility"];
+interface DashboardHeroProps {
+  hero: DashboardHeroVm;
+  spotlight: string;
 }
 
-export function ScreenOneHero({ hero, utility }: ScreenOneHeroProps) {
+export function DashboardHero({ hero, spotlight }: DashboardHeroProps) {
   return (
     <Surface className="overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
       <div className="grid gap-0 lg:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.95fr)]">
@@ -31,7 +28,7 @@ export function ScreenOneHero({ hero, utility }: ScreenOneHeroProps) {
                 </Badge>
               </div>
               <Badge tone="muted" className="px-3 py-1 text-[11px] tracking-[0.18em]">
-                {utility.spotlight}
+                {spotlight}
               </Badge>
             </div>
 
@@ -48,7 +45,10 @@ export function ScreenOneHero({ hero, utility }: ScreenOneHeroProps) {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <button className="inline-flex h-9 items-center justify-center rounded-md bg-vt-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-vt-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vt-accent focus-visible:ring-offset-2 focus-visible:ring-offset-vt-surface" type="button">
+              <button
+                className="inline-flex h-9 items-center justify-center rounded-md bg-vt-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-vt-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vt-accent focus-visible:ring-offset-2 focus-visible:ring-offset-vt-surface"
+                type="button"
+              >
                 {hero.ctaLabel}
               </button>
               <Badge tone="neutral" className="rounded-md px-3 py-2 text-xs tracking-[0.12em]">
@@ -76,9 +76,7 @@ export function ScreenOneHero({ hero, utility }: ScreenOneHeroProps) {
               <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl border border-white/6 bg-black/20 p-4">
                 <div>
                   <p className="text-sm text-vt-muted">{hero.homeTeam}</p>
-                  <p className="text-5xl font-black text-white">
-                    {hero.homeScore}
-                  </p>
+                  <p className="text-5xl font-black text-white">{hero.homeScore}</p>
                 </div>
                 <div className="text-center text-vt-muted">
                   <p className="text-xs uppercase tracking-[0.24em]">Set</p>
@@ -87,9 +85,7 @@ export function ScreenOneHero({ hero, utility }: ScreenOneHeroProps) {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-vt-muted">{hero.awayTeam}</p>
-                  <p className="text-5xl font-black text-white">
-                    {hero.awayScore}
-                  </p>
+                  <p className="text-5xl font-black text-white">{hero.awayScore}</p>
                 </div>
               </div>
             </div>

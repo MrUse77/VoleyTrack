@@ -1,32 +1,19 @@
-import type { ScreenOneMatchesVm } from "../screen-one.models";
+import type { MatchesBrowserVm } from "../matches.models";
 import { useMatchCenterFilter } from "../hooks/use-match-center-filter";
 import { Badge } from "../../../components/ui/Badge";
-import { SectionShell } from "../../../components/ui/SectionShell";
 import { Surface } from "../../../components/ui/Surface";
 
-interface ScreenOneMatchesProps {
-	matchCenter: ScreenOneMatchesVm;
+interface MatchesBrowserProps {
+	matchCenter: MatchesBrowserVm;
 }
 
-export function ScreenOneMatches({ matchCenter }: ScreenOneMatchesProps) {
+export function MatchesBrowser({ matchCenter }: MatchesBrowserProps) {
 	const { normalizeFilter, visibleSections, isActive, setFilter } =
 		useMatchCenterFilter(matchCenter);
 
 	return (
 		<section className="space-y-6">
-			<header className="rounded-[18px] border border-vt-border bg-vt-surface p-4 sm:p-5">
-				<div className="flex flex-wrap items-center justify-between gap-4">
-					<div className="space-y-1">
-						<p className="text-[10px] font-bold uppercase tracking-[0.28em] text-vt-muted">
-							Matches
-						</p>
-						<h2 className="text-2xl font-black uppercase tracking-[-0.04em] text-white sm:text-3xl">
-							Match Center
-						</h2>
-						<p className="text-sm text-slate-400">Live scoreboard and category browser</p>
-					</div>
-				</div>
-			</header>
+
 			<div className="flex flex-wrap gap-2">
 				{matchCenter.filters.map((filter) => {
 					const filterLabel = normalizeFilter(filter.label);
@@ -79,8 +66,7 @@ export function ScreenOneMatches({ matchCenter }: ScreenOneMatchesProps) {
 													</Badge>
 												</div>
 												<p className="text-base font-semibold text-white">
-													{match.teams[0]} <span className="text-vt-muted">vs</span>{" "}
-													{match.teams[1]}
+													{match.teams[0]} <span className="text-vt-muted">vs</span> {match.teams[1]}
 												</p>
 												<p className="text-sm text-vt-muted">{match.status}</p>
 											</div>

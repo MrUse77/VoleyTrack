@@ -1,19 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import type {
-  ScreenOneMatchCategory,
-  ScreenOneMatchSectionVm,
-  ScreenOneMatchesVm,
-} from "../screen-one.models";
+import type { MatchCategory, MatchSectionVm, MatchesBrowserVm } from "../matches.models";
 
-type MatchFilter = "ALL" | ScreenOneMatchCategory;
+type MatchFilter = "ALL" | MatchCategory;
 
 const FILTER_ORDER: MatchFilter[] = ["ALL", "LIVE", "UPCOMING", "RESULTS"];
 
-export function useMatchCenterFilter(matchCenter: ScreenOneMatchesVm) {
+export function useMatchCenterFilter(matchCenter: MatchesBrowserVm) {
   const initialFilter = useMemo<MatchFilter>(() => {
-    const activeFilter = matchCenter.filters
-      .find((filter) => filter.active)
-      ?.label?.toUpperCase();
+    const activeFilter = matchCenter.filters.find((filter) => filter.active)?.label?.toUpperCase();
     return FILTER_ORDER.includes(activeFilter as MatchFilter)
       ? (activeFilter as MatchFilter)
       : "ALL";
@@ -25,8 +19,6 @@ export function useMatchCenterFilter(matchCenter: ScreenOneMatchesVm) {
     setActiveFilter(initialFilter);
   }, [initialFilter]);
 
-  const currentFilter = activeFilter;
-
   const normalizeFilter = (filter: string): MatchFilter => {
     const normalized = filter.toUpperCase();
     return FILTER_ORDER.includes(normalized as MatchFilter)
@@ -34,17 +26,15 @@ export function useMatchCenterFilter(matchCenter: ScreenOneMatchesVm) {
       : "ALL";
   };
 
-  const visibleSections = useMemo<ScreenOneMatchSectionVm[]>(() => {
-    if (currentFilter === "ALL") return matchCenter.sections;
-    return matchCenter.sections.filter(
-      (section) => section.category === currentFilter,
-    );
-  }, [currentFilter, matchCenter.sections]);
+  const visibleSections = useMemo<MatchSectionVm[]>(() => {
+    if (activeFilter === "ALL") return matchCenter.sections;
+    return matchCenter.sections.filter((section) => section.category === activeFilter);
+  }, [activeFilter, matchCenter.sections]);
 
-  const isActive = (filter: MatchFilter) => currentFilter === filter;
+  const isActive = (filter: MatchFilter) => activeFilter === filter;
 
   return {
-    activeFilter: currentFilter,
+    activeFilter,
     setFilter: setActiveFilter,
     normalizeFilter,
     visibleSections,

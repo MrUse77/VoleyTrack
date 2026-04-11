@@ -8,8 +8,7 @@ describe("MatchesPage", () => {
 
     expect(html).toContain("Match center");
     expect(html).toContain("ALL");
-    expect(html).toContain("LIVE");
-    expect(html).toContain("Upcoming");
-    expect(html).toContain("Results");
+    expect(html).toContain("Brazil");
+    expect(html).toContain("Completed");
   });
 });

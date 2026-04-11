@@ -1,5 +1,4 @@
 import { APP_SHELL_FOOTER } from "../shared/app-shell.content";
-import { Surface } from "./ui/Surface";
 
 interface ShellFooterProps {
   className?: string;

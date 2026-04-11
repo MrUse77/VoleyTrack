@@ -1,17 +1,8 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import type { HTMLAttributes } from "react";
 
-interface SectionShellProps extends HTMLAttributes<HTMLElement> {
-	eyebrow?: string;
-	title?: string;
-	description?: string;
-	actions?: ReactNode;
-}
+type SectionShellProps = HTMLAttributes<HTMLElement>;
 
 export function SectionShell({
-	eyebrow,
-	title,
-	description,
-	actions,
 	className = "",
 	children,
 	...props

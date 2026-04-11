@@ -1,12 +1,12 @@
-import type { ScreenOneRailCardVm } from "../screen-one.models";
+import type { DashboardRailCardVm } from "../dashboard.models";
 import { Badge } from "../../../components/ui/Badge";
 import { Surface } from "../../../components/ui/Surface";
 
-interface ScreenOneRailProps {
-  cards: ScreenOneRailCardVm[];
+interface DashboardRailProps {
+  cards: DashboardRailCardVm[];
 }
 
-export function ScreenOneRail({ cards }: ScreenOneRailProps) {
+export function DashboardRail({ cards }: DashboardRailProps) {
   return (
     <aside className="flex flex-col gap-4">
       {cards.map((card) => (
