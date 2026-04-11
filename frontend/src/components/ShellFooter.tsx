@@ -7,7 +7,8 @@ interface ShellFooterProps {
 
 export const ShellFooter = ({ className = "" }: ShellFooterProps) => {
   return (
-    <footer className={`border-t border-vt-border bg-vt-panel ${className}`.trim()}>
+    <footer
+      className={`border-t border-vt-border bg-vt-panel ${className}`.trim()}>
       <div className="mx-auto grid w-full max-w-[1600px] gap-8 px-4 py-10 md:grid-cols-[1.2fr_1fr] md:px-6">
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-white">
@@ -35,7 +36,7 @@ export const ShellFooter = ({ className = "" }: ShellFooterProps) => {
 
         <div className="grid gap-5 sm:grid-cols-3">
           {APP_SHELL_FOOTER.columns.map((column) => (
-            <Surface key={column.title} className="p-4">
+            <div>
               <h3 className="text-xs font-bold uppercase tracking-[0.24em] text-vt-muted">
                 {column.title}
               </h3>
@@ -44,14 +45,13 @@ export const ShellFooter = ({ className = "" }: ShellFooterProps) => {
                   <li key={link.label}>
                     <a
                       className="transition hover:text-white hover:underline"
-                      href={link.href}
-                    >
+                      href={link.href}>
                       {link.label}
                     </a>
                   </li>
                 ))}
               </ul>
-            </Surface>
+            </div>
           ))}
         </div>
       </div>
