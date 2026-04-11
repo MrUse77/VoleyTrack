@@ -1,0 +1,40 @@
+<footer class="border-t border-vt-border bg-vt-panel">
+  <div class="mx-auto grid w-full max-w-[1600px] gap-8 px-4 py-8 md:grid-cols-[1.2fr_1fr] md:px-6">
+    <div class="space-y-4">
+      <div class="flex items-center gap-2 text-white">
+        <img src="/icon.svg" alt="VOLLEYTRACK" width="25" height="25" class="shrink-0" />
+        <div>
+          <p class="text-lg font-black uppercase tracking-[-0.04em] text-white">
+            VOLLEY<span class="text-vt-accent">TRACK</span>
+          </p>
+          <p class="text-xs uppercase tracking-[0.26em] text-vt-muted">
+            {{ footer.brand.subtitle }}
+          </p>
+        </div>
+      </div>
+
+      <p class="max-w-xl text-sm leading-6 text-slate-400">
+        {{ footer.legal }}
+      </p>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-3">
+      @for (column of footer.columns; track column.title) {
+        <section>
+          <h3 class="text-xs font-bold uppercase tracking-[0.24em] text-vt-muted">
+            {{ column.title }}
+          </h3>
+          <ul class="mt-3 space-y-2 text-sm text-slate-300">
+            @for (link of column.links; track link.label) {
+              <li>
+                <a class="transition hover:text-white hover:underline" [href]="link.href">
+                  {{ link.label }}
+                </a>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  </div>
+</footer>

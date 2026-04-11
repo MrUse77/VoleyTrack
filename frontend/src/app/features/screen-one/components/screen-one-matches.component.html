@@ -1,0 +1,141 @@
+<section class="overflow-hidden rounded-[18px] border border-vt-border bg-vt-surface">
+  <header class="border-b border-white/6 bg-black/15 px-4 py-3 sm:px-5">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <p class="text-[10px] font-bold uppercase tracking-[0.28em] text-vt-muted">
+          {{ matches.tag }}
+        </p>
+        <h2 class="text-2xl font-black uppercase tracking-[-0.04em] text-white sm:text-3xl">
+          {{ matches.title }}
+        </h2>
+        <p class="text-sm text-slate-400">{{ matches.subtitle }}</p>
+      </div>
+
+      <a
+        class="inline-flex items-center rounded-full border border-vt-border bg-black/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-vt-accent transition hover:border-vt-accent/50 hover:bg-white/5"
+        href="#"
+      >
+        {{ matches.ctaLabel }}
+      </a>
+    </div>
+  </header>
+
+  <div class="border-b border-white/6 px-4 py-3 sm:px-5">
+    <div class="flex flex-wrap gap-2">
+      @for (filter of matches.filters; track filter.label) {
+        <button
+          class="rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] transition"
+          [class.border-vt-accent]="filter.active"
+          [class.bg-vt-accent/10]="filter.active"
+          [class.text-white]="filter.active"
+          [class.border-white/10]="!filter.active"
+          [class.bg-black/20]="!filter.active"
+          [class.text-vt-muted]="!filter.active"
+          [attr.aria-current]="filter.active ? 'page' : null"
+          type="button"
+        >
+          {{ filter.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="grid gap-5 p-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:p-5">
+    <article
+      class="overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-br from-slate-900 to-vt-panel"
+    >
+      <div class="border-b border-white/6 px-4 py-3">
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-vt-muted">
+            Featured match
+          </p>
+          <span
+            class="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300"
+          >
+            {{ matches.featuredMatch.badge || 'LIVE' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="space-y-4 p-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.28em] text-vt-muted">
+              {{ matches.featuredMatch.league }}
+            </p>
+            <h3 class="mt-1 text-2xl font-black uppercase tracking-[-0.03em] text-white">
+              {{ matches.featuredMatch.teams[0] }} <span class="text-vt-muted">vs</span>
+              {{ matches.featuredMatch.teams[1] }}
+            </h3>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-bold text-white">{{ matches.featuredMatch.score }}</p>
+            <p class="text-[10px] uppercase tracking-[0.24em] text-vt-accent">
+              {{ matches.featuredMatch.stage }}
+            </p>
+          </div>
+        </div>
+
+        <p class="text-sm text-slate-300">{{ matches.featuredMatch.status }}</p>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-white/8 bg-black/20 px-4 py-3">
+            <p class="text-[10px] uppercase tracking-[0.24em] text-vt-muted">Home</p>
+            <p class="mt-1 text-xl font-black text-white">{{ matches.featuredMatch.teams[0] }}</p>
+            <p class="text-sm text-slate-400">{{ matches.featuredMatch.status }}</p>
+          </div>
+          <div class="rounded-xl border border-white/8 bg-black/20 px-4 py-3 text-right">
+            <p class="text-[10px] uppercase tracking-[0.24em] text-vt-muted">Away</p>
+            <p class="mt-1 text-xl font-black text-white">{{ matches.featuredMatch.teams[1] }}</p>
+            <p class="text-sm text-slate-400">{{ matches.featuredMatch.stage }}</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <div class="space-y-3">
+      @if (matches.secondaryMatches.length === 0) {
+        <div
+          class="rounded-2xl border border-dashed border-white/10 bg-black/20 px-4 py-10 text-sm text-slate-400"
+        >
+          {{ matches.emptyState }}
+        </div>
+      } @else {
+        @for (
+          match of matches.secondaryMatches;
+          track match.league + match.teams[0] + match.teams[1]
+        ) {
+          <article
+            class="rounded-2xl border border-white/8 bg-black/20 p-4 transition hover:border-vt-accent/30 hover:bg-white/5"
+          >
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0 space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-[10px] uppercase tracking-[0.26em] text-vt-muted">
+                    {{ match.league }}
+                  </span>
+                  <span
+                    class="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-vt-muted"
+                  >
+                    {{ match.badge || 'Match' }}
+                  </span>
+                </div>
+                <p class="text-base font-semibold text-white">
+                  {{ match.teams[0] }} <span class="text-vt-muted">vs</span> {{ match.teams[1] }}
+                </p>
+                <p class="text-sm text-slate-400">{{ match.status }}</p>
+              </div>
+
+              <div class="text-right">
+                <p class="text-lg font-black text-white">{{ match.score }}</p>
+                <p class="text-[10px] uppercase tracking-[0.22em] text-vt-accent">
+                  {{ match.stage }}
+                </p>
+              </div>
+            </div>
+          </article>
+        }
+      }
+    </div>
+  </div>
+</section>

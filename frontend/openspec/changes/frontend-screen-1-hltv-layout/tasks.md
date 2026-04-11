@@ -1,0 +1,44 @@
+# Tasks: Screen 1 HLTV Layout
+
+## Phase 1: Infrastructure
+
+- [x] 1.1 Add the default lazy route in `src/app/app.routes.ts` and reduce `src/app/app.ts` to a minimal router host.
+- [x] 1.2 Create `src/app/features/screen-one/screen-one.models.ts` with typed local VMs and seed mock data.
+- [x] 1.3 Define dark tokens and focus baselines in `src/styles.scss`, and remove CDN font assumptions from `src/index.html`.
+
+## Phase 2: Implementation
+
+- [x] 2.1 Create `src/app/features/screen-one/screen-one.page.ts|html|scss` as the routed shell with semantic landmarks.
+- [x] 2.2 Split the page into presentational children for top strip/header, hero/live match, lists, and right rail cards.
+- [x] 2.3 Wire narrow `@Input()` contracts from the page VM into each child component.
+- [x] 2.4 Add local SVG/material icon handling for critical actions without CDN dependencies.
+
+## Phase 3: Testing
+
+- [x] 3.1 Write failing unit specs for `screen-one.page` covering route render, visible shell, and required sections.
+- [x] 3.2 Add component specs for empty-state/fallback rendering and keyboard-focus visibility on interactive elements.
+- [x] 3.3 Verify responsive behavior in tests: desktop two-column rail, tablet/mobile stacked rail, no clipped content.
+- [x] 3.4 Run `ng test` and `npx tsc --noEmit` to confirm the screen compiles and the scenarios pass.
+
+## Iteration 7: Matches surface and footer
+
+- [x] 4.1 Add a dedicated Matches section with hero, tabs, featured card, secondary cards, and empty-state fallback.
+- [x] 4.2 Add an HLTV-like footer to the page shell and expose footer VM data.
+- [x] 4.3 Mark Matches as the active topbar navigation entry.
+- [x] 4.4 Update specs to cover the new Matches section, footer, and active navigation state.
+- [x] 4.5 Re-run the screen-one test slice and confirm all targeted specs pass.
+
+## Iteration 3: Hierarchy realignment
+
+- [x] 3.5 Rework the main column so the hero is a principal match card, followed by live matches, then upcoming/results sections with `Ver más` as a future navigation placeholder.
+- [x] 3.6 Keep the screen modular while tightening visual fidelity to the HLTV reference and local dark tokens.
+- [x] 3.7 Update the page-level spec to assert the new hierarchy and the removal of the news-hero pattern.
+- [x] 3.8 Re-run the screen-one test slice after the hierarchy adjustment.
+
+## Iteration 8: Route separation and dashboard revert
+
+- [x] 5.1 Restore `/` to the dashboard-only layout by removing the Matches section and footer from the home shell.
+- [x] 5.2 Add `/matches` as a dedicated route and page that reuses the Match Center layout plus footer.
+- [x] 5.3 Update topbar navigation so Dashboard is active on `/` and Matches is active on `/matches`.
+- [x] 5.4 Add route-separation and page-footer regression specs covering both pages.
+- [x] 5.5 Re-run `ng test` and confirm the full Angular spec suite passes.

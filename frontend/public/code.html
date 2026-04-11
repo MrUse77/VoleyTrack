@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VolleyTrack Pro Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#FF8C42", // Vibrant Orange
+              "secondary": "#2A3B47",
+              "background-page": "#1B2838", // Deep Navy
+              "background-card": "#233142", // Slightly lighter navy
+              "surface-border": "#32465C",
+              "text-main": "#FFFFFF",
+              "text-muted": "#8A9BA8",
+              "accent-green": "#4CAF50",
+              "accent-red": "#F44336"
+            },
+            fontFamily: {
+              "sans": ["Roboto", "sans-serif"],
+            },
+            borderRadius: {
+                "DEFAULT": "2px", 
+                "md": "4px", 
+                "lg": "6px", 
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1B2838;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1B2838;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #32465C;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF8C42;
+        }
+        .text-shadow {
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="bg-background-page text-text-main flex flex-col h-screen overflow-hidden selection:bg-primary selection:text-white">
+<header class="h-16 bg-background-card border-b border-surface-border flex items-center px-4 md:px-6 shrink-0 z-30 justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">sports_volleyball</span>
+<span class="font-black text-xl tracking-tighter uppercase italic">Volley<span class="text-primary">Track</span></span>
+</div>
+<nav class="hidden md:flex items-center gap-1">
+<a class="px-4 py-2 text-sm font-bold text-white border-b-2 border-primary bg-white/5" href="#">DASHBOARD</a>
+<a class="px-4 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 transition-colors" href="#">MATCHES</a>
+<a class="px-4 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 transition-colors" href="#">RESULTS</a>
+<a class="px-4 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 transition-colors" href="#">STATS</a>
+<a class="px-4 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 transition-colors" href="#">GALLERY</a>
+<a class="px-4 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 transition-colors" href="#">FANTASY</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex items-center bg-black/20 rounded px-3 py-1.5 border border-surface-border">
+<span class="material-symbols-outlined text-text-muted text-lg">search</span>
+<input class="bg-transparent border-none text-sm text-white focus:ring-0 placeholder-text-muted w-32" placeholder="Search..." type="text"/>
+</div>
+<div class="flex items-center gap-3 border-l border-surface-border pl-4">
+<button class="relative text-text-muted hover:text-white">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<div class="w-8 h-8 rounded bg-cover bg-center border border-surface-border cursor-pointer" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAkiCR-aIBF5O46h97kCMYFbskIDiEFYCZLMnV5aLKH0iEhW2PAhtZ7XPwFgyGdpXpz4fnRa7Lzb3bTEogEFqFB5XM4aUy2h5x0BOZY8I84z6mjBu1W1QFnT5KegeubBHsdvZhw4_GWJtCZK--ek_LR-rz-MkAvuJXpj6Fsb5eac7ydVik67tECMDLKSV__cQuKZcFWKRc1UH5ov8kA2gtTwr37eZe2DwRXGMcss1IWpzufLlZHNSLv9OPC7CoyffQ_t--2W_vswd30');"></div>
+</div>
+</div>
+</header>
+<div class="h-10 bg-[#16202c] border-b border-surface-border flex items-center px-4 md:px-6 shrink-0 overflow-x-auto gap-4 no-scrollbar">
+<div class="flex items-center gap-2 text-xs font-bold text-text-muted border-r border-surface-border pr-4">
+<span class="text-primary">LIVE NOW:</span> 3 Matches
+    </div>
+<div class="flex items-center gap-2">
+<button class="px-2 py-1 text-xs font-medium text-white bg-surface-border rounded hover:bg-primary hover:text-white transition-colors">All Events</button>
+<button class="px-2 py-1 text-xs font-medium text-text-muted hover:text-white transition-colors">VNL 2024</button>
+<button class="px-2 py-1 text-xs font-medium text-text-muted hover:text-white transition-colors">World Champs</button>
+<button class="px-2 py-1 text-xs font-medium text-text-muted hover:text-white transition-colors">CEV Cup</button>
+</div>
+</div>
+<main class="flex-1 flex overflow-hidden">
+<div class="flex-1 overflow-y-auto scroll-smooth">
+<div class="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
+<div class="relative w-full h-[320px] rounded-lg overflow-hidden group cursor-pointer border border-surface-border">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDENLE-DYl_s6TvUBthX-PmFzXzBtcbBo-WbR2dS2lOdxlZg7ivnkgmj66R8kgtv8nUpUn94j3vKeIsC89Q4iLN7sxd_eNuQD3-SpjLBp7AEZcU6yz05LNkT-il_ERj5zHeYs6H9aZbRtnLKaSRnVEUVoUzfPWLq0uRFDnvwB-CuPDQmkhzqCtKrXoScpPCcAq178miO8QRkqF23qTdn_SkmK6fLE0ZTARw3HXKeBGzx-KmwiIB863-QaLGeIGYWI_0XYgz-OsGIb8n');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background-page via-background-page/40 to-transparent"></div>
+<div class="relative z-10 h-full flex flex-col justify-end p-6 md:p-8">
+<span class="text-primary font-bold text-xs uppercase tracking-widest mb-2">Tournament Focus</span>
+<h1 class="text-3xl md:text-5xl font-black text-white leading-tight drop-shadow-lg mb-2">FINALS WEEK: Rio 2024</h1>
+<p class="text-gray-300 max-w-2xl text-lg drop-shadow mb-4">Brazil looks to defend home court against a surging Italian squad in what promises to be a historic final.</p>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold uppercase tracking-wide rounded transition-colors shadow-lg shadow-orange-900/20">Read Article</button>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<h2 class="text-sm font-bold uppercase tracking-wide text-text-muted">Live Matches</h2>
+<a class="text-xs text-primary hover:underline" href="#">View All Live (3)</a>
+</div>
+<div class="bg-background-card border border-surface-border hover:border-primary/50 transition-colors rounded">
+<div class="flex flex-col md:flex-row">
+<div class="w-full md:w-32 bg-black/20 flex flex-row md:flex-col items-center justify-center p-3 gap-2 border-b md:border-b-0 md:border-r border-surface-border">
+<span class="inline-flex items-center gap-1.5 text-xs font-bold text-primary animate-pulse">
+<span class="w-2 h-2 rounded-full bg-primary"></span> LIVE
+                            </span>
+<span class="text-xs font-mono text-text-muted">Set 4</span>
+</div>
+<div class="flex-1 p-4 flex items-center justify-between">
+<div class="flex items-center gap-4 flex-1 justify-end">
+<span class="text-lg md:text-xl font-bold uppercase text-right">Brazil</span>
+<img alt="Brazil" class="w-10 h-8 object-cover rounded shadow-sm border border-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPHFqXU1B-F11tYXYkQxFzE3skCK-2KDSkZxRS1-6oX4spOmAyAeztu1s7bkUKtLYE4Or6WuPuYgM_8tIcKdmqMYkGP3WKoFkAXtFnZymdWNC8fi_ZgYQiuekIfaHMNUxvPUNvr13ZBou5Ddt_hQuBL3pcuWkPRPSHAR-mVslUuhQibjveKQJZvYZy6JjPbern9v8tUbMQlXuB4TRgbdE9dqsMBgr_fVEAjRnVxi6WlkboId0ASg1UxHuAmcfLoktgr9ZVclPl9f_B"/>
+</div>
+<div class="px-6 flex flex-col items-center">
+<div class="text-3xl md:text-4xl font-black tabular-nums tracking-tighter flex items-center gap-3">
+<span class="text-primary">2</span>
+<span class="text-text-muted text-xl">:</span>
+<span>1</span>
+</div>
+<div class="text-xs font-mono text-text-muted mt-1 bg-black/30 px-2 py-0.5 rounded">
+                                    24 - 22
+                                </div>
+</div>
+<div class="flex items-center gap-4 flex-1 justify-start">
+<img alt="Italy" class="w-10 h-8 object-cover rounded shadow-sm border border-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtPw2b3TvvqTv1We2V8ow9GLbnIrC_H_buxPmMeYCXsv8vnt1_T3WQrxft7Vuh1dzv_JdA0SPChGl3u7mQk_ZS59ODJ2SzuZ7H5ssolKyK_Kxv01t_MdmRC0afgQ5sjYLfxhaayUpquF142Qb8eLPmbnw-_iuH6YCehNbj9-En3m2sysyDg9cwtKZHb9Peo7yo32GU3NL19ZRouswK6WN5aN2A7TejxW6ru91tJuqVN5Xem0V8iVHGs1eP0spvPcvQ1yH5X--WckBY"/>
+<span class="text-lg md:text-xl font-bold uppercase text-text-muted">Italy</span>
+</div>
+</div>
+<div class="w-full md:w-auto p-3 flex md:flex-col justify-center items-center gap-2 border-t md:border-t-0 md:border-l border-surface-border bg-white/5">
+<span class="text-[10px] font-bold text-accent-green uppercase tracking-wider mb-0 md:mb-1">Match Point</span>
+<button class="text-xs bg-primary text-white px-3 py-1.5 rounded font-bold hover:bg-orange-600 transition w-full md:w-auto">WATCH</button>
+</div>
+</div>
+<div class="bg-black/40 px-4 py-1.5 flex justify-center text-xs font-mono text-text-muted gap-6 border-t border-surface-border">
+<span>S1: <span class="text-white">25</span>-18</span>
+<span>S2: 22-<span class="text-white">25</span></span>
+<span>S3: <span class="text-white">25</span>-17</span>
+<span class="text-primary font-bold">S4: 24-22</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="space-y-2">
+<h2 class="text-sm font-bold uppercase tracking-wide text-text-muted border-b border-surface-border pb-2">Upcoming</h2>
+<div class="bg-background-card border border-surface-border rounded hover:bg-surface-border/20 transition-colors group cursor-pointer">
+<div class="p-3 flex items-center justify-between">
+<div class="flex items-center gap-3 w-1/3">
+<img alt="USA" class="w-6 h-4 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5wK1G3py6QC-tIayKoVey1aKAvwMaSMUcy0pxWAlcQQcYoe9feKZQzrnGVIpo-nJER-ybyqZGYD1rSS8X8JOog60AI3X2BiRPnQWUflXWASx4cpcKD84P7_d37IMFHM7oIwmayrZpJBjo1p_L_tqPKUUk47cGO7lnpFfB2b3L8uaE5E9mXTSSjkoq0YEBObkA78fby-FCRamC08zuM8EjXQJy-HJGCwC6STAAqzazu2sbAuaIcz3FD__eGR-0VJv-04vDhoUT1av_"/>
+<span class="font-bold text-sm">USA</span>
+</div>
+<div class="text-center w-1/3">
+<span class="text-xs font-mono text-text-muted bg-surface-border/50 px-2 py-1 rounded">14:00</span>
+</div>
+<div class="flex items-center gap-3 w-1/3 justify-end">
+<span class="font-bold text-sm">POL</span>
+<img alt="POL" class="w-6 h-4 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTAK0V53sgUbgmUjXdaYpD1ALBGHQWDe_cmhjGMKtVlo7grMzTzuDedzAavam3qJyYcJYMPjgbVqV0UoPyP1ntucOYIqLdjFW3fAFl1U0VrUYDds5ZUv8AS1ZwxXWB22AqE-Ny-JfB8I7HyhMBaOW-Ihh1zGAM0C_IOyKXz03IKmePlcmwMZ-xbDXfIRNQu_XwPgMtogkMcI8b21s5Ep8JreBN5FTqdV_2jz4-W_9IlxpASRNDA-fLBat_9983A0sMAO3IDCJujpDj"/>
+</div>
+</div>
+</div>
+<div class="bg-background-card border border-surface-border rounded hover:bg-surface-border/20 transition-colors group cursor-pointer">
+<div class="p-3 flex items-center justify-between">
+<div class="flex items-center gap-3 w-1/3">
+<img alt="FRA" class="w-6 h-4 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVU2ac1DIu4LQWSqOkvMTZpIRgYbUVcD23_n2iiDSyzDMlsuRpKmkTSQkui0gP08aQLwdpmNu8K9ZaSyeEgjd44QC5RG3SZrtwmzy6JzTE2Kr4ooPlD5o6JFuSAZo-8t3yfZNRYUJ6dTjc4y72TsgsU3hrBv27oPyFTHY-aBgArcBfaKNzYWm6CtEe_PhEKY4iS9jIUpdtsqjCEUoEHk9SXyKZS4TrwtlK8ax8RnOKV7PnEHDfXzmd2pMxhftcD5ysfd1n-RAOjsgq"/>
+<span class="font-bold text-sm">FRA</span>
+</div>
+<div class="text-center w-1/3">
+<span class="text-xs font-mono text-text-muted bg-surface-border/50 px-2 py-1 rounded">16:00</span>
+</div>
+<div class="flex items-center gap-3 w-1/3 justify-end">
+<span class="font-bold text-sm">JPN</span>
+<img alt="JPN" class="w-6 h-4 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2-vERYoH5Lse7DBSgYkw0bdfPGgoWrXneGfnUHkzKoT-a2uX7IYtUNbkU01zOYUGL9q4gUhIbMRbBfXQ_86oD6SQhCYP-60oN7eJwvdiUWIBNN_wNK3q1uw-A2OPOO3hpTFpqN22dC0jQ3VtvwiTn3U7xKVkfleb0emNAfGPUzsQy1QFpyy9shlwGXAumLSEvirJ-PVk_I68xUDVYfhYDfYI_hFtuEHdWTYwIjU7H-1eNqXdxdyRdFkk0uT3KItOZpegWojF1MhKi"/>
+</div>
+</div>
+</div>
+<div class="bg-background-card border border-surface-border rounded hover:bg-surface-border/20 transition-colors group cursor-pointer">
+<div class="p-3 flex items-center justify-between">
+<div class="flex items-center gap-3 w-1/3">
+<img alt="ARG" class="w-6 h-4 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUSsuaB4RAMPj0Mht15QpqvQKT5Bk45emQZ6xVcH7h5hkOpe6QZ8IaXx9riLG6avnPDF3rv-vAjDJeYBgIhLQAHgJsk3eEP-Vf6Ga30hdf6pJwjbgrglZ7GSC0tKdkoR_lmwxgC_d6TaczukLmwZXKPfMb80IxvoCcITxkFbFQgjFOGz6KezK0rk4zSFV38KWa3gJUmdFgG9fLC-c5fGAT5Dgr_ZKuPRw-msDyU2RuL4HWAm2SL2bM660cR-M2IM5i6AElvbcx8rhw"/>
+<span class="font-bold text-sm">ARG</span>
+</div>
+<div class="text-center w-1/3">
+<span class="text-xs font-mono text-text-muted bg-surface-border/50 px-2 py-1 rounded">18:00</span>
+</div>
+<div class="flex items-center gap-3 w-1/3 justify-end">
+<span class="font-bold text-sm">SLO</span>
+<img alt="SLO" class="w-6 h-4 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIvKUil5T7-Qs7D0I5kEP3340LJBX29kP33H3hCQkomhILVkVxuPGeXlFdgUwQJPG0kLpa-29gg89Oa5urBifUtTxnKa_K2p_-XAZ8CW-lfMkOWdKQ24LtOIvnCUO4fuDtCh2dRDL4hIekTFG6X_LtvLYMwXOPhS8WPWeE_vvWSQH-s9-CW-FiUfsoptmDxDw1KyTUWzrlN3-j1IJD8oJ_dL45ds8T9iEN3W5d1rGrOg__VCnWtLvmWkF87oY0lWhgMhamQPPcgnA2"/>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<h2 class="text-sm font-bold uppercase tracking-wide text-text-muted border-b border-surface-border pb-2">Results</h2>
+<div class="bg-background-card border border-surface-border rounded hover:bg-surface-border/20 transition-colors group cursor-pointer">
+<div class="p-3 flex items-center justify-between">
+<div class="flex items-center gap-3 w-1/3">
+<img alt="CAN" class="w-6 h-4 object-cover rounded shadow-sm grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0sg3bgFuDZW6ZG7rb4grXRHRZUrZ9ZTTzJ6mJYY9rm17eJ1Qz3LiNILTrYFxn4UV9-CDUe3Eac4yEWmaCB0SKJTkViMEiU7JaahfxFj9qvUuNSJxn34n51aXviV2EF47vRcQbsHo6RhF7RejTppS160onDyzmQOUMdGD-yzEyrp8DFxTm61DFXKdKa4Tg_qnX8YThveMZ0DiJPNQ5bZ8m77P0GioRYzA4LaLRNECZ2KiNqwYw7F96a-_o3Hg4VUjsBBfJ9euy4VuW"/>
+<span class="font-bold text-sm text-text-muted group-hover:text-white">CAN</span>
+</div>
+<div class="text-center w-1/3 font-mono font-bold text-sm">
+<span class="text-accent-green">3</span> - <span class="text-accent-red">1</span>
+</div>
+<div class="flex items-center gap-3 w-1/3 justify-end">
+<span class="font-bold text-sm text-text-muted group-hover:text-white">GER</span>
+<img alt="GER" class="w-6 h-4 object-cover rounded shadow-sm grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUNnEeapn27TTTGwFYGx7imUqTCAmjHBpcQcEWUnmomunc_ka8wnLGkPKaOcrHIrjQjNFJxASMTkn2obmxhLieRYRUSUcM6VMF7jEHMefRdXxUK8grOumgWLCOKtxFl4P-GBSy6nmFdCAgCOjVfljVArK3-WGr9H2qxoxD3uxuQU5PVj4ngFSvNeB2sxoeXbPnhk8E5eXCjbI51d6Cc7z60KFJ6SMyIATK_1FXPVVGvrowKSZfAfvvjuT3dE8YgC7mu4UJrz9Eg63P"/>
+</div>
+</div>
+</div>
+<div class="bg-background-card border border-surface-border rounded hover:bg-surface-border/20 transition-colors group cursor-pointer">
+<div class="p-3 flex items-center justify-between">
+<div class="flex items-center gap-3 w-1/3">
+<img alt="NED" class="w-6 h-4 object-cover rounded shadow-sm grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdl27yZwmzQFI0-1_LJLc7Lr8ST0Cxek1ba98ykM_ABZQFTMzda65mmO4YR0P8jYWzJw5AvJOsd5yOmUxB3nz0nY7fDF-mYKZ2s1FuupjRTAbnIz4Nwl2Jd7mtDI9h-0SKAs3-bN0Cwcj55z9D_9w9McKeyCo1FsKfgUugA6gwF58oTk8VcxMP11d3b_8Nhr2E2ajgmP62QugCtY7ldNaqKXJtuplibkVuCE5VH1ZCWu2Z83Q26vlnx8w8a_sNViIBkhHUuQ1ZWgiE"/>
+<span class="font-bold text-sm text-text-muted group-hover:text-white">NED</span>
+</div>
+<div class="text-center w-1/3 font-mono font-bold text-sm">
+<span class="text-accent-red">0</span> - <span class="text-accent-green">3</span>
+</div>
+<div class="flex items-center gap-3 w-1/3 justify-end">
+<span class="font-bold text-sm text-white">IRI</span>
+<img alt="IRI" class="w-6 h-4 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDony7hWj0XKrFPYE7mhaY2j5FfqruyMt_gjOa_NXvn_z6E-Zo9h5uidoudj4nyNDV0txrJJwOXJ5-29Qzl-sssWqc9uT7hP1MB-DhBYYm5WK68O7xnd1y2iiSceQssRLVH-BI6nLLsayDZFJdvBtE-1iNhOWhjiU0oJB4PyYv5xfO2lw_OVgNZoPG4c8Ttu6j8P_XE07gv8xjOjuc20hIVgsXnqhzsK_PEr3hM13krl0JEHkGZVmjKcw0jKP9UnO9T0ZLD5BCglxi6"/>
+</div>
+</div>
+</div>
+<div class="bg-background-card border border-surface-border rounded hover:bg-surface-border/20 transition-colors group cursor-pointer">
+<div class="p-3 flex items-center justify-between">
+<div class="flex items-center gap-3 w-1/3">
+<img alt="CUB" class="w-6 h-4 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsozZbN5K_4oDJ_s3ECRZDJqdlHPxwvcizCJ3PbdCO2EOQEWK9WxVHMt9cIMLFFNBskEPEG1qlf8GNadPTCWfPFWQDg42cFr3QTBG014Dd6KPU8FycO5gOnILyH1CrjaksC-U_OODJEycNkRLKy0wj0Ukz4eBTYs5lxFKArl1irdbKA28QzA4LNlj68T6D1h7OM78heXuFWOHaP_ixmAzlZz6v3g-rY5gzMfLyuFeTdwAes5l91wKKghI5mZGPxmkfOqCe_v8t8hRg"/>
+<span class="font-bold text-sm text-white">CUB</span>
+</div>
+<div class="text-center w-1/3 font-mono font-bold text-sm">
+<span class="text-accent-green">3</span> - <span class="text-accent-red">2</span>
+</div>
+<div class="flex items-center gap-3 w-1/3 justify-end">
+<span class="font-bold text-sm text-text-muted group-hover:text-white">BUL</span>
+<img alt="BUL" class="w-6 h-4 object-cover rounded shadow-sm grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtwwpWzqqledKzt8bbfkPE5SXCTNwk0IPEM985s_-0gZ-h_AmDooXzjXYTXNkepZobhCBxDuRP_MoxO_NPvNvLyU2TCarYnBmZo84r9_7_LWznuR9U0DYWLSS2ry5RPAqkm4jJunGCf-u0wkg_v34ST9Ey-llZ7DowEdomZn5sA4vziqoRUoRZuVqBn5kG0YZ_ahxhJSJQM-EbD7gkh0avIREDaDpECdzF14JVIn2NF5LL385880d2r3nOaD_WAawGlrl3gP0YNLKw"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4">
+<h2 class="text-sm font-bold uppercase tracking-wide text-text-muted border-b border-surface-border pb-2 mb-4">Latest News</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<article class="bg-background-card border border-surface-border rounded group cursor-pointer hover:border-text-muted/30 transition-all">
+<div class="h-40 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDENLE-DYl_s6TvUBthX-PmFzXzBtcbBo-WbR2dS2lOdxlZg7ivnkgmj66R8kgtv8nUpUn94j3vKeIsC89Q4iLN7sxd_eNuQD3-SpjLBp7AEZcU6yz05LNkT-il_ERj5zHeYs6H9aZbRtnLKaSRnVEUVoUzfPWLq0uRFDnvwB-CuPDQmkhzqCtKrXoScpPCcAq178miO8QRkqF23qTdn_SkmK6fLE0ZTARw3HXKeBGzx-KmwiIB863-QaLGeIGYWI_0XYgz-OsGIb8n');"></div>
+<div class="p-4">
+<span class="text-[10px] text-primary font-bold uppercase">Analysis</span>
+<h3 class="font-bold text-sm mt-1 leading-snug group-hover:text-primary transition-colors">Statistical breakdown of Brazil's block defense</h3>
+<div class="flex items-center gap-2 mt-3 text-xs text-text-muted">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 2 hours ago
+                            </div>
+</div>
+</article>
+<article class="bg-background-card border border-surface-border rounded group cursor-pointer hover:border-text-muted/30 transition-all">
+<div class="h-40 bg-cover bg-center grayscale group-hover:grayscale-0 transition-all" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB2-vERYoH5Lse7DBSgYkw0bdfPGgoWrXneGfnUHkzKoT-a2uX7IYtUNbkU01zOYUGL9q4gUhIbMRbBfXQ_86oD6SQhCYP-60oN7eJwvdiUWIBNN_wNK3q1uw-A2OPOO3hpTFpqN22dC0jQ3VtvwiTn3U7xKVkfleb0emNAfGPUzsQy1QFpyy9shlwGXAumLSEvirJ-PVk_I68xUDVYfhYDfYI_hFtuEHdWTYwIjU7H-1eNqXdxdyRdFkk0uT3KItOZpegWojF1MhKi');"></div>
+<div class="p-4">
+<span class="text-[10px] text-accent-green font-bold uppercase">Interview</span>
+<h3 class="font-bold text-sm mt-1 leading-snug group-hover:text-primary transition-colors">Nishida on the upcoming clash against France</h3>
+<div class="flex items-center gap-2 mt-3 text-xs text-text-muted">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 5 hours ago
+                            </div>
+</div>
+</article>
+<article class="bg-background-card border border-surface-border rounded group cursor-pointer hover:border-text-muted/30 transition-all">
+<div class="h-40 bg-cover bg-center grayscale group-hover:grayscale-0 transition-all" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBo6za6ardgpgUXA7AIClpd65VazjNxfV609HzrRVlfBcPIhiIE9go-Qjco9X4-J_wnF5ZouJyMq-404JFr8jOV1yQN3iHynMNPPqGa5Rk6YjYcyd_M-VvzP2NSBxMiFuGaLsNomyQD80DUpPlWrQhsUK85ZIFjHsYCMeXE89HO81KDePPlJQYc46foGiWBmOX0FMC0O79NtOzCiydRSA8iy4iCKFGfTK8QWxglCdq58xDS-lTKCcTXrF7DrR0QsXAWnlzD3icH3-NL');"></div>
+<div class="p-4">
+<span class="text-[10px] text-blue-400 font-bold uppercase">Transfer</span>
+<h3 class="font-bold text-sm mt-1 leading-snug group-hover:text-primary transition-colors">USA Setter Christenson rumored to change clubs</h3>
+<div class="flex items-center gap-2 mt-3 text-xs text-text-muted">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 8 hours ago
+                            </div>
+</div>
+</article>
+</div>
+</div>
+</div>
+</div>
+<aside class="w-[300px] hidden xl:flex flex-col bg-background-card border-l border-surface-border overflow-y-auto">
+<div class="p-4 border-b border-surface-border">
+<h3 class="text-xs font-bold text-text-muted uppercase mb-3">Trending Players</h3>
+<div class="space-y-3">
+<div class="flex items-center gap-3 group cursor-pointer">
+<div class="w-8 h-8 rounded bg-surface-border flex items-center justify-center text-xs font-bold text-text-muted">1</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-white group-hover:text-primary transition-colors">Nishida</p>
+<p class="text-xs text-text-muted">Japan • OP</p>
+</div>
+<span class="text-xs font-bold text-accent-green">+14%</span>
+</div>
+<div class="flex items-center gap-3 group cursor-pointer">
+<div class="w-8 h-8 rounded bg-surface-border flex items-center justify-center text-xs font-bold text-text-muted">2</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-white group-hover:text-primary transition-colors">Michieletto</p>
+<p class="text-xs text-text-muted">Italy • OH</p>
+</div>
+<span class="text-xs font-bold text-accent-green">+8%</span>
+</div>
+<div class="flex items-center gap-3 group cursor-pointer">
+<div class="w-8 h-8 rounded bg-surface-border flex items-center justify-center text-xs font-bold text-text-muted">3</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-white group-hover:text-primary transition-colors">Leal</p>
+<p class="text-xs text-text-muted">Brazil • OH</p>
+</div>
+<span class="text-xs font-bold text-accent-red">-2%</span>
+</div>
+</div>
+</div>
+<div class="p-0 flex-1">
+<div class="px-4 py-3 bg-black/20 border-b border-surface-border flex justify-between items-center">
+<h3 class="text-xs font-bold text-text-muted uppercase">Standings</h3>
+<span class="text-[10px] text-primary cursor-pointer hover:underline">Full Table</span>
+</div>
+<table class="w-full text-xs text-left">
+<thead class="bg-surface-border/30 text-text-muted">
+<tr>
+<th class="pl-4 py-2 font-medium">#</th>
+<th class="py-2 font-medium">Team</th>
+<th class="pr-4 py-2 text-right font-medium">Pts</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-border/30">
+<tr class="hover:bg-white/5 transition-colors cursor-pointer group">
+<td class="pl-4 py-2.5 font-bold text-primary">1.</td>
+<td class="py-2.5 flex items-center gap-2 font-medium text-white group-hover:text-primary">
+<img alt="BR" class="w-4 h-3 object-cover rounded-[1px]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWICiWUIp77PHLHIoaTLyMuPJs7_Ss_eEUM_L5ZqUUftvEEtywqCzj-zSpwXoMSlg_KFfhEPig2PLZ1eqKg42ZtWAdGybqLztcNY6R88QxoJ1ImxWSwZaRDASD_PlZrlMBqDEB-8psG1ME_FecEdhve9R8cBhhxXReK7_1fvvDWbJyFSkqwaBVdv4aReVweYnk_T9HWUefrRzAFBmG_vTw5LZR77uZqWj40LVazV7wWlN762NWne-K_hwm1-i-B-agvjXSTT1cQRLS"/> BRA
+                        </td>
+<td class="pr-4 py-2.5 text-right font-mono font-bold">24</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors cursor-pointer group">
+<td class="pl-4 py-2.5 font-bold text-white">2.</td>
+<td class="py-2.5 flex items-center gap-2 font-medium text-white group-hover:text-primary">
+<img alt="PL" class="w-4 h-3 object-cover rounded-[1px]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_WerhzZGJD4XC9_2P6zYoqJ_3uIXeu--1hkF8KzUmz8wFaXs9whrv6AwNd9Vft0OiKVt6UZ-YdsRuMAGoMHEwfyUuTcxpkfKnejxdYllbIdJBGSHmwMB1j0kCW9Okyhx8libp3hPAOS2hWVV4pZBkZSJo2EDy636ZPg5ryci_SRqEtLMCGMJsv6pZgkyWI7BVJm_mRvLi68-xxgDQSNG9nhf7ylu9Xcz80r_4DtejC2iX2bKaajk48W5KYkFTr124s6KVC27JGSdb"/> POL
+                        </td>
+<td class="pr-4 py-2.5 text-right font-mono font-bold">21</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors cursor-pointer group">
+<td class="pl-4 py-2.5 font-bold text-white">3.</td>
+<td class="py-2.5 flex items-center gap-2 font-medium text-white group-hover:text-primary">
+<img alt="IT" class="w-4 h-3 object-cover rounded-[1px]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZl4wAp47iPJfLfe0Jrfa4-3Vi7PttHPBSdA9-tGdLWdslgIL1FklQUS2S-v_oxISfFFoK5LhG8tffZehP0Zzf3IggIXrPiO3H8Aw6I3CI-u4Vnp6evYIAEAHfbsb3iuiZbM6L7it7sPImu6hPnwK_DxvCgx9E0MB7G-ZxMJlY1SA6Nzu4aSy1NrZ5LWc4mf1Vn38BZpK23kP6MJdPsL9dxiNoCZ-654YFW9hY9wiRCAo-y9h6cCtOeNz-nfTTIGywqETGFsY6Tstn"/> ITA
+                        </td>
+<td class="pr-4 py-2.5 text-right font-mono font-bold">18</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors cursor-pointer group">
+<td class="pl-4 py-2.5 font-bold text-text-muted">4.</td>
+<td class="py-2.5 flex items-center gap-2 font-medium text-text-muted group-hover:text-primary">
+<img alt="US" class="w-4 h-3 object-cover rounded-[1px]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBo6za6ardgpgUXA7AIClpd65VazjNxfV609HzrRVlfBcPIhiIE9go-Qjco9X4-J_wnF5ZouJyMq-404JFr8jOV1yQN3iHynMNPPqGa5Rk6YjYcyd_M-VvzP2NSBxMiFuGaLsNomyQD80DUpPlWrQhsUK85ZIFjHsYCMeXE89HO81KDePPlJQYc46foGiWBmOX0FMC0O79NtOzCiydRSA8iy4iCKFGfTK8QWxglCdq58xDS-lTKCcTXrF7DrR0QsXAWnlzD3icH3-NL"/> USA
+                        </td>
+<td class="pr-4 py-2.5 text-right font-mono font-bold text-text-muted">15</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors cursor-pointer group">
+<td class="pl-4 py-2.5 font-bold text-text-muted">5.</td>
+<td class="py-2.5 flex items-center gap-2 font-medium text-text-muted group-hover:text-primary">
+<img alt="JP" class="w-4 h-3 object-cover rounded-[1px]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_x2Dqqw6winHZrdFhqYIiJ7zcnS0SJLF1kE--MQ3VZv6PNvHrsO3NvU8cHrt6H38WeIZPPeccL9O4kDqWtBNg5hUbEhiu_DDgv-7oHL1n8BUtz8rUp92JSxO98OUBSwS0fC3UkRVnhTmSKcW2EgVK3UzrXoXsdd7psS_pUUeJgXiXOzdY4mDLBbN_oPYjt719-p4hlMxnGA9R-scPmx3i8WfmUHEjBmIqyPnseKlpKsfTf0_9rHgTvPlrIVAn7FaA_7JZYs_CXSWU"/> JPN
+                        </td>
+<td class="pr-4 py-2.5 text-right font-mono font-bold text-text-muted">14</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 mt-auto border-t border-surface-border bg-black/20 text-center">
+<p class="text-[10px] text-text-muted uppercase mb-2">Partner</p>
+<div class="h-24 bg-surface-border/20 rounded border border-dashed border-surface-border flex items-center justify-center text-text-muted text-xs">
+                Premium Stats Access
+            </div>
+</div>
+</aside>
+</main>
+
+</body></html>

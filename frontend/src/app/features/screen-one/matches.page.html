@@ -1,0 +1,9 @@
+<div class="min-h-screen bg-vt-page text-vt-text">
+  <app-screen-one-topbar [brand]="vm.brand" [navigation]="vm.navigation" [utility]="vm.utility" />
+
+  <main class="mx-auto flex w-full max-w-[1599px] flex-col gap-5 px-4 py-5 lg:px-6">
+    <app-screen-one-matches [matches]="vm.matches" />
+  </main>
+
+  <app-screen-one-footer [footer]="vm.footer" />
+</div>
