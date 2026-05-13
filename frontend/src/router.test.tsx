@@ -2,16 +2,21 @@ import { describe, expect, it } from "vitest";
 import { router } from "./router";
 
 describe("router", () => {
-  it("exposes the expected top-level routes", () => {
-    const paths = router.routeTree.children.map((route) => route.path);
+  it("exposes the auth route and shell subtree", () => {
+    const topLevelPaths = router.routeTree.children.map((route) => route.path);
+    const shellRoute = router.routeTree.children.find((route) => route.id === "shell");
+    const shellPaths = shellRoute?.children.map((route) => route.path);
 
-    expect(paths).toContain("/");
-    expect(paths).toContain("matches");
-    expect(paths).toContain("results");
-    expect(paths).toContain("stats");
-    expect(paths).toContain("gallery");
-    expect(paths).toContain("fantasy");
-    expect(paths).toContain("players");
-    expect(paths).toContain("teams");
+    expect(topLevelPaths).toContain("login");
+    expect(shellPaths).toContain("/");
+    expect(shellPaths).toContain("/admin");
+    expect(shellPaths).toContain("/planillero");
+    expect(shellPaths).toContain("/matches");
+    expect(shellPaths).toContain("/results");
+    expect(shellPaths).toContain("/stats");
+    expect(shellPaths).toContain("/gallery");
+    expect(shellPaths).toContain("/fantasy");
+    expect(shellPaths).toContain("/players");
+    expect(shellPaths).toContain("/teams");
   });
 });

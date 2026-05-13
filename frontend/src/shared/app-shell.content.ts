@@ -11,7 +11,7 @@ export const APP_SHELL_NAVIGATION = [
 export const APP_SHELL_UTILITY = {
   live: true,
   dateLabel: "Fri 10 Apr",
-  spotlight: "3 Matches",
+  spotlight: "3 control rooms",
 } as const;
 
 export const APP_SHELL_FOOTER = {
