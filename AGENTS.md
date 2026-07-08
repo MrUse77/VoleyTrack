@@ -1,47 +1,43 @@
-# Decisiones de Stack - VoleyTrack
+# Stack y Arquitectura — VoleyTrack
 
-## Contexto
-El proyecto busca desarrollar una aplicación escalable y estructurada para el tracking de partidos de vóley. Se priorizó un stack que permita aprender tecnologías modernas y ser competitivo en el mercado laboral.
+## Backend
 
----
+| Decisión | Stack | Estado |
+|----------|-------|--------|
+| **Lenguaje** | Java 21 | ✅ |
+| **Framework** | Spring Boot 4.1.0 (WebMVC, Data JDBC, Validation, Flyway) | ✅ |
+| **Build** | Gradle 9.5.1 | ✅ |
+| **Persistencia** | Spring Data JDBC + Flyway | ✅ |
+| **Base de datos** | PostgreSQL 16 (prod) / H2 (test) | ✅ |
+| **Arquitectura** | Hexagonal (Ports & Adapters) + GRASP | ✅ |
+| **Testing** | JUnit 5 + AssertJ + Mockito | ✅ |
 
-## Decisiones del Stack
+Ver `backend/ARCHITECTURE.md` para el detalle de la estructura hexagonal.
 
-### **Backend**
-- **Framework:** NestJS
-  - Se eligió por su modularidad, inyección de dependencias nativa y estructura sólida para proyectos escalables.
-  - Compatible con TypeScript y Bun, asegurando desempeño y velocidad en el desarrollo.
-  - Adaptable a patrones de diseño como Hexagonal Architecture y Domain-Driven Design (DDD).  
-- **Runtime:** Bun
-  - Elegido por su velocidad (3-4x más rápido que Node.js) y soporte nativo para TypeScript.
-  - Uso para el servidor, compilación y bundle ligero.
-- **Base de Datos:** PostgreSQL + Prisma ORM
-  - Base relacional madura, ACID, perfecta para la integridad de datos de partidos, jugadores y estadísticas.
-  - Prisma elegido por su type-safety, migrations automáticas y DX excelente con TypeScript.
+## Frontend
 
----
+| Decisión | Stack | Estado |
+|----------|-------|--------|
+| **Framework** | React (según RNF-07) | 🔲 Pendiente |
 
-### **Frontend**
-- **Framework:** Angular
-  - Ideal por su enfoque empresarial, estructura modular y TypeScript nativo.
-  - Escalable para aplicaciones grandes y frameworks robustos con soporte a largo plazo.
-- **UI Framework:** Angular Material
-  - Proporciona componentes predefinidos que agilizan el desarrollo visual.
+## Dominio
 
----
+23 clases de dominio implementadas con TDD. Cubre:
 
-### **Arquitectura**
-- **Backend**: Hexagonal Architecture (Ports & Adapters) y Domain-Driven Design (DDD)
-  - La idea es mantener el dominio independiente de frameworks y librerías externas.
-  - Los módulos de NestJS serán adaptadores para la ejecución del dominio central.
+- **Enums**: Posicion, EstadoPartido, EstadoSet, TipoFundamento, TipoSustitucion, TipoLado, RolUsuario
+- **Partido**: Partido, SetPartido, Marcador, Cambios, CantSets, Lado
+- **Equipo**: Equipo, Jugador, Plantel, Alineacion, AlineacionJugador
+- **Eventos**: Evento, Sustitucion
+- **Usuarios**: Usuario, Admin, Planillero
+- **Proyección**: Estadistica
 
-- **Frontend**: Modular con Angular
-  - Aunque no directamente hexagonal, se estructurará en módulos que reflejen casos de uso clave.
+## Reglas de negocio verificadas
 
----
+RN-01 a RN-06 implementadas y testeadas (70 tests totales).
 
-## Próximos Pasos
-1. Configuración inicial del proyecto con NestJS y Angular.
-2. Implementar la base de datos y modelos iniciales (partido, jugador, estadísticas).
-3. Diseñar los módulos del backend siguiendo Hexagonal Architecture y DDD.
-4. Crear las vistas básicas en Angular con Angular Material.
+## Próximos pasos
+
+1. Implementar controladores REST (`adapter/in/web/`)
+2. Conectar frontend React con la API
+3. Autenticación JWT con Spring Security
+4. WebSockets para pizarra en vivo
