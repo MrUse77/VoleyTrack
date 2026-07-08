@@ -14,8 +14,8 @@ class BackendPackageArchitectureTest {
 	private static final Path SRC_MAIN_JAVA = BACKEND_ROOT.resolve("src/main/java/com/mrusedev/voleytrack");
 
 	@Test
-	void partidosPackageContractsExist() {
-		for (String relativePath : expectedPartidosPackageInfoFiles()) {
+	void hexagonalLayerContractsExist() {
+		for (String relativePath : expectedPackageInfoFiles()) {
 			Path packageInfo = SRC_MAIN_JAVA.resolve(relativePath);
 			assertThat(packageInfo)
 				.as("Expected package contract file at %s", relativePath)
@@ -24,15 +24,15 @@ class BackendPackageArchitectureTest {
 	}
 
 	@Test
-	void partidosPackageContractsAreMeaningful() throws IOException {
-		for (String relativePath : expectedPartidosPackageInfoFiles()) {
+	void hexagonalLayerContractsAreMeaningful() throws IOException {
+		for (String relativePath : expectedPackageInfoFiles()) {
 			Path packageInfo = SRC_MAIN_JAVA.resolve(relativePath);
 			String content = Files.readString(packageInfo);
 
 			assertThat(content)
 				.as("Expected package-level Javadoc contract in %s", relativePath)
 				.contains("/**")
-				.contains("package com.mrusedev.voleytrack.partidos");
+				.contains("package com.mrusedev.voleytrack");
 			assertThat(content.lines().filter(line -> line.strip().startsWith("*")).count())
 				.as("Expected non-empty package-level contract in %s", relativePath)
 				.isGreaterThanOrEqualTo(3);
@@ -40,32 +40,38 @@ class BackendPackageArchitectureTest {
 	}
 
 	@Test
-	void partidosContainsOnlyPackageContractsForThisSlice() throws IOException {
-		Path partidosPackage = SRC_MAIN_JAVA.resolve("partidos");
-		assertThat(partidosPackage).isDirectory();
+	void domainContainsOnlyDomainClasses() throws IOException {
+		Path domainPackage = SRC_MAIN_JAVA.resolve("domain");
+		assertThat(domainPackage).isDirectory();
 
-		try (var files = Files.walk(partidosPackage)) {
-			List<Path> unexpectedJavaFiles = files
+		try (var files = Files.list(domainPackage)) {
+			List<Path> javaFiles = files
 				.filter(Files::isRegularFile)
 				.filter(path -> path.toString().endsWith(".java"))
 				.filter(path -> !path.getFileName().toString().equals("package-info.java"))
 				.toList();
 
-			assertThat(unexpectedJavaFiles)
-				.as("No controllers, use cases, entities, repositories, or other source types belong in this slice")
-				.isEmpty();
+			assertThat(javaFiles)
+				.as("Domain package must contain domain classes")
+				.isNotEmpty();
 		}
 	}
 
 	@Test
-	void futureContextSourcePackagesDoNotExist() {
-		List<String> forbiddenPackages = List.of("usuarios", "plantel", "livestats", "live-stats");
+	void hexagonalStructureIsComplete() {
+		List<String> requiredLayers = List.of(
+			"domain",
+			"application", "application/port", "application/port/in",
+			"application/port/out", "application/gestor",
+			"adapter", "adapter/in", "adapter/in/web",
+			"adapter/out", "adapter/out/persistence"
+		);
 
-		for (String packageName : forbiddenPackages) {
-			Path packageDir = SRC_MAIN_JAVA.resolve(packageName);
-			assertThat(packageDir)
-				.as("Future context package must not exist: %s", packageName)
-				.doesNotExist();
+		for (String layer : requiredLayers) {
+			Path layerDir = SRC_MAIN_JAVA.resolve(layer);
+			assertThat(layerDir)
+				.as("Hexagonal layer must exist: %s", layer)
+				.isDirectory();
 		}
 	}
 
@@ -90,15 +96,15 @@ class BackendPackageArchitectureTest {
 	}
 
 	@Test
-	void architectureDocumentationNamesAllBoundedContexts() throws IOException {
+	void architectureDocumentationDescribesHexagonalStructure() throws IOException {
 		Path architectureDoc = BACKEND_ROOT.resolve("ARCHITECTURE.md");
 		assertThat(architectureDoc).isRegularFile();
 
 		String content = Files.readString(architectureDoc);
-		assertThat(content).contains("partidos");
-		assertThat(content).contains("usuarios");
-		assertThat(content).contains("plantel");
-		assertThat(content).contains("live-stats");
+		assertThat(content).contains("hexagonal");
+		assertThat(content).contains("domain");
+		assertThat(content).contains("application");
+		assertThat(content).contains("adapter");
 	}
 
 	@Test
@@ -109,17 +115,19 @@ class BackendPackageArchitectureTest {
 			.isRegularFile();
 	}
 
-	private static List<String> expectedPartidosPackageInfoFiles() {
+	private static List<String> expectedPackageInfoFiles() {
 		return List.of(
-			"partidos/package-info.java",
-			"partidos/domain/package-info.java",
-			"partidos/application/package-info.java",
-			"partidos/application/port/package-info.java",
-			"partidos/application/port/in/package-info.java",
-			"partidos/application/port/out/package-info.java",
-			"partidos/adapter/package-info.java",
-			"partidos/adapter/in/package-info.java",
-			"partidos/adapter/out/package-info.java"
+			"domain/package-info.java",
+			"application/package-info.java",
+			"application/port/package-info.java",
+			"application/port/in/package-info.java",
+			"application/port/out/package-info.java",
+			"application/gestor/package-info.java",
+			"adapter/package-info.java",
+			"adapter/in/package-info.java",
+			"adapter/in/web/package-info.java",
+			"adapter/out/package-info.java",
+			"adapter/out/persistence/package-info.java"
 		);
 	}
 
