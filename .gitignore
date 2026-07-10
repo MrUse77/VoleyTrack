@@ -10,3 +10,6 @@ backend/.classpath
 backend/.project
 backend/.settings/
 backend/bin/
+
+# Documentation analysis symlink
+DocsAnalisis
