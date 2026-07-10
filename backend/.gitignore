@@ -1,4 +1,8 @@
+node_modules
+dist
 HELP.md
+
+# Keep environment variables out of version control
 .env
 .env.local
 .m2/
@@ -38,3 +42,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Prisma generated files
+/generated/prisma
