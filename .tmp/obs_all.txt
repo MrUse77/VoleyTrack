@@ -1,0 +1,105 @@
+415|Define public spectator dashboard as first frontend experience|What: Updated the Open Pencil frontend design so the initial dashboard is a public spectator/guest experience, not an authenticated admin/backoffice view.
+Why: User clarified that guests/spectators should see Dashboard, Partidos, Torneos, and Estadísticas; login/registration and match creation are out of scope for now.
+Where: Open Pencil document saved at frontend/design/voleytrack-webapp-design.fig; new page named '02 Public Spectator Dashboard'.
+Learned: Public navigation should be Dashboard, Partidos, Torneos, Estadísticas. Remove admin concepts from this flow: no Plantel, Encuentros, Proyecciones, Usuarios, user avatar, login/register, or create match actions. CTAs should be spectator-oriented like 'Ver en vivo' and 'Ver detalle'.
+416|Add public spectator matches screen to Open Pencil design|What: Removed obsolete Open Pencil pages Page 1, App Shell, and 01 Dashboard Home, then added the spectator-facing Partidos screen.
+Why: User confirmed the public/spectator IA should keep Dashboard and add Partidos/Torneos/Estadísticas, without admin/login/create-match flows.
+Where: Open Pencil document saved at frontend/design/voleytrack-webapp-design.fig; pages now include Dashboard, 02 Public Spectator Dashboard, and 03 Public Matches.
+Learned: Partidos page should be public and browsing-focused: search by team/tournament/venue, filters for Todos/En vivo/Hoy/Próximos/Finalizados, match list rows, featured match detail, and no operational controls.
+417|Add first public tournaments screen to Open Pencil design|What: Added a first spectator-facing Torneos screen to the Open Pencil design.
+Why: User requested a first version of the Torneos section to iterate later.
+Where: Open Pencil document saved at frontend/design/voleytrack-webapp-design.fig; new page named '04 Public Tournaments'.
+Learned: Public Torneos view should browse competitions rather than manage them: active/upcoming/finished filters, tournament metrics, highlighted tournament list, standings preview, and upcoming matches within the selected tournament. No admin or creation controls.
+418|Add public tournament detail screen with contextual stats entry|What: Added the spectator-facing tournament detail screen reached from 'Ver torneo' in the Torneos page.
+Why: User reasoned that statistics should likely be contextualized by tournament; the design now places stats as a tab/preview inside the selected tournament rather than as global contextless stats.
+Where: Open Pencil document saved at frontend/design/voleytrack-webapp-design.fig; new page named '05 Public Tournament Detail'.
+Learned: Public tournament detail should include breadcrumb back to Torneos, tournament hero, tabs (Resumen, Partidos, Tabla, Estadísticas), standings, tournament matches, recent results, and a stats preview/entry point for deeper tournament-specific analytics.
+419|Design tournament detail tab variants for matches standings and stats|What: Added Open Pencil pages for the tournament detail tabs: Partidos, Tabla, and Estadísticas.
+Why: User requested designs for the buttons/tabs shown in the tournament detail screen image, and specified that Estadísticas should include leaderboards for total points, attack points, block points, and serve points.
+Where: Open Pencil document saved at frontend/design/voleytrack-webapp-design.fig; pages added: 06 Public Tournament Matches Tab, 07 Public Tournament Standings Tab, 08 Public Tournament Stats Tab.
+Learned: Tournament statistics are contextualized inside a selected tournament. Stats tab should prioritize four spectator-facing player leaderboards: players with most total points, most attack points, most block points, and most serve points. These correspond to points by fundamentos, not generic global analytics.
+420|Change tournament stats tab to category filter pattern|What: Updated the Open Pencil tournament statistics tab to use a filter/sub-tab pattern for statistic categories instead of showing four equally weighted leaderboard sections at once.
+Why: User requested the statistics categories behave like the top navigation tabs (Resumen, Partidos, Tabla, Estadísticas), but specifically for statistics.
+Where: Open Pencil document saved at frontend/design/voleytrack-webapp-design.fig; page '08 Public Tournament Stats Tab' now has a statistics filter bar with Puntos, Ataques, Bloqueos, and Saques.
+Learned: The Stats tab should present one selected statistic category at a time with a primary leaderboard, while showing secondary category previews. This reduces visual competition and mirrors the existing tab mental model.
+421|Add team detail navigation from standings|What: Updated the tournament standings tab to make team rows visually clickable and added a public team detail page.
+Why: User asked whether teams should be clickable from the standings or have their own section; decision was to support direct drill-down from standings first, without adding a top-level Equipos navigation item yet.
+Where: Open Pencil document saved at frontend/design/voleytrack-webapp-design.fig; updated '07 Public Tournament Standings Tab' and added '09 Public Team Detail'.
+Learned: Team detail should be contextual to the tournament: breadcrumb Torneos / Liga A1 Masculina / Tabla / Team, team summary, roster/players, recent matches, and team stats within the selected tournament.
+422|Add complete public team detail sections|What: Fixed overlapping team row affordances in the standings page and added full team detail sections for roster, matches, and statistics.
+Why: User reported that 'Ver equipo' overlapped table columns and requested the remaining team pages/sections.
+Where: Open Pencil document saved at frontend/design/voleytrack-webapp-design.fig; updated '07 Public Tournament Standings Tab' and added '10 Public Team Roster Tab', '11 Public Team Matches Tab', and '12 Public Team Stats Tab'.
+Learned: Team rows in standings should be clickable without extra action text in the stats columns. Use subtle arrows/hint instead. Team detail sections should stay contextual to the selected tournament and use tabs: Resumen, Plantel, Partidos, Estadísticas.
+423|Add public live match detail design|What: Added a public live match detail screen to the Open Pencil design.
+Why: User requested a live match detail page with historical events per set, the player/team responsible for each point, and statistics split by team with player rows.
+Where: Open Pencil document saved at frontend/design/voleytrack-webapp-design.fig; new page '13 Public Live Match Detail'.
+Learned: Live match detail for spectators should include a live scoreboard hero, set selector, per-set event timeline, and team/player stats sections. Stats columns should include attack points, block points, serve points, serve errors, unforced errors, and a calculated efficiency value derived from those columns.
+424|Reviewed current OpenPencil screens|**What**: Current OpenPencil document contains public spectator-focused desktop screens: Dashboard, Public Spectator Dashboard, Public Matches, Public Tournaments, Tournament Detail, Tournament Matches/Standings/Stats tabs, Team Detail, Team Roster/Matches/Stats tabs, and Public Live Match Detail; Internal Only Canvas is empty.
+**Why**: User asked to review existing OpenPencil designs and suggest additional screens.
+**Where**: OpenPencil pages 0:3, 0:237, 0:340, 0:454, 0:575, 0:704, 0:803, 0:933, 0:1038, 0:1146, 0:1239, 0:1315, 0:1404, 0:1539.
+**Learned**: Designs have a coherent dark desktop shell (#0B1220/#111A2B/#0F1726) and public navigation model, but OpenPencil reports repeated no-auto-layout warnings, duplicate generic layer names (Text/Frame), invisible same-fill parent/child regions, contrast warnings for red/green text on dark backgrounds, and one 42x42 touch target under the recommended 44x44 minimum.
+425|Adjusted CU-21 point type step|**What**: Updated OpenPencil `CU-21 Anotar Punto Flow` Step 3 to remove the separate result selector and keep only point type selection.
+**Why**: The planillero flow should avoid redundant decisions; result is implied by the chosen point category and scoring team.
+**Where**: OpenPencil page `0:1540`, flow root `0:1836`, updated Step 3 frame `0:1944`; preview summary now uses `Impacto: +1 River` instead of `Resultado: A favor`.
+**Learned**: Step 3 point types are now Ataque, Bloqueo, Saque, Error no forzado, and Error saque; `Defensa` and `Otro` were removed.
+426|Created remaining OpenPencil screen set|**What**: Added the remaining recommended VoleyTrack OpenPencil screens after the admin scoring console.
+**Why**: The product needed coverage beyond public spectator consumption and point entry: setup, post-match closure, player detail, tournament bracket, mobile live view, and generic UI states.
+**Where**: OpenPencil pages created: `15 Admin Match Setup` (0:1975, root 0:1976), `16 Admin Post Match Summary` (0:2089, root 0:2090), `17 Public Player Detail` (0:2188, root 0:2189), `18 Public Tournament Bracket` (0:2278, root 0:2279), `19 Mobile Live Match` (0:2364, root 0:2365), `20 UI States` (0:2425, root 0:2426).
+**Learned**: The screen set now covers the main lifecycle: match creation/setup -> live scoring/admin -> public live consumption -> post-match summary -> player/tournament exploration -> loading/empty/error/offline states. These are first-pass structural screens and should still be polished for spacing, responsive behavior, and design-token consistency before design-to-code.
+427|Refined Admin Match Setup step context placement|**What**: Adjusted OpenPencil `15 Admin Match Setup` so the step context card no longer appears in the sidebar and instead appears inline below the step progress control for each setup state. Also fixed Step 04 footer layout so Back/Create Match buttons are separated from the preceding CU-16 warning block.
+**Why**: User reported the Step 04 buttons were incorrectly positioned and asked for the `PASO ACTUAL` context card to live under each step rather than on the side.
+**Where**: OpenPencil page `0:1975`; step roots `0:1976`, `0:2473`, `0:2561`, `0:2642`; new inline context cards `0:2726`, `0:2731`, `0:2736`, `0:2741`; removed sidebar context/help cards `0:1997`, `0:2481`, `0:2569`, `0:2650`.
+**Learned**: Setup progress context works better as inline flow guidance under the stepper, while the sidebar should stay navigational/brand-only instead of carrying per-step state.
+428|Integrated bracket preview into tournament detail design|What: Integrated the tournament bracket concept from page 18 into page 05 by adding a Llave tab, changing the tournament context to playoffs/semifinals, and replacing the stats preview card with a compact bracket preview.
+Why: The bracket screen needed to feel connected to the existing tournament detail overview instead of living as an isolated page.
+Where: frontend/design/voleytrack-webapp-design.fig, pages 05 Public Tournament Detail and 18 Public Tournament Bracket.
+Learned: Page 18 exists in the updated design file as '18 Public Tournament Bracket'; page 05 uses absolute-positioned design nodes, so replacements should preserve x/y/w/h coordinates.
+429|Merged tournament tab content into page 05 design|What: Consolidated tournament bracket, matches, standings, and statistics content into page 05 Public Tournament Detail as one long single-page layout.
+Why: User wants tournament details to live on a single page instead of separate tab pages 06, 07, 08, and 18.
+Where: frontend/design/voleytrack-webapp-design.fig, page 05 Public Tournament Detail.
+Learned: OpenPencil subagents lacked design inspection access, so parent used OpenPencil directly; page 05 now extends the root/sidebar/main frame height to support vertically stacked sections.
+430|Corrected tournament detail to separate design layers|What: Corrected the tournament detail design after misunderstanding the user. Page 05 now contains separate top-level layers/frames for overview, matches, standings, stats, and bracket instead of one long consolidated screen.
+Why: The user meant "same Figma/design page" with different layers, not one single scrolling UI page.
+Where: frontend/design/voleytrack-webapp-design.fig, page 05 Public Tournament Detail.
+Learned: For design requests, "página" can mean Figma page/canvas, while "layers" means separate top-level frames/artboards. Do not collapse tab variants into one scrolling mockup unless explicitly requested.
+431|Rebuilt frontend design in Pencil .pen|**What**: Reconstructed `frontend/design/voleytrack-webapp-design.pen` with 20 top-level Pencil screens recovered from Engram memories and JSX backups after the `.fig` file became unusable.
+**Why**: The user reported the `.fig` workflow was broken and requested migration/rebuild in Pencil.dev `.pen` using the MCP.
+**Where**: `frontend/design/voleytrack-webapp-design.pen`; recovery sources included `frontend/design/backups/*.jsx` and Engram observations #414-#430.
+**Learned**: The target `.pen` already existed but contained a mismatched admin/CRUD screen set; it was replaced with the recovered spectator-first design set. Tournament detail is preserved as a layered variant canvas instead of a single long scrolling screen.
+432|Session summary: voleytrack|## Goal
+Recover the broken frontend design work from the old `.fig` flow into a Pencil.dev `.pen` document.
+
+## Instructions
+Use `frontend/design/voleytrack-webapp-design.pen` as the new source of truth; recover the best available version from Engram and `frontend/design/backups/*.jsx`; use Pencil MCP rather than continuing with `.fig`.
+
+## Discoveries
+- `frontend/design/voleytrack-webapp-design.pen` already existed and was open in Pencil, but it contained a mismatched 20-screen admin/CRUD set rather than the recovered spectator-first `.fig` design direction.
+- Engram had recoverable design decisions for public dashboard/matches/tournaments, team/player/live match details, admin scoring/setup/post-match, mobile live view, and UI states.
+- `frontend/design/backups/README.md` and JSX files preserved the tournament detail layer intent; the important correction is that tournament detail variants should remain separate layers/frames, not one long consolidated screen.
+
+## Accomplished
+- ✅ Rebuilt `frontend/design/voleytrack-webapp-design.pen` with 20 top-level screens using Pencil MCP.
+- ✅ Included public spectator flows, tournaments, layered tournament detail, team sections, live match detail, global stats, admin scoring, CU-21 point flow, match setup/confirmation, post-match summary, player detail, bracket, mobile live match, UI states, and a recovery index.
+- ✅ Verified the document has exactly 20 top-level nodes and checked screenshots for dashboard, tournament detail layers, mobile live match, and recovery index.
+- ✅ Saved project memory under `design/pencil-pen-recovery`.
+
+## Next Steps
+- Review the visual fidelity screen by screen in Pencil and polish spacing/detail where needed.
+- Decide whether to delete or archive the unusable `.fig` and backups after confirming the `.pen` is sufficient.
+
+## Relevant Files
+- frontend/design/voleytrack-webapp-design.pen — rebuilt Pencil.dev design document with 20 screens.
+- frontend/design/backups/*.jsx — recovery references for tournament detail layers.
+- frontend/design/Untitled.fig — existing `.fig` artifact still present/untracked according to git status.
+433|skill-registry|**What**: Updated skill registry with openpencil-design skill
+**Why**: Installed openpencil-design skill from openpencil-skill repo
+**Where**: /home/agustin/.config/opencode/.atl/skill-registry.md, ~/.config/opencode/skills/openpencil-design/SKILL.md
+**Learned**: OpenCode plugins (plugin array) expect npm JS/TS modules, not git repos with SKILL.md files. openpencil-skill repo uses Claude Code/Cursor plugin format which is incompatible with OpenCode's plugin system. Skills must be placed in ~/.config/opencode/skills/<name>/SKILL.md manually.
+434|Corrected recovery quality issue|**What**: Removed an unrelated embedded raster image from the recovered `17 Public Player Detail` hero and replaced it with VoleyTrack player data, stat cards, performance content, recent-match content, and navigation copy.
+**Why**: User correctly identified that recovered `17` was an empty scaffold unlike the complete `02 Public Matches` screen and contained an inappropriate non-volleyball image.
+**Where**: OpenPencil page `17 Public Player Detail`, root node `n85`; saved to `/home/agustin/Dev/VoleyTrack/VoleyTrack-recovery.op`.
+**Learned**: Recovery pages must match the information density, real UI copy, semantic components, and visual quality of existing imported screens. Do not treat scaffold frames or invented imagery as completed design work.
+435|Mejorar tablero de torneo|What: Reworked the active OpenPencil tournament-bracket desktop screen into a complete dark data dashboard.
+Why: The prior screen contained only empty structural frames, without navigation, content hierarchy, bracket data, or match context.
+Where: Active OpenPencil page “VoleyTrack Public Tournament Bracket - Desktop”.
+Learned: Explicit geometry and text dimensions are required for reliably visible nodes in the current OpenPencil document; auto-layout insertions produced zero-sized text/content.

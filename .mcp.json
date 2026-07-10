@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "openpencil": {
+      "url": "http://localhost:44367/mcp",
+      "lifecycle": "keep-alive",
+      "directTools": true
+    }
+  }
+}

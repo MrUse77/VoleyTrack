@@ -1,0 +1,8 @@
+# Open Pencil / Figma binary design files
+*.fig binary
+*.fig -diff
+*.fig -merge=binary
+*.fig -text
+
+# Prevent whitespace/line-ending normalization on binary blobs
+*.fig eol=lf

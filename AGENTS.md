@@ -40,6 +40,17 @@ El proyecto busca desarrollar una aplicación escalable y estructurada para el t
 
 ---
 
+## Alcance y Versionado (MVP)
+Para la **Primera Versión (V1)**, el desarrollo se centrará exclusivamente en la gestión de:
+- **Equipos** (ABM y planteles)
+- **Jugadores** (ABM)
+- **Partidos** (Programación, desarrollo en vivo y estadísticas)
+
+> [!NOTE]
+> Todo el módulo y la lógica de **Torneos** (ligas, llaves, clasificaciones, etc.) queda **excluido de la versión inicial** y se planificará para una segunda etapa, con el objetivo de acelerar el lanzamiento del núcleo estadístico del sistema.
+
+---
+
 ## Próximos Pasos
 1. Configuración inicial del proyecto con NestJS y Angular.
 2. Implementar la base de datos y modelos iniciales (partido, jugador, estadísticas).
