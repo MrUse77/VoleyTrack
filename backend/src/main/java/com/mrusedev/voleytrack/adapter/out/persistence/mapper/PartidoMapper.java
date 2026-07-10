@@ -26,7 +26,8 @@ public class PartidoMapper {
     }
 
     public static Partido toDomain(PartidoEntity entity, Equipo equipoLocal, Equipo equipoVisitante) {
-        Partido partido = new Partido(entity.getId(), equipoLocal, equipoVisitante,
+        Partido partido = new Partido(entity.getId(), entity.getFechaHora(),
+                equipoLocal, equipoVisitante,
                 new CantSets(entity.getCantSets()));
         partido.cambiarEstado(entity.getEstado());
         return partido;

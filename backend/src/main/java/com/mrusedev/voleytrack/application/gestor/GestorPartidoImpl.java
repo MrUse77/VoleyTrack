@@ -5,6 +5,7 @@ import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import com.mrusedev.voleytrack.application.port.out.*;
 import com.mrusedev.voleytrack.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -107,18 +108,20 @@ public class GestorPartidoImpl implements GestorPartidoPort {
     // ── RF-9: Confirmar inicio de partido ──
 
     @Override
+    @Transactional
     public ConfirmacionDTO confirmarInicioPartido(Partido partido, SetPartido set) {
         try {
             if (partido.getEstado() == EstadoPartido.PROGRAMADO) {
                 partido.iniciar();
             }
             set.iniciar();
-            partidoRepo.guardar(partido);
-            setRepo.guardar(set, partido.getId());
-            return ConfirmacionDTO.ok("Partido iniciado correctamente");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return ConfirmacionDTO.error("Error al iniciar el partido: " + e.getMessage());
         }
+        // Persistence outside try-catch: any failure here rolls back the transaction
+        partidoRepo.guardar(partido);
+        setRepo.guardar(set, partido.getId());
+        return ConfirmacionDTO.ok("Partido iniciado correctamente");
     }
 
     // ── RF-10: Iniciar anotación ──
@@ -164,30 +167,32 @@ public class GestorPartidoImpl implements GestorPartidoPort {
     // ── RF-10: Confirmar punto ──
 
     @Override
+    @Transactional
     public ConfirmacionDTO confirmarPunto(Partido partido, Equipo equipo, Jugador jugador, TipoFundamento tipoFundamento) {
+        Evento evento;
         try {
-            Evento evento = partido.anotarPunto(equipo, jugador, tipoFundamento);
-            SetPartido set = partido.getSetActual();
-
-            // Persistir
-            partidoRepo.guardar(partido);
-            if (set != null) {
-                setRepo.guardar(set, partido.getId());
-                eventoRepo.guardar(evento, set.getId());
-            }
-
-            String mensaje = "Punto registrado";
-            if (set != null && set.getEstado() == EstadoSet.FINALIZADO) {
-                mensaje = "¡Set finalizado!";
-                if (partido.getEstado() == EstadoPartido.FINALIZADO) {
-                    mensaje = "¡Partido finalizado! Ganador: " +
-                            partido.getGanador().getEquipo().getNombreClub();
-                }
-            }
-
-            return ConfirmacionDTO.ok(mensaje);
-        } catch (Exception e) {
+            evento = partido.anotarPunto(equipo, jugador, tipoFundamento);
+        } catch (RuntimeException e) {
             return ConfirmacionDTO.error("Error al registrar punto: " + e.getMessage());
         }
+
+        SetPartido set = partido.getSetActual();
+        // Persistence outside try-catch: any failure here rolls back the transaction
+        partidoRepo.guardar(partido);
+        if (set != null) {
+            setRepo.guardar(set, partido.getId());
+            eventoRepo.guardar(evento, set.getId());
+        }
+
+        String mensaje = "Punto registrado";
+        if (set != null && set.getEstado() == EstadoSet.FINALIZADO) {
+            mensaje = "¡Set finalizado!";
+            if (partido.getEstado() == EstadoPartido.FINALIZADO) {
+                mensaje = "¡Partido finalizado! Ganador: " +
+                        partido.getGanador().getEquipo().getNombreClub();
+            }
+        }
+
+        return ConfirmacionDTO.ok(mensaje);
     }
 }

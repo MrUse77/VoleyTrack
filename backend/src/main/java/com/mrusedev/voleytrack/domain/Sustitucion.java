@@ -22,6 +22,17 @@ public class Sustitucion {
     this.tipo = tipo;
   }
 
+  /** Reconstruction constructor — preserves persisted ID and timestamp. */
+  public Sustitucion(UUID id, LocalDateTime timestamp, Equipo equipo,
+                     Jugador jugadorSale, Jugador jugadorEntra, TipoSustitucion tipo) {
+    this.id = id;
+    this.timestamp = timestamp;
+    this.equipo = equipo;
+    this.jugadorSale = jugadorSale;
+    this.jugadorEntra = jugadorEntra;
+    this.tipo = tipo;
+  }
+
   public UUID getId() {
     return id;
   }

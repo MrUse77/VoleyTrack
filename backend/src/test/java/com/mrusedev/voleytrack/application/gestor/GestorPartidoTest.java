@@ -17,6 +17,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -184,6 +185,50 @@ class GestorPartidoTest {
         ConfirmacionDTO result = gestor.confirmarPunto(partido, desconocido, jugador, TipoFundamento.ATAQUE);
 
         assertThat(result.exitoso()).isFalse();
+    }
+
+    // ── Persistence failure atomicy ──
+
+    @Test
+    void confirmarInicioPartidoPropagaFalloDePersistencia() {
+        SetPartido set = partido.iniciarSet();
+        when(partidoRepo.guardar(any())).thenReturn(partido);
+        when(setRepo.guardar(any(), any()))
+                .thenThrow(new RuntimeException("DB failure"));
+
+        assertThatThrownBy(() -> gestor.confirmarInicioPartido(partido, set))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("DB failure");
+    }
+
+    @Test
+    void confirmarPuntoPropagaFalloDePersistenciaEnSetRepo() {
+        partido.iniciar();
+        SetPartido set = partido.iniciarSet();
+        set.iniciar();
+        when(partidoRepo.guardar(any())).thenReturn(partido);
+        when(setRepo.guardar(any(), any()))
+                .thenThrow(new RuntimeException("DB failure"));
+
+        assertThatThrownBy(() ->
+                gestor.confirmarPunto(partido, equipoLocal, jugador, TipoFundamento.ATAQUE))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("DB failure");
+    }
+
+    @Test
+    void confirmarPuntoNoLlamaPersistenciaSiDominioRechaza() {
+        Equipo desconocido = new Equipo(UUID.randomUUID(), "Otro", "X");
+        partido.iniciar();
+        partido.iniciarSet().iniciar();
+
+        // The domain should reject before any repo call
+        gestor.confirmarPunto(partido, desconocido, jugador, TipoFundamento.ATAQUE);
+
+        // Verify no persistence was invoked — domain rejection short-circuits the call
+        verifyNoInteractions(partidoRepo);
+        verifyNoInteractions(setRepo);
+        verifyNoInteractions(eventoRepo);
     }
 
     // ── cargarOpcionesPunto ──

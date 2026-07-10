@@ -23,6 +23,7 @@ public class SustitucionMapper {
 
     public static Sustitucion toDomain(SustitucionEntity entity, Equipo equipo,
                                        Jugador jugadorSale, Jugador jugadorEntra) {
-        return new Sustitucion(equipo, jugadorSale, jugadorEntra, entity.getTipo());
+        return new Sustitucion(entity.getId(), entity.getCreadoEn(),
+                equipo, jugadorSale, jugadorEntra, entity.getTipo());
     }
 }

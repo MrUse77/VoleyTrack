@@ -31,7 +31,7 @@ public class SetMapper {
         Lado ladoLocal = new Lado(TipoLado.LOCAL, equipoLocal);
         Lado ladoVisitante = new Lado(TipoLado.VISITANTE, equipoVisitante);
 
-        SetPartido set = new SetPartido(entity.getNumSet(), entity.isEsTieBreak(), ladoLocal, ladoVisitante);
+        SetPartido set = new SetPartido(entity.getId(), entity.getNumSet(), entity.isEsTieBreak(), ladoLocal, ladoVisitante);
         // Restaurar marcador
         for (int i = 0; i < entity.getPuntosLocal(); i++) set.getMarcador().incrementar(ladoLocal);
         for (int i = 0; i < entity.getPuntosVisitante(); i++) set.getMarcador().incrementar(ladoVisitante);
@@ -41,7 +41,10 @@ public class SetMapper {
         for (int i = 0; i < diffLocal; i++) set.getCambiosLocal().consumir();
         for (int i = 0; i < diffVisit; i++) set.getCambiosVisitante().consumir();
         // Restaurar estado
-        if (entity.getEstado() == com.mrusedev.voleytrack.domain.EstadoSet.EN_CURSO) set.iniciar();
+        if (entity.getEstado() == com.mrusedev.voleytrack.domain.EstadoSet.EN_CURSO
+                || entity.getEstado() == com.mrusedev.voleytrack.domain.EstadoSet.FINALIZADO) {
+            set.cambiarEstado(entity.getEstado());
+        }
         return set;
     }
 }

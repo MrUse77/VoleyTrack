@@ -20,7 +20,12 @@ public class SetPartido {
     private final List<Sustitucion> sustituciones;
 
     public SetPartido(int numeroSet, boolean esTieBreak, Lado ladoLocal, Lado ladoVisitante) {
-        this.id = UUID.randomUUID();
+        this(UUID.randomUUID(), numeroSet, esTieBreak, ladoLocal, ladoVisitante);
+    }
+
+    /** Reconstruction constructor — preserves persisted ID. */
+    public SetPartido(UUID id, int numeroSet, boolean esTieBreak, Lado ladoLocal, Lado ladoVisitante) {
+        this.id = id;
         this.numeroSet = numeroSet;
         this.esTieBreak = esTieBreak;
         this.estado = EstadoSet.PENDIENTE;
@@ -75,6 +80,10 @@ public class SetPartido {
         this.saque = equipoSaqueInicial;
     }
 
+    public void cambiarEstado(EstadoSet estado) {
+        this.estado = estado;
+    }
+
     public void iniciar() {
         if (estado != EstadoSet.PENDIENTE) {
             throw new IllegalStateException("El set no está en estado PENDIENTE");
@@ -119,6 +128,18 @@ public class SetPartido {
             return cambiosVisitante;
         }
         throw new IllegalArgumentException("El equipo no pertenece a este set");
+    }
+
+    /** Restores persisted events after reconstruction (idempotent). */
+    public void restaurarEventos(List<Evento> eventos) {
+        this.eventos.clear();
+        this.eventos.addAll(eventos);
+    }
+
+    /** Restores persisted sustituciones after reconstruction (idempotent). */
+    public void restaurarSustituciones(List<Sustitucion> sustituciones) {
+        this.sustituciones.clear();
+        this.sustituciones.addAll(sustituciones);
     }
 
     public Cambios getCambiosLocal() { return cambiosLocal; }

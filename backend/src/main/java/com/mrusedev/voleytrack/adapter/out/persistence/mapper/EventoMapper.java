@@ -19,6 +19,6 @@ public class EventoMapper {
     }
 
     public static Evento toDomain(EventoEntity entity, Jugador jugador) {
-        return new Evento(jugador, entity.getTipoFundamento());
+        return new Evento(entity.getId(), entity.getCreadoEn(), jugador, entity.getTipoFundamento());
     }
 }

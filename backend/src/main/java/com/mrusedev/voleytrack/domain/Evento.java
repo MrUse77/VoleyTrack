@@ -11,8 +11,13 @@ public class Evento {
     private final TipoFundamento tipoFundamento;
 
     public Evento(Jugador jugador, TipoFundamento tipoFundamento) {
-        this.id = UUID.randomUUID();
-        this.timestamp = LocalDateTime.now();
+        this(UUID.randomUUID(), LocalDateTime.now(), jugador, tipoFundamento);
+    }
+
+    /** Reconstruction constructor — preserves persisted ID and timestamp. */
+    public Evento(UUID id, LocalDateTime timestamp, Jugador jugador, TipoFundamento tipoFundamento) {
+        this.id = id;
+        this.timestamp = timestamp;
         this.jugador = jugador;
         this.tipoFundamento = tipoFundamento;
     }

@@ -16,8 +16,13 @@ public class Partido {
     private final CantSets cantSets;
 
     public Partido(UUID id, Equipo equipoLocal, Equipo equipoVisitante, CantSets cantSets) {
+        this(id, LocalDateTime.now(), equipoLocal, equipoVisitante, cantSets);
+    }
+
+    /** Reconstruction constructor — preserves persisted fechaHora. */
+    public Partido(UUID id, LocalDateTime fechaHora, Equipo equipoLocal, Equipo equipoVisitante, CantSets cantSets) {
         this.id = id;
-        this.fechaHora = LocalDateTime.now();
+        this.fechaHora = fechaHora;
         this.estado = EstadoPartido.PROGRAMADO;
         this.cantSets = cantSets;
 
@@ -77,6 +82,12 @@ public class Partido {
 
     public void cambiarEstado(EstadoPartido estado) {
         this.estado = estado;
+    }
+
+    /** Restores persisted sets after reconstruction (idempotent). */
+    public void reconstruirSets(List<SetPartido> sets) {
+        this.sets.clear();
+        this.sets.addAll(sets);
     }
 
     public Evento anotarPunto(Equipo equipo, Jugador jugador, TipoFundamento tipoFundamento) {
