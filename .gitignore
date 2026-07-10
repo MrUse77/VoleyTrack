@@ -1,0 +1,15 @@
+# Local Pi runtime state
+.atl/
+.codegraph/
+
+# Local archives
+voleytrack.zip
+
+# Eclipse JDT LS (LSP)
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/bin/
+
+# Documentation analysis symlink
+DocsAnalisis
