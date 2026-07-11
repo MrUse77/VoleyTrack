@@ -19,6 +19,7 @@ import { TournamentMatchesPage } from "./features/public/TournamentMatchesPage";
 import { TournamentStandingsPage } from "./features/public/TournamentStandingsPage";
 import { TournamentBracketPage } from "./features/public/TournamentBracketPage";
 import { TournamentStatsPage } from "./features/public/TournamentStatsPage";
+    import { TeamDetailPage } from "./features/public/TeamDetailPage";
 import { AdminPage } from "./pages/AdminPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { PlanilleroPage } from "./pages/PlanilleroPage";
@@ -187,7 +188,11 @@ const tournamentBracketRoute = createRoute({
 	path: "/tournaments/$id/bracket",
 	component: TournamentBracketPage,
 });
-const teamDetailRoute = placeholderRoute(publicShellRoute, "/teams/$id", "Team detail");
+const teamDetailRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/teams/$id",
+	component: TeamDetailPage,
+});
 const teamRosterRoute = placeholderRoute(publicShellRoute, "/teams/$id/roster", "Team roster");
 const teamMatchesRoute = placeholderRoute(publicShellRoute, "/teams/$id/matches", "Team matches");
 const teamStatsRoute = placeholderRoute(publicShellRoute, "/teams/$id/stats", "Team stats");

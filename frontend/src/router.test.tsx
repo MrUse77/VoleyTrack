@@ -52,6 +52,7 @@ describe("router", () => {
 
     expect(publicPaths).toContain("/");
     expect(publicPaths).toContain("matches");
+    expect(publicPaths).toContain("teams/$id");
     expect(publicPaths).not.toContain("dashboard");
     expect(allPaths).not.toContain("/dashboard");
   });
