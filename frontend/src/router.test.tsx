@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ARTBOARD_MANIFEST } from "./artboardManifest";
+import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
 import { router } from "./router";
 
@@ -58,7 +59,11 @@ describe("router", () => {
     const rosterRoute = publicChildren?.find(
       (route) => route.fullPath === "/teams/$id/roster",
     );
+    const matchesRoute = publicChildren?.find(
+      (route) => route.fullPath === "/teams/$id/matches",
+    );
     expect(rosterRoute?.options?.component).toBe(TeamRosterPage);
+    expect(matchesRoute?.options?.component).toBe(TeamMatchesPage);
     expect(publicPaths).not.toContain("dashboard");
     expect(allPaths).not.toContain("/dashboard");
   });
