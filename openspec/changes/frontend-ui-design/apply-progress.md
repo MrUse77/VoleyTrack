@@ -196,11 +196,12 @@ Capture and record the 1440×900 visual comparisons for artboards 3–13 before 
 - Commit `530211f feat(frontend): implement UI foundation and public discovery` contains the foundation, dashboard, matches, tournaments, and SDD artifacts.
 - Commit `4a9d35b feat(frontend): add tournament overview` contains artboard 14.
 - Commit `ac598ba feat(frontend): add tournament matches and standings` (2026-07-11) contains artboards 15 and 16 (Tournament Matches and Tournament Standings), the router integration, and the matching section of this progress file.
-- The earlier delivery note stating that the foundation/public-discovery commit was not created is historical and is superseded by the three commits above.
+- Commit `e008c0d feat(frontend): add tournament stats tab (artboard 17)` contains the Tournament Stats page + SSR test, the public Stats route (`/tournaments/$id/stats` switched from placeholder to `createRoute`), and this progress file. Bracket (artboard 18) page and SSR test remain implemented in the working tree but are routed via placeholder until their own self-contained commit lands.
+- The earlier delivery note stating that the foundation/public-discovery commit was not created is historical and is superseded by the four commits above.
 
 ## Remaining Work Map
 
-1. **Tournament detail:** implement artboards 17 Stats and 18 Bracket. Artboard 17 (Stats) is implemented and staged for its own commit unit; artboard 18 (Bracket) is implemented locally and wired into the router only when its own commit lands.
+1. **Tournament detail:** artboard 18 Bracket (next unit; page + SSR test are in the working tree, the route is still `placeholderRoute`; the planned commit must wire the route).
 2. **Public detail:** team overview/roster/matches/stats (19–22), live match detail (23), and player detail (24).
 3. **Scorer workflows:** setup/player modal, scoring/substitution, point entry, and post-match summary (25–30).
 4. **Administration:** staff, admin tournament tabs, creation forms/modals, and listings (31–45).
@@ -215,7 +216,7 @@ Every screen unit requires focused SSR tests, full tests/lint/TypeScript/build v
 - The stats route switches from `placeholderRoute` to `createRoute` pointing at the new `TournamentStatsPage` component.
 - Added Node-compatible SSR coverage for tournament context, leaders content, active tab links, alternate tournament status (finished), and unknown-tournament handling.
 
-### Task 2.8 Verification
+### Task 2.8 Verification (final)
 
 | Command | Result |
 | --- | --- |
@@ -224,31 +225,46 @@ Every screen unit requires focused SSR tests, full tests/lint/TypeScript/build v
 | `cd frontend && bun run lint` | PASS |
 | `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
 | `cd frontend && ./node_modules/.bin/vite build --outDir /tmp/voleytrack-tournament-stats-bracket-build` | PASS |
-| Boundary test | PASS — no network/auth/persistence in new pages |
+| Boundary test | PASS — no network/auth/persistence in new page |
 
 ### Task 2.8 Boundary
 
-- Changed only the delegated page, SSR test, public stats route, and this progress file. The page and test contain 200 lines; the router diff is ~6 source lines. Total implementation unit ~206 touched source lines, below the 300-line limit. Stats is one self-contained commit/PR unit, intentionally split from the upcoming Bracket unit (Task 2.9) so each stays under the read-review line budget. Bracket (page + test) is implemented locally in the working tree but routed via placeholder until its own commit lands; that wired-routing step is part of Task 2.9, not Task 2.8.
+- Changed only the delegated page, SSR test, public stats route, and this progress file. The page and test contain 200 lines; the router diff is ~6 source lines. Total implementation unit ~206 touched source lines, below the 300-line limit. Stats is one self-contained committed unit (`e008c0d`); Bracket (Task 2.9) was intentionally split off and remains the next unit.
 
-### Task 2.8 Manual Commit Receipt
+## Task 2.9: Public tournament bracket tab (artboard 18)
 
-Task 2.8 must be committed manually from the terminal by the operator before any further work continues. That diagram is unchanged from `ac598ba` and is recorded here on purpose:
+- Replaced only `/tournaments/$id/bracket` placeholder with a fixture-driven bracket screen using the selected tournament context, canonical Spanish local navigation, a static elimination grid (Cuartos → Semifinal → Final), per-match scores/status badges, and the shared `Card`, `Badge`, and `PageHeader` primitives.
+- Stats, APIs, auth, persistence, WebSockets, backend, and `.op` files remain unchanged; overview, matches, standings, and stats routes remain unchanged.
+- The bracket route still rides `placeholderRoute`; the wire-in step (`createRoute → TournamentBracketPage`) is part of Task 2.9's commit, not yet executed.
+- The active tab is labeled "Cuadro" to match the overview (artboard 14) and standings page; the matches page still uses "Llave" (a known minor inconsistency carried over from commit `ac598ba` and deliberately left untouched under the non-goal of not modifying delivered artboards in this scope).
+- Added Node-compatible SSR coverage for tournament context, bracket rounds, active tab links, alternate tournament status (upcoming), and unknown-tournament handling.
+
+### Task 2.9 Verification (working-tree only)
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/public/TournamentBracketPage.test.tsx` | PASS — 1 file, 4 tests |
+| Boundary test | PASS — no network/auth/persistence in new page |
+
+### Task 2.9 Planned Commit Receipt
+
+Bracket must be committed in its own manual terminal commit so the global review budget stays bounded; the four files below are the only ones to stage:
 
 | Pre-commit stage | Files |
 | --- | --- |
-| `git add frontend/src/features/public/TournamentStatsPage.tsx` | new (131 lines) |
-| `git add frontend/src/features/public/TournamentStatsPage.test.tsx` | new (69 lines) |
-| `git add frontend/src/router.tsx` | modified — Stats route only (Bracket still placeholder) |
-| `git add openspec/changes/frontend-ui-design/apply-progress.md` | modified — reconciliation + Task 2.8 header + boundary |
+| `git add frontend/src/features/public/TournamentBracketPage.tsx` | new (176 lines) |
+| `git add frontend/src/features/public/TournamentBracketPage.test.tsx` | new (66 lines) |
+| `git add frontend/src/router.tsx` | modified — bracket route only (Stats already wired in `e008c0d`) |
+| `git add openspec/changes/frontend-ui-design/apply-progress.md` | modified — Task 2.9 completion + 2.9 Verification + this receipt replaced |
 
-Must NOT be staged for this commit: `TournamentBracketPage.*` (Task 2.9), `frontend/dist/**`, `openspec/changes/archive/**`, `.atl/skill-registry.md`, the two archived openspec change directories under `?? ` in `git status`. Commit message suggestion: `feat(frontend): add tournament stats tab (artboard 17)`. Post-commit SHA should be appended to the Current State Reconciliation block in this file as the new second-most-recent entry.
+Must NOT be staged for this commit: `frontend/dist/**`, `openspec/changes/archive/**`, `.atl/skill-registry.md`. The Bracket unit total is 242 + ~6 source lines (under the 300-line limit per unit). Commit message suggestion: `feat(frontend): add tournament bracket tab (artboard 18)`. Post-commit SHA should be appended to the Current State Reconciliation block as the secondmost-recent entry, replacing the e008c0d bullet with `e008c0d + the new SHA`.
 
-### Review Controller Diagnostic (carried forward to next session)
+## Review Controller Diagnostic (carried forward to next session)
 
 The gentle-pi `gentle_review` controller was investigated end to end this session with the operator's authorization. Findings to save the next session a re-investigation:
 
-- The `start` operation requires `input` as a JSON-encoded string with: `mode` = `"ordinary"` or `"judgment-day"`; `projection.kind` = `"complete"` or `"intended-commit"` (the latter requires `projection.tree: string`); `policyHash` and `evidenceHash` each as a 64-character lowercase hex SHA-256 digest (regenerated for this repo as `policyHash="1b39fcb46183901ea14d69751759603f7a08fefbd2732f6020644fd04f41b2c7"` and `evidenceHash="f4a68869a77844d64861f10d729a50e41eb818f17c19c1fd3a2e6de9c80c326c"` for artboard 17); and `budget` with all 8 zero counters (`review_batches`, `review_actors`, `refuter_batches`, `fix_batches`, `validator_runs`, `final_verifications`, `judgment_rounds`, `judge_runs`).
+- The `start` operation requires `input` as a JSON-encoded string with: `mode` = `"ordinary"` or `"judgment-day"`; `projection.kind` = `"complete"` or `"intended-commit"` (the latter requires `projection.tree: string`); `policyHash` and `evidenceHash` each as a 64-character lowercase hex SHA-256 digest; and `budget` with all 8 zero counters (`review_batches`, `review_actors`, `refuter_batches`, `fix_batches`, `validator_runs`, `final_verifications`, `judgment_rounds`, `judge_runs`).
 - The `reset` operation requires `input` JSON with all four fields: `repositoryId`, `commonDirHash`, `inventoryHash`, `confirmation`. The confirmation string comes from `inspect.reset_request.confirmation` and must match byte-perfect (including surrounding whitespace).
 - The legacy review authority at `.git/gentle-ai/reviews/{lineages,locks,snapshots}` blocks `start` with `Review authority blocked (blocked-legacy)`. Authorized destructive reset was executed this session (`reset_id=50cd238f913a4c0f72a7fba1bd216bcdfd26969fc0b9ed43576a0f2e33a9c285`, `initialization_kind="destructive-reset"`); current authority is `clean`.
 - After reset and `start`, ordinary transactions require 6 transitions (`ordinary-discovery`, `ordinary-evidence`, `ordinary-fix` or `ordinary-no-fix`, `ordinary-validation`, `ordinary-final-verification`) each routing through actor + refuter + validator cycles. A `start` capturing 854+ changed lines, hot-path files (`frontend/src/router.tsx`), or large evidence (`frontend/dist/`) defaults to the `full-4R` route (4 lens reviews in parallel).
-- One transaction (`stats-pr-2026-07-11`, `phase=started, revision=0`) was opened this session and intentionally left persisted. It captures the full working tree as the diff includes Bracket + `frontend/dist/` + apply-progress in the same snapshot. The next session should NOT advance it; instead, the operator runs the manual commit per `Manual Commit Receipt` above, then the next session opens a fresh lineage id with a properly narrowed snapshot (only the Stats files of Task 2.8; round-bracket unit re-narrowed for Task 2.9).
+- One transaction (`stats-pr-2026-07-11`, `phase=started, revision=0`) was opened this session and intentionally left persisted. It captured the full working tree as the diff because the file inventory at start time included Bracket + `frontend/dist/` + apply-progress. The next session should NOT advance it; instead, after each manual commit lands, the next session opens a fresh lineage id (`gr-pr-<yyyy-mm-dd>` style) with a properly narrowed snapshot limited to one task unit's files.
