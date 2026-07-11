@@ -199,11 +199,13 @@ Capture and record the 1440×900 visual comparisons for artboards 3–13 before 
 - Commit `e008c0d feat(frontend): add tournament stats tab (artboard 17)` contains the Tournament Stats page + SSR test, the public Stats route (`/tournaments/$id/stats` switched from placeholder to `createRoute`), and this progress file.
 - Commit `ed758f5 feat(frontend): add tournament bracket tab (artboard 18)` contains the Tournament Bracket page + SSR test.
 - Commit `e8290b5 feat(frontend): wire tournament bracket route` mounts `TournamentBracketPage` at `/tournaments/$id/bracket` through `createRoute`.
-- The earlier delivery note stating that the foundation/public-discovery commit was not created is historical and is superseded by the six commits above.
+- Commit `e61de45 feat(frontend): add public team overview (artboard 19)` contains the fixture-driven Team overview page, SSR coverage, router registration, and isolated future-tab links.
+- Commit `d39ce00 feat(frontend): add public team roster (artboard 20)` contains the fixture-driven Team roster page, roster join coverage, explicit route registration, and isolated future-tab links.
+- The earlier delivery note stating that the foundation/public-discovery commit was not created is historical and is superseded by the eight implementation commits above plus the documentation synchronization commit `d87a6fc`.
 
 ## Remaining Work Map
 
-1. **Public detail:** team overview/roster/matches/stats (artboards 19–22), live match detail (23), and player detail (24). Artboards 14–18 are implemented and committed; visual comparison and remaining detail-navigation evidence are still pending.
+1. **Public detail:** team matches (artboard 21), team stats (22), live match detail (23), and player detail (24). Artboards 19–20 Team overview and roster are implemented and committed; visual comparison and remaining detail-navigation evidence are still pending.
 2. **Scorer workflows:** setup/player modal, scoring/substitution, point entry, and post-match summary (25–30).
 3. **Administration:** staff, admin tournament tabs, creation forms/modals, and listings (31–45).
 4. **Shared states and closeout:** loading/empty/error/offline/sync states, state injection, route/manifest audit, and visual comparisons.
@@ -255,6 +257,29 @@ Every screen unit requires focused SSR tests, full tests/lint/TypeScript/build v
 
 - Changed only the delegated Bracket page, SSR test, public bracket route, and this progress file across commits `ed758f5` and `e8290b5`. The page and test contain 242 lines; the router diff contains 6 source lines. Total implementation unit is ~248 touched source lines, below the 300-line limit. The route is now wired through `createRoute`.
 
+## Task 3.2: Public team overview and roster (artboards 19–20)
+
+- Commit `e61de45` replaced only `/teams/$id` with fixture-driven `TeamDetailPage`, rendering team metadata, roster preview, not-found handling, and prepared local links.
+- Commit `d39ce00` replaced only `/teams/$id/roster` with fixture-driven `TeamRosterPage`, preserving `rosterPlayerIds` order, handling empty/orphaned roster entries, and marking Plantel active.
+- Artboards 21–22 remain intentionally isolated placeholders/follow-up units. No backend/API/auth/persistence/network/WebSocket changes.
+
+### Task 3.2 Verification (final)
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test` | PASS — 24 files, 76 tests |
+| `cd frontend && bun run test -- src/features/public/TeamDetailPage.test.tsx src/features/public/TeamRosterPage.test.tsx src/router.test.tsx` | PASS — 3 files, 12 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && ./node_modules/.bin/vite build --outDir /tmp/voleytrack-team-roster-build` | PASS |
+| `cd frontend && bun run test src/boundary.test.ts` | PASS — no network/auth/persistence |
+| Review controller | APPROVED — artboard 19 lineage `team-overview-2026-07-11-v4`; artboard 20 lineage `team-roster-2026-07-11-v3` |
+
+### Task 3.2 Boundary
+
+- Commit `e61de45` contains the 4-file Team overview unit: 171 insertions and 1 deletion.
+- Commit `d39ce00` contains the 4-file Team roster unit: 150 insertions and 3 deletions.
+- Both units remain below the chained-PR budget. Artboards 21–22 are explicitly out of scope.
 ## Review Controller Diagnostic (carried forward to next session)
 
 The gentle-pi `gentle_review` controller was investigated end to end this session with the operator's authorization. Findings to save the next session a re-investigation:

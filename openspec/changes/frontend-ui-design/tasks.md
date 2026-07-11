@@ -112,13 +112,14 @@ Implement tournament tabs, team tabs, live match detail, player detail, tables/c
 ### Task 3.1: Tournament detail tabs
 - [x] **RED**: Write failing tests for `/tournaments/:id` (artboard 14), `/tournaments/:id/matches` (artboard 15), `/tournaments/:id/standings` (artboard 16), `/tournaments/:id/stats` (artboard 17), `/tournaments/:id/bracket` (artboard 18): assert overview tab renders tournament info, matches tab renders match list, standings tab renders standings table (static fixture, not computed), stats tab renders statistics, bracket tab renders bracket; assert tab bar switches content; assert state resets on reload
 - [x] **GREEN**: Implement `src/features/public/TournamentDetailPage.tsx` and the four tab pages with explicit routes; use shared `Card`, `Badge`, `DataTable`, and `PageHeader` primitives; load fixture-driven tournament data by `:id`; preserve Spanish copy
-- [x] **Automated evidence**: Tournament detail tests pass; all five tabs render; full suite passes with 22 files and 67 tests; Stats and Bracket routes are wired through `createRoute`.
+- [x] **Automated evidence**: Tournament detail tests pass; all five tabs render; Stats and Bracket routes are wired through `createRoute`. Current full suite baseline is 24 files and 76 tests.
 - [ ] **Visual evidence**: Compare artboards 14-18 at canonical dimensions; breadcrumb/state-reset evidence remains pending.
 
 ### Task 3.2: Team detail tabs
-- [ ] **RED**: Write failing tests for `/teams/:id` (artboard 19), `/teams/:id/roster` (artboard 20), `/teams/:id/matches` (artboard 21), `/teams/:id/stats` (artboard 22): assert overview/roster tab renders team info and roster table, matches tab renders match list, stats tab renders statistics; assert tab bar switches content; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/public/TeamDetailPage.tsx` with tab routes; use `TabBar`, `DataTable`, `Card` primitives; load team/roster/matches/stats fixtures by `:id`; preserve Spanish copy
-- [ ] **Evidence**: Team detail tests pass; all four tabs render; visual comparison with artboards 19-22
+- [x] **RED**: Write failing tests for `/teams/:id` (artboard 19) and `/teams/:id/roster` (artboard 20): assert overview renders team info and roster preview, roster renders ordered roster rows, route registration is correct, and unknown-team fallbacks render. Artboards 21–22 have separate follow-up issues and tasks.
+- [x] **GREEN**: Implemented artboards 19–20 in isolated units: `TeamDetailPage.tsx` at `/teams/$id` and `TeamRosterPage.tsx` at `/teams/$id/roster`, using fixture-driven team metadata, roster joins, explicit route registration, and prepared links for future tabs. Artboards 21–22 remain intentionally isolated follow-up units.
+- [x] **Automated evidence**: Team overview and roster SSR tests plus router registration tests pass; full suite passes with 24 files and 76 tests; lint, TypeScript, build, and boundary checks pass.
+- [ ] **Visual/follow-up evidence**: Compare artboards 19–20 at canonical dimensions; implement artboards 21–22 and their route-specific active states in subsequent units.
 
 ### Task 3.3: Live match detail
 - [ ] **RED**: Write failing test for `/matches/:id/live` (artboard 23): assert page renders live match detail with static score, teams, and match state from fixtures; assert no real-time updates or polling; assert state resets on reload
