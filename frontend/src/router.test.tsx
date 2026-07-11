@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ARTBOARD_MANIFEST } from "./artboardManifest";
+import { TeamRosterPage } from "./features/public/TeamRosterPage";
 import { router } from "./router";
 
 function routePaths(routeTree: typeof router.routeTree) {
@@ -45,7 +46,7 @@ describe("router", () => {
     const topLevelRoutes = router.routeTree.children ?? [];
     const publicShellRoute = topLevelRoutes.find((route) => route.id === "/public");
     const publicChildren = publicShellRoute?.children as
-      | Array<{ path: string }>
+      | Array<{ path: string; fullPath: string; options?: { component?: unknown } }>
       | undefined;
     const publicPaths = publicChildren?.map((route) => route.path) ?? [];
     const allPaths = routePaths(router.routeTree);
@@ -53,6 +54,11 @@ describe("router", () => {
     expect(publicPaths).toContain("/");
     expect(publicPaths).toContain("matches");
     expect(publicPaths).toContain("teams/$id");
+    expect(publicPaths).toContain("teams/$id/roster");
+    const rosterRoute = publicChildren?.find(
+      (route) => route.fullPath === "/teams/$id/roster",
+    );
+    expect(rosterRoute?.options?.component).toBe(TeamRosterPage);
     expect(publicPaths).not.toContain("dashboard");
     expect(allPaths).not.toContain("/dashboard");
   });
