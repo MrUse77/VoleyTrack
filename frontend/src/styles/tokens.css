@@ -1,0 +1,14 @@
+@theme {
+  --color-vt-background: #0b1220;
+  --color-vt-surface: #111a2b;
+  --color-vt-panel: #0f1726;
+  --color-vt-raised: #1e293b;
+  --color-vt-border: #243249;
+  --color-vt-raised-border: #334155;
+  --color-vt-text: #f8fafc;
+  --color-vt-muted: #94a3b8;
+  --color-vt-accent: #ff8c42;
+  --color-vt-success: #4caf50;
+  --color-vt-danger: #f44336;
+  --font-sans: "Inter", system-ui, sans-serif;
+}

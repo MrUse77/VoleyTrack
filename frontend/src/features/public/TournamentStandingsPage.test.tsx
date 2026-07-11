@@ -1,0 +1,69 @@
+import type { ReactNode } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PUBLIC_TOURNAMENTS } from "../../fixtures";
+import { TournamentStandingsPage } from "./TournamentStandingsPage";
+
+let tournamentId = PUBLIC_TOURNAMENTS.inProgress[0].id;
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ children, to, ...props }: { children: ReactNode; to: string; "aria-current"?: "page" }) => (
+    <a href={to} {...props}>{children}</a>
+  ),
+  useParams: () => ({ id: tournamentId }),
+}));
+
+function renderTournamentStandings(id = PUBLIC_TOURNAMENTS.inProgress[0].id) {
+  tournamentId = id;
+  return renderToStaticMarkup(<TournamentStandingsPage />);
+}
+
+describe("public tournament standings", () => {
+  beforeEach(() => {
+    tournamentId = PUBLIC_TOURNAMENTS.inProgress[0].id;
+  });
+
+  it("renders the selected tournament context and standings rows", () => {
+    const tournament = PUBLIC_TOURNAMENTS.inProgress[0];
+    const html = renderTournamentStandings(tournament.id);
+
+    expect(html).toContain(tournament.name);
+    expect(html).toContain(tournament.statusLabel);
+    expect(html).toContain("Tabla de posiciones");
+    for (const label of ["#", "Equipo", "PJ", "PG", "PP", "SETS", "PTS"]) {
+      expect(html).toContain(label);
+    }
+    for (const team of ["River Plate", "Ciudad Voley", "UPCN San Juan", "Boca Juniors", "Once Unidos"]) {
+      expect(html).toContain(team);
+    }
+  });
+
+  it("renders the active standings tab and local tournament navigation", () => {
+    const tournament = PUBLIC_TOURNAMENTS.inProgress[0];
+    const html = renderTournamentStandings(tournament.id);
+
+    expect(html).toContain(`href="/tournaments/${tournament.id}"`);
+    expect(html).toContain(`href="/tournaments/${tournament.id}/matches"`);
+    expect(html).toContain(`href="/tournaments/${tournament.id}/standings"`);
+    expect(html).toContain(`href="/tournaments/${tournament.id}/stats"`);
+    expect(html).toContain(`href="/tournaments/${tournament.id}/bracket"`);
+    expect(html).toContain('aria-current="page"');
+  });
+
+  it("renders the selected status for a finished tournament", () => {
+    const tournament = PUBLIC_TOURNAMENTS.finished[0];
+    const html = renderTournamentStandings(tournament.id);
+
+    expect(html).toContain(tournament.name);
+    expect(html).toContain(tournament.statusLabel);
+    expect(html).toContain(tournament.dateLabel);
+  });
+
+  it("renders a not-found state without standings data for an unknown tournament", () => {
+    const html = renderTournamentStandings("missing-tournament");
+
+    expect(html).toContain("Torneo no encontrado");
+    expect(html).toContain('href="/tournaments"');
+    expect(html).not.toContain("River Plate");
+  });
+});

@@ -3,12 +3,26 @@ import {
 	createRoute,
 	createRootRoute,
 	createRouter,
+	useLocation,
 } from "@tanstack/react-router";
 import { AppShell } from "./layouts/AppShell";
-import { LoginPage } from "./pages/LoginPage";
+import { AdminShell } from "./layouts/AdminShell";
+import { PublicShell } from "./layouts/PublicShell";
+import type { SidebarNavigationGroup } from "./components/navigation/Sidebar";
+import { LoginPage as AuthLoginPage } from "./features/auth/LoginPage";
+import { ChangePasswordPage } from "./features/auth/ChangePasswordPage";
+import { DashboardPage as PublicDashboardPage } from "./features/public/DashboardPage";
+import { MatchesPage } from "./features/public/MatchesPage";
+import { TournamentsPage } from "./features/public/TournamentsPage";
+import { TournamentDetailPage } from "./features/public/TournamentDetailPage";
+import { TournamentMatchesPage } from "./features/public/TournamentMatchesPage";
+import { TournamentStandingsPage } from "./features/public/TournamentStandingsPage";
+import { TournamentBracketPage } from "./features/public/TournamentBracketPage";
+import { TournamentStatsPage } from "./features/public/TournamentStatsPage";
+import { TeamDetailPage } from "./features/public/TeamDetailPage";
+import { TeamRosterPage } from "./features/public/TeamRosterPage";
+import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { AdminPage } from "./pages/AdminPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { MatchesPage } from "./pages/MatchesPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { PlanilleroPage } from "./pages/PlanilleroPage";
 
@@ -22,11 +36,89 @@ const shellRoute = createRoute({
 	component: AppShell,
 });
 
-const dashboardRoute = createRoute({
-	getParentRoute: () => shellRoute,
-	path: "/",
-	component: DashboardPage,
+const publicNavigation: SidebarNavigationGroup[] = [
+	{
+		items: [
+			{ href: "/", icon: "D", label: "Dashboard" },
+			{ href: "/matches", icon: "M", label: "Matches" },
+			{ href: "/tournaments", icon: "T", label: "Tournaments" },
+		],
+	},
+	{
+		items: [
+			{ href: "/teams", icon: "T", label: "Teams" },
+			{ href: "/players", icon: "P", label: "Players" },
+		],
+	},
+];
+
+const adminNavigation: SidebarNavigationGroup[] = [
+	{
+		items: [
+			{ href: "/admin", icon: "D", label: "Overview" },
+			{ href: "/admin/matches", icon: "M", label: "Matches" },
+			{ href: "/admin/tournaments", icon: "T", label: "Tournaments" },
+		],
+	},
+	{
+		items: [
+			{ href: "/admin/teams", icon: "T", label: "Teams" },
+			{ href: "/admin/players", icon: "P", label: "Players" },
+		],
+	},
+];
+
+// These route shells are local components because the router module also exports its router instance.
+// eslint-disable-next-line react-refresh/only-export-components
+function PublicRouteShell() {
+	const { pathname } = useLocation();
+	return (
+		<PublicShell
+			currentPath={pathname}
+			navigation={publicNavigation}
+			roleLabel="Public"
+		/>
+	);
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+function AdminRouteShell() {
+	const { pathname } = useLocation();
+	return (
+		<AdminShell
+			currentPath={pathname}
+			navigation={adminNavigation}
+			roleLabel="Admin"
+		/>
+	);
+}
+
+const publicShellRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	id: "public",
+	component: PublicRouteShell,
 });
+
+const adminShellRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	id: "admin",
+	component: AdminRouteShell,
+});
+
+const placeholder = (title: string) => () => <PlaceholderPage title={title} />;
+
+function placeholderRoute(
+	parent: typeof shellRoute | typeof publicShellRoute | typeof adminShellRoute,
+	path: string,
+	title: string,
+) {
+	return createRoute({
+		getParentRoute: () => parent,
+		path,
+		component: placeholder(title),
+	});
+}
+
 const adminRoute = createRoute({
 	getParentRoute: () => shellRoute,
 	path: "/admin",
@@ -42,94 +134,146 @@ const planilleroRoute = createRoute({
 const loginRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/login",
-	component: LoginPage,
+	component: AuthLoginPage,
 });
 
+const changePasswordRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/change-password",
+	component: ChangePasswordPage,
+});
+
+const resultsRoute = placeholderRoute(shellRoute, "/results", "Results");
+const statsRoute = placeholderRoute(shellRoute, "/stats", "Stats");
+const galleryRoute = placeholderRoute(shellRoute, "/gallery", "Gallery");
+const fantasyRoute = placeholderRoute(shellRoute, "/fantasy", "Fantasy");
+const playersRoute = placeholderRoute(shellRoute, "/players", "Players");
+const teamsRoute = placeholderRoute(shellRoute, "/teams", "Teams");
+
+const publicDashboardRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/",
+	component: PublicDashboardPage,
+});
 const matchesRoute = createRoute({
-	getParentRoute: () => shellRoute,
+	getParentRoute: () => publicShellRoute,
 	path: "/matches",
 	component: MatchesPage,
 });
-
-const resultsRoute = createRoute({
-	getParentRoute: () => shellRoute,
-	path: "/results",
-	component: () => (
-		<PlaceholderPage
-			title="Results"
-			description="Final match results and recaps will be rebuilt here."
-		/>
-	),
+const tournamentsRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/tournaments",
+	component: TournamentsPage,
 });
-
-const statsRoute = createRoute({
-	getParentRoute: () => shellRoute,
-	path: "/stats",
-	component: () => (
-		<PlaceholderPage
-			title="Stats"
-			description="League and match statistics will be rebuilt here."
-		/>
-	),
+const tournamentDetailRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/tournaments/$id",
+	component: TournamentDetailPage,
 });
-
-const galleryRoute = createRoute({
-	getParentRoute: () => shellRoute,
-	path: "/gallery",
-	component: () => (
-		<PlaceholderPage
-			title="Gallery"
-			description="Editorial and media surfaces will be rebuilt here."
-		/>
-	),
+const tournamentMatchesRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/tournaments/$id/matches",
+	component: TournamentMatchesPage,
 });
-
-const fantasyRoute = createRoute({
-	getParentRoute: () => shellRoute,
-	path: "/fantasy",
-	component: () => (
-		<PlaceholderPage
-			title="Fantasy"
-			description="Fantasy experiences and companion views will be rebuilt here."
-		/>
-	),
+const tournamentStandingsRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/tournaments/$id/standings",
+	component: TournamentStandingsPage,
 });
-
-const playersRoute = createRoute({
-	getParentRoute: () => shellRoute,
-	path: "/players",
-	component: () => (
-		<PlaceholderPage
-			title="Players"
-			description="Player browsing and profiles will be rebuilt here."
-		/>
-	),
+const tournamentStatsRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/tournaments/$id/stats",
+	component: TournamentStatsPage,
 });
-
-const teamsRoute = createRoute({
-	getParentRoute: () => shellRoute,
-	path: "/teams",
-	component: () => (
-		<PlaceholderPage
-			title="Teams"
-			description="Team browsing and roster surfaces will be rebuilt here."
-		/>
-	),
+const tournamentBracketRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/tournaments/$id/bracket",
+	component: TournamentBracketPage,
 });
+const teamDetailRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/teams/$id",
+	component: TeamDetailPage,
+});
+const teamRosterRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/teams/$id/roster",
+	component: TeamRosterPage,
+});
+const teamMatchesRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/teams/$id/matches",
+	component: TeamMatchesPage,
+});
+const teamStatsRoute = placeholderRoute(publicShellRoute, "/teams/$id/stats", "Team stats");
+const liveMatchRoute = placeholderRoute(publicShellRoute, "/matches/$id/live", "Live match detail");
+const playerDetailRoute = placeholderRoute(publicShellRoute, "/players/$id", "Player detail");
+
+const adminMatchSetupRoute = placeholderRoute(adminShellRoute, "/admin/matches/setup", "Match setup");
+const adminScoringRoute = placeholderRoute(adminShellRoute, "/admin/matches/$id/scoring", "Scoring console");
+const adminPointEntryRoute = placeholderRoute(adminShellRoute, "/admin/matches/$id/point-entry", "Point entry");
+const adminSummaryRoute = placeholderRoute(adminShellRoute, "/admin/matches/$id/summary", "Post-match summary");
+const adminStaffRegisterRoute = placeholderRoute(adminShellRoute, "/admin/staff/register", "Staff registration");
+const adminTournamentMatchesRoute = placeholderRoute(adminShellRoute, "/admin/tournaments/$id/matches", "Admin tournament matches");
+const adminTournamentStandingsRoute = placeholderRoute(adminShellRoute, "/admin/tournaments/$id/standings", "Admin tournament standings");
+const adminTournamentStatsRoute = placeholderRoute(adminShellRoute, "/admin/tournaments/$id/stats", "Admin tournament stats");
+const adminUiStatesRoute = placeholderRoute(adminShellRoute, "/admin/ui-states", "UI states");
+const adminPlayerCreateRoute = placeholderRoute(adminShellRoute, "/admin/players/create", "Create player");
+const adminTeamCreateRoute = placeholderRoute(adminShellRoute, "/admin/teams/create", "Create team");
+const adminTournamentCreateRoute = placeholderRoute(adminShellRoute, "/admin/tournaments/create", "Create tournament");
+const adminMatchCreateRoute = placeholderRoute(adminShellRoute, "/admin/matches/create", "Create match");
+const adminTournamentsRoute = placeholderRoute(adminShellRoute, "/admin/tournaments", "Admin tournaments");
+const adminMatchesRoute = placeholderRoute(adminShellRoute, "/admin/matches", "Admin matches");
+const adminTeamsRoute = placeholderRoute(adminShellRoute, "/admin/teams", "Admin teams");
+const adminPlayersRoute = placeholderRoute(adminShellRoute, "/admin/players", "Admin players");
 
 const routeTree = rootRoute.addChildren([
 	loginRoute,
+	changePasswordRoute,
 	shellRoute.addChildren([
-		dashboardRoute,
 		adminRoute,
 		planilleroRoute,
-		matchesRoute,
 		resultsRoute,
 		statsRoute,
 		galleryRoute,
 		fantasyRoute,
 		playersRoute,
 		teamsRoute,
+	]),
+	publicShellRoute.addChildren([
+		publicDashboardRoute,
+		matchesRoute,
+		tournamentsRoute,
+		tournamentDetailRoute,
+		tournamentMatchesRoute,
+		tournamentStandingsRoute,
+		tournamentStatsRoute,
+		tournamentBracketRoute,
+		teamDetailRoute,
+		teamRosterRoute,
+		teamMatchesRoute,
+		teamStatsRoute,
+		liveMatchRoute,
+		playerDetailRoute,
+	]),
+	adminShellRoute.addChildren([
+		adminMatchSetupRoute,
+		adminScoringRoute,
+		adminPointEntryRoute,
+		adminSummaryRoute,
+		adminStaffRegisterRoute,
+		adminTournamentMatchesRoute,
+		adminTournamentStandingsRoute,
+		adminTournamentStatsRoute,
+		adminUiStatesRoute,
+		adminPlayerCreateRoute,
+		adminTeamCreateRoute,
+		adminTournamentCreateRoute,
+		adminMatchCreateRoute,
+		adminTournamentsRoute,
+		adminMatchesRoute,
+		adminTeamsRoute,
+		adminPlayersRoute,
 	]),
 ]);
 
