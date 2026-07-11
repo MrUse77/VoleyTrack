@@ -24,6 +24,7 @@ import { TeamRosterPage } from "./features/public/TeamRosterPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamStatsPage } from "./features/public/TeamStatsPage";
 import { LiveMatchPage } from "./features/public/LiveMatchPage";
+import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { AdminPage } from "./pages/AdminPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { PlanilleroPage } from "./pages/PlanilleroPage";
@@ -217,7 +218,11 @@ const liveMatchRoute = createRoute({
 	path: "/matches/$id/live",
 	component: LiveMatchPage,
 });
-const playerDetailRoute = placeholderRoute(publicShellRoute, "/players/$id", "Player detail");
+const playerDetailRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/players/$id",
+	component: PlayerDetailPage,
+});
 
 const adminMatchSetupRoute = placeholderRoute(adminShellRoute, "/admin/matches/setup", "Match setup");
 const adminScoringRoute = placeholderRoute(adminShellRoute, "/admin/matches/$id/scoring", "Scoring console");
