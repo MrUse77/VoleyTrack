@@ -157,3 +157,44 @@ Resolve the review-controller receipt limitation, then run the exact authorized 
 
 - Changed source/progress files only within the delegated edit surfaces.
 - The page and test contain 181 lines; including the 7-line router diff, the implementation unit is 188 touched source lines, below the 300-line limit. No commits, staging, branches, pushes, or PRs were created.
+
+## Task 2.6: Public tournament matches tab
+
+- Replaced only `/tournaments/$id/matches` with a fixture-driven public matches screen for the selected tournament.
+- Added canonical Spanish tournament context, local tab navigation, status/date/venue match rows, static scores, and live-detail links using immutable public fixtures. Standings, stats, and bracket remain placeholder routes; the overview route is unchanged.
+- Added SSR coverage for tournament selection, all fixture statuses, local tab hrefs/active state, match rows, and unknown-tournament handling.
+
+## Task 2.6 Verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/public/TournamentMatchesPage.test.tsx src/router.test.tsx` | PASS — 2 files, 6 tests |
+| `cd frontend && bun run test` | PASS — 19 files, 55 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && ./node_modules/.bin/vite build --outDir /tmp/voleytrack-tournament-matches-build` | PASS — output under `/tmp` |
+
+## Task 2.6 Boundary
+
+- Changed source/progress files only within the delegated edit surfaces.
+- The page and test contain 180 lines; including the 7-line router diff, the implementation unit is 187 touched source lines, below the 300-line limit. No commits, staging, branches, pushes, or PRs were created.
+
+## Task 2.7: Public tournament standings tab
+
+- Replaced only `/tournaments/$id/standings` with a fixture-driven standings screen using the selected tournament context, canonical Spanish local navigation, a static standings table, status badges, and the shared `Card`, `DataTable`, and `PageHeader` primitives.
+- Added local immutable display rows because the public fixture contract has no standings data. Stats, bracket, APIs, auth, persistence, WebSockets, backend, and `.op` files remain unchanged; overview and matches routes remain unchanged.
+- Added Node-compatible SSR coverage for tournament context, standings headers/rows, active tab links, alternate tournament status, and unknown-tournament handling.
+
+## Task 2.7 Verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/public/TournamentStandingsPage.test.tsx` | PASS — 1 file, 4 tests |
+| `cd frontend && bun run test` | PASS — 20 files, 59 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && ./node_modules/.bin/vite build --outDir /tmp/voleytrack-tournament-standings-build` | PASS — output under `/tmp` |
+
+## Task 2.7 Boundary
+
+- Changed only the delegated page, SSR test, public standings route, and this progress file. The page and test contain 201 lines; including the 7-line router diff, the implementation unit is 208 changed source lines, below the 300-line limit. No commits, staging, branches, pushes, or PRs were created.
