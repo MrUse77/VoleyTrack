@@ -135,3 +135,25 @@ The current UI implementation and SDD artifacts were staged for the authorized c
 ## Next Action
 
 Resolve the review-controller receipt limitation, then run the exact authorized commit. After that, continue screen-by-screen with one commit per coherent unit.
+
+## Task 2.5: Public tournament overview
+
+- Replaced only the `/tournaments/$id` placeholder with a fixture-driven `TournamentDetailPage` selected by the route id.
+- Added the canonical overview composition with Spanish tournament title, status, dates, location, category, summary information, and local navigation links for Resumen, Partidos, Tabla, Estadísticas, and Cuadro.
+- Matches, standings, stats, and bracket bodies remain delegated to their existing placeholder routes.
+- Added SSR coverage for fixture selection, overview content, alternate status data, and canonical tab hrefs.
+
+## Task 2.5 Verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/public/TournamentDetailPage.test.tsx` | PASS — 1 file, 3 tests |
+| `cd frontend && bun run test` | PASS — 18 files, 52 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && ./node_modules/.bin/vite build --outDir /tmp/voleytrack-tournament-detail-build` | PASS — output under `/tmp` |
+
+## Task 2.5 Boundary
+
+- Changed source/progress files only within the delegated edit surfaces.
+- The page and test contain 181 lines; including the 7-line router diff, the implementation unit is 188 touched source lines, below the 300-line limit. No commits, staging, branches, pushes, or PRs were created.
