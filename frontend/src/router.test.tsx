@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ARTBOARD_MANIFEST } from "./artboardManifest";
+import { LiveMatchPage } from "./features/public/LiveMatchPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
 import { TeamStatsPage } from "./features/public/TeamStatsPage";
@@ -55,6 +56,7 @@ describe("router", () => {
 
     expect(publicPaths).toContain("/");
     expect(publicPaths).toContain("matches");
+    expect(publicPaths).toContain("matches/$id/live");
     expect(publicPaths).toContain("teams/$id");
     expect(publicPaths).toContain("teams/$id/roster");
     expect(publicPaths).toContain("teams/$id/stats");
@@ -64,9 +66,13 @@ describe("router", () => {
     const matchesRoute = publicChildren?.find(
       (route) => route.fullPath === "/teams/$id/matches",
     );
+    const liveMatchRoute = publicChildren?.find(
+      (route) => route.fullPath === "/matches/$id/live",
+    );
     const statsRoute = publicChildren?.find(
       (route) => route.fullPath === "/teams/$id/stats",
     );
+    expect(liveMatchRoute?.options?.component).toBe(LiveMatchPage);
     expect(rosterRoute?.options?.component).toBe(TeamRosterPage);
     expect(matchesRoute?.options?.component).toBe(TeamMatchesPage);
     expect(statsRoute?.options?.component).toBe(TeamStatsPage);
