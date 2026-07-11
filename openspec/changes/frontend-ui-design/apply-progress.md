@@ -196,16 +196,17 @@ Capture and record the 1440×900 visual comparisons for artboards 3–13 before 
 - Commit `530211f feat(frontend): implement UI foundation and public discovery` contains the foundation, dashboard, matches, tournaments, and SDD artifacts.
 - Commit `4a9d35b feat(frontend): add tournament overview` contains artboard 14.
 - Commit `ac598ba feat(frontend): add tournament matches and standings` (2026-07-11) contains artboards 15 and 16 (Tournament Matches and Tournament Standings), the router integration, and the matching section of this progress file.
-- Commit `e008c0d feat(frontend): add tournament stats tab (artboard 17)` contains the Tournament Stats page + SSR test, the public Stats route (`/tournaments/$id/stats` switched from placeholder to `createRoute`), and this progress file. Bracket (artboard 18) page and SSR test remain implemented in the working tree but are routed via placeholder until their own self-contained commit lands.
-- The earlier delivery note stating that the foundation/public-discovery commit was not created is historical and is superseded by the four commits above.
+- Commit `e008c0d feat(frontend): add tournament stats tab (artboard 17)` contains the Tournament Stats page + SSR test, the public Stats route (`/tournaments/$id/stats` switched from placeholder to `createRoute`), and this progress file.
+- Commit `ed758f5 feat(frontend): add tournament bracket tab (artboard 18)` contains the Tournament Bracket page + SSR test.
+- Commit `e8290b5 feat(frontend): wire tournament bracket route` mounts `TournamentBracketPage` at `/tournaments/$id/bracket` through `createRoute`.
+- The earlier delivery note stating that the foundation/public-discovery commit was not created is historical and is superseded by the six commits above.
 
 ## Remaining Work Map
 
-1. **Tournament detail:** artboard 18 Bracket (next unit; page + SSR test are in the working tree, the route is still `placeholderRoute`; the planned commit must wire the route).
-2. **Public detail:** team overview/roster/matches/stats (19–22), live match detail (23), and player detail (24).
-3. **Scorer workflows:** setup/player modal, scoring/substitution, point entry, and post-match summary (25–30).
-4. **Administration:** staff, admin tournament tabs, creation forms/modals, and listings (31–45).
-5. **Shared states and closeout:** loading/empty/error/offline/sync states, state injection, route/manifest audit, and visual comparisons.
+1. **Public detail:** team overview/roster/matches/stats (artboards 19–22), live match detail (23), and player detail (24). Artboards 14–18 are implemented and committed; visual comparison and remaining detail-navigation evidence are still pending.
+2. **Scorer workflows:** setup/player modal, scoring/substitution, point entry, and post-match summary (25–30).
+3. **Administration:** staff, admin tournament tabs, creation forms/modals, and listings (31–45).
+4. **Shared states and closeout:** loading/empty/error/offline/sync states, state injection, route/manifest audit, and visual comparisons.
 
 Every screen unit requires focused SSR tests, full tests/lint/TypeScript/build validation, and a manual visual comparison when the screenshot harness is available.
 
@@ -235,29 +236,24 @@ Every screen unit requires focused SSR tests, full tests/lint/TypeScript/build v
 
 - Replaced only `/tournaments/$id/bracket` placeholder with a fixture-driven bracket screen using the selected tournament context, canonical Spanish local navigation, a static elimination grid (Cuartos → Semifinal → Final), per-match scores/status badges, and the shared `Card`, `Badge`, and `PageHeader` primitives.
 - Stats, APIs, auth, persistence, WebSockets, backend, and `.op` files remain unchanged; overview, matches, standings, and stats routes remain unchanged.
-- The bracket route still rides `placeholderRoute`; the wire-in step (`createRoute → TournamentBracketPage`) is part of Task 2.9's commit, not yet executed.
+- Commit `ed758f5` contains the page and SSR test; commit `e8290b5` wires `/tournaments/$id/bracket` from `placeholderRoute` to `createRoute` with `TournamentBracketPage`.
 - The active tab is labeled "Cuadro" to match the overview (artboard 14) and standings page; the matches page still uses "Llave" (a known minor inconsistency carried over from commit `ac598ba` and deliberately left untouched under the non-goal of not modifying delivered artboards in this scope).
 - Added Node-compatible SSR coverage for tournament context, bracket rounds, active tab links, alternate tournament status (upcoming), and unknown-tournament handling.
 
-### Task 2.9 Verification (working-tree only)
+### Task 2.9 Verification (final)
 
 | Command | Result |
 | --- | --- |
 | `cd frontend && bun run test -- src/features/public/TournamentBracketPage.test.tsx` | PASS — 1 file, 4 tests |
+| `cd frontend && bun run test` | PASS — 22 files, 67 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && ./node_modules/.bin/vite build --outDir /tmp/voleytrack-bracket-router-build` | PASS |
 | Boundary test | PASS — no network/auth/persistence in new page |
 
-### Task 2.9 Planned Commit Receipt
+### Task 2.9 Boundary
 
-Bracket must be committed in its own manual terminal commit so the global review budget stays bounded; the four files below are the only ones to stage:
-
-| Pre-commit stage | Files |
-| --- | --- |
-| `git add frontend/src/features/public/TournamentBracketPage.tsx` | new (176 lines) |
-| `git add frontend/src/features/public/TournamentBracketPage.test.tsx` | new (66 lines) |
-| `git add frontend/src/router.tsx` | modified — bracket route only (Stats already wired in `e008c0d`) |
-| `git add openspec/changes/frontend-ui-design/apply-progress.md` | modified — Task 2.9 completion + 2.9 Verification + this receipt replaced |
-
-Must NOT be staged for this commit: `frontend/dist/**`, `openspec/changes/archive/**`, `.atl/skill-registry.md`. The Bracket unit total is 242 + ~6 source lines (under the 300-line limit per unit). Commit message suggestion: `feat(frontend): add tournament bracket tab (artboard 18)`. Post-commit SHA should be appended to the Current State Reconciliation block as the secondmost-recent entry, replacing the e008c0d bullet with `e008c0d + the new SHA`.
+- Changed only the delegated Bracket page, SSR test, public bracket route, and this progress file across commits `ed758f5` and `e8290b5`. The page and test contain 242 lines; the router diff contains 6 source lines. Total implementation unit is ~248 touched source lines, below the 300-line limit. The route is now wired through `createRoute`.
 
 ## Review Controller Diagnostic (carried forward to next session)
 

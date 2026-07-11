@@ -78,24 +78,28 @@ Establish canonical tokens, desktop canvas policy, public/admin/auth shells, nav
 Implement dashboard, matches status variants, tournaments status variants, and public navigation/filter mechanics using shared fixtures.
 
 ### Task 2.1: Public dashboard
-- [ ] **RED**: Write failing test for `/` (artboard 3): assert dashboard renders match cards, tournament cards, and metric cards from fixtures; assert sidebar highlights "Dashboard" as active; assert cards use shared `Card` primitive
-- [ ] **GREEN**: Implement `src/features/public/DashboardPage.tsx` at `/` composing primitives and fixtures; match artboard layout, typography, and Spanish copy. `/dashboard` is a removed non-goal, not a redirect or duplicate route.
-- [ ] **Evidence**: Dashboard test passes; visual comparison with artboard 3 at 1440×900
+- [x] **RED**: Write failing test for `/` (artboard 3): assert dashboard renders match cards, tournament cards, and metric cards from fixtures; assert sidebar highlights "Dashboard" as active; assert cards use shared `Card` primitive
+- [x] **GREEN**: Implement `src/features/public/DashboardPage.tsx` at `/` composing primitives and fixtures; match artboard layout, typography, and Spanish copy. `/dashboard` is a removed non-goal, not a redirect or duplicate route.
+- [x] **Automated evidence**: Dashboard tests pass; fixture-driven cards and active navigation are covered.
+- [ ] **Visual evidence**: Compare with artboard 3 at 1440×900
 
 ### Task 2.2: Matches page with status filters
-- [ ] **RED**: Write failing tests for `/matches` (artboards 4-8): assert Main view renders with no `?status`; assert `?status=live` renders live matches (artboard 5), `?status=today` renders today's matches (artboard 6), `?status=upcoming` renders upcoming (artboard 7), `?status=finished` renders finished (artboard 8); assert status filter tabs swap content; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/public/MatchesPage.tsx` with `useState` for filter state initialized from optional `?status` search value; use `TabBar` primitive; filter fixtures by status; preserve Spanish copy
-- [ ] **Evidence**: Matches tests pass; all five filter variants render; deep links work; visual comparison with artboards 4-8
+- [x] **RED**: Write failing tests for `/matches` (artboards 4-8): assert Main view renders with no `?status`; assert `?status=live` renders live matches (artboard 5), `?status=today` renders today's matches (artboard 6), `?status=upcoming` renders upcoming (artboard 7), `?status=finished` renders finished (artboard 8); assert status filter tabs swap content; assert state resets on reload
+- [x] **GREEN**: Implement `src/features/public/MatchesPage.tsx` with `useState` for filter state initialized from optional `?status` search value; use `TabBar` primitive; filter fixtures by status; preserve Spanish copy
+- [x] **Automated evidence**: Matches tests pass; all five filter variants and deep links are covered.
+- [ ] **Visual evidence**: Compare with artboards 4-8
 
 ### Task 2.3: Tournaments page with status filters
-- [ ] **RED**: Write failing tests for `/tournaments` (artboards 9-13): assert Main view renders with no `?status`; assert `?status=todos` renders all tournaments (artboard 10), `?status=en-curso` renders in-progress (artboard 11), `?status=proximos` renders upcoming (artboard 12), `?status=finalizados` renders finished (artboard 13); assert status filter tabs swap content; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/public/TournamentsPage.tsx` with `useState` for filter state initialized from optional `?status` search value; use `TabBar` primitive; filter fixtures by status; preserve Spanish copy
-- [ ] **Evidence**: Tournaments tests pass; all five filter variants render; deep links work; visual comparison with artboards 9-13
+- [x] **RED**: Write failing tests for `/tournaments` (artboards 9-13): assert Main view renders with no `?status`; assert `?status=todos` renders all tournaments (artboard 10), `?status=en-curso` renders in-progress (artboard 11), `?status=proximos` renders upcoming (artboard 12), `?status=finalizados` renders finished (artboard 13); assert status filter tabs swap content; assert state resets on reload
+- [x] **GREEN**: Implement `src/features/public/TournamentsPage.tsx` with `useState` for filter state initialized from optional `?status` search value; use `TabBar` primitive; filter fixtures by status; preserve Spanish copy
+- [x] **Automated evidence**: Tournaments tests pass; all five filter variants and deep links are covered.
+- [ ] **Visual evidence**: Compare with artboards 9-13
 
 ### Task 2.4: Public navigation mechanics
-- [ ] **RED**: Write failing tests asserting sidebar navigation changes routes and highlights active link; assert breadcrumb/back navigation works on detail pages; assert clicking match/tournament cards navigates to detail routes
-- [ ] **GREEN**: Implement navigation handlers in public shell and pages using TanStack Router; no guards or persistence
-- [ ] **Evidence**: Navigation tests pass; sidebar highlights active route; detail navigation works
+- [x] **RED**: Write failing tests asserting sidebar navigation changes routes and highlights active link; assert breadcrumb/back navigation works on detail pages; assert clicking match/tournament cards navigates to detail routes
+- [x] **GREEN**: Implement navigation handlers in public shell and pages using TanStack Router; no guards or persistence
+- [x] **Automated evidence**: Navigation tests pass for delivered dashboard, matches, tournaments, and canonical detail links.
+- [ ] **Remaining evidence**: Detail-page breadcrumbs and the complete visual comparison are still pending.
 
 **Slice 2 PR**: ~400 lines; delivers dashboard, matches, tournaments, and public navigation
 
@@ -106,9 +110,10 @@ Implement dashboard, matches status variants, tournaments status variants, and p
 Implement tournament tabs, team tabs, live match detail, player detail, tables/cards, and detail navigation.
 
 ### Task 3.1: Tournament detail tabs
-- [ ] **RED**: Write failing tests for `/tournaments/:id` (artboard 14), `/tournaments/:id/matches` (artboard 15), `/tournaments/:id/standings` (artboard 16), `/tournaments/:id/stats` (artboard 17), `/tournaments/:id/bracket` (artboard 18): assert overview tab renders tournament info, matches tab renders match list, standings tab renders standings table (static fixture, not computed), stats tab renders statistics, bracket tab renders bracket; assert tab bar switches content; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/public/TournamentDetailPage.tsx` with tab routes; use `TabBar`, `DataTable`, `Card` primitives; load tournament/tournament-matches/standings/stats/bracket fixtures by `:id`; preserve Spanish copy
-- [ ] **Evidence**: Tournament detail tests pass; all five tabs render; visual comparison with artboards 14-18
+- [x] **RED**: Write failing tests for `/tournaments/:id` (artboard 14), `/tournaments/:id/matches` (artboard 15), `/tournaments/:id/standings` (artboard 16), `/tournaments/:id/stats` (artboard 17), `/tournaments/:id/bracket` (artboard 18): assert overview tab renders tournament info, matches tab renders match list, standings tab renders standings table (static fixture, not computed), stats tab renders statistics, bracket tab renders bracket; assert tab bar switches content; assert state resets on reload
+- [x] **GREEN**: Implement `src/features/public/TournamentDetailPage.tsx` and the four tab pages with explicit routes; use shared `Card`, `Badge`, `DataTable`, and `PageHeader` primitives; load fixture-driven tournament data by `:id`; preserve Spanish copy
+- [x] **Automated evidence**: Tournament detail tests pass; all five tabs render; full suite passes with 22 files and 67 tests; Stats and Bracket routes are wired through `createRoute`.
+- [ ] **Visual evidence**: Compare artboards 14-18 at canonical dimensions; breadcrumb/state-reset evidence remains pending.
 
 ### Task 3.2: Team detail tabs
 - [ ] **RED**: Write failing tests for `/teams/:id` (artboard 19), `/teams/:id/roster` (artboard 20), `/teams/:id/matches` (artboard 21), `/teams/:id/stats` (artboard 22): assert overview/roster tab renders team info and roster table, matches tab renders match list, stats tab renders statistics; assert tab bar switches content; assert state resets on reload
