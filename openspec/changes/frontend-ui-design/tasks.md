@@ -187,9 +187,10 @@ Implement staff registration, admin tournament tabs, creation forms, create-team
 - [ ] **Evidence**: Focused SSR/interaction and real-route tests pass; full frontend tests, lint, TypeScript, boundary test, and Vite production build pass. Visual comparison with artboard 31 remains pending.
 
 ### Task 5.2: Admin tournament tabs
-- [ ] **RED**: Write failing tests for `/admin/tournaments/:id/matches` (artboard 32), `/admin/tournaments/:id/standings` (artboard 33), `/admin/tournaments/:id/stats` (artboard 34): assert matches tab renders match list, standings tab renders standings table, stats tab renders statistics; assert tab bar switches content; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/admin/AdminTournamentDetailPage.tsx` with tab routes; use `TabBar`, `DataTable` primitives; load admin tournament fixtures by `:id`; preserve Spanish copy
-- [ ] **Evidence**: Admin tournament tests pass; all three tabs render; visual comparison with artboards 32-34
+- [x] **RED (artboard 32)**: Added failing SSR coverage for `/admin/tournaments/:id/matches`; observed failure: `AdminTournamentMatchesPage` module could not be resolved before implementation.
+- [x] **GREEN (artboard 32)**: Implemented `src/features/admin/AdminTournamentMatchesPage.tsx` with immutable admin fixtures selected by `:id`, Spanish tournament context, fixture-driven match rows, and local admin tab links with Matches active. Replaced only the matches placeholder route.
+- [x] **Evidence (artboard 32)**: Focused SSR and real-route coverage pass; full frontend tests, lint, TypeScript, boundary test, and Vite production build pass. Visual comparison remains pending.
+- [ ] **Deferred**: `/admin/tournaments/:id/standings` (artboard 33) and `/admin/tournaments/:id/stats` (artboard 34) remain explicit placeholders and require separate scoped implementation.
 
 ### Task 5.3: Create player form
 - [ ] **RED**: Write failing test for `/admin/players/create` (artboard 36): assert page renders create-player form; assert form accepts input (name, number, position) and reflects typed values; assert submit prevents navigation/network; assert state resets on reload

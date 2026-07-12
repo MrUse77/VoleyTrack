@@ -482,3 +482,18 @@ The gentle-pi `gentle_review` controller was investigated end to end this sessio
 | `cd frontend && bun run build -- --outDir /tmp/voleytrack-staff-register-artboard-31-build` | PASS |
 
 Visual comparison with artboard 31 remains pending.
+
+## Task 5.2: Admin tournament matches (artboard 32, issue #42)
+
+- Replaced only `/admin/tournaments/$id/matches` with `AdminTournamentMatchesPage`, using immutable `ADMIN` tournament and match fixtures selected by route id.
+- Added Spanish tournament context, fixture-driven match rows, local Partidos/Tabla/Estadísticas links with Partidos active, and an explicit unknown-tournament fallback. The standings and stats routes remain placeholders.
+- Added focused SSR coverage and router registration/real-route rendering coverage; no API, auth, persistence, network, or mutation behavior was added.
+
+### Task 5.2 validation evidence
+
+| Evidence | Result |
+| --- | --- |
+| Focused SSR and real-route coverage | PASS — recorded for artboard 32 implementation |
+| Full frontend tests, lint, TypeScript, boundary test, and Vite production build | PASS — recorded for artboard 32 implementation |
+
+Visual comparison with artboard 32 remains pending.
