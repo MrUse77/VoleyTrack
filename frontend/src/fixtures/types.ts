@@ -65,9 +65,11 @@ export type PublicTournamentFixtures = Readonly<{
 export type ScoringMatchStatus = "setup" | "live" | "finished";
 export type ScoringTeamFixture = Readonly<{ id: string; name: string; shortName: string }>;
 export type ScoringSetFixture = Readonly<{ id: string; label: string; home: number; away: number }>;
+export type ScoringSetupStepFixture = Readonly<{ id: string; label: string; description: string }>;
 export type ScoringSetupFixture = Readonly<{
-  id: string; matchId: string; title: string; stepLabel: string; tournamentName: string;
+  id: string; matchId: string; title: string; tournamentName: string;
   scheduledLabel: string; venue: string; homeTeam: ScoringTeamFixture; awayTeam: ScoringTeamFixture;
+  steps: readonly ScoringSetupStepFixture[];
 }>;
 export type ScoringConsoleFixture = Readonly<{
   id: string; matchId: string; title: string; status: ScoringMatchStatus; statusLabel: string;

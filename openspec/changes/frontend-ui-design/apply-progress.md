@@ -357,3 +357,22 @@ The gentle-pi `gentle_review` controller was investigated end to end this sessio
 | Command | Result |
 | --- | --- |
 | `cd frontend && bun run test -- src/features/scoring/PlayerSelectionModal.test.tsx src/features/scoring/MatchSetupPage.test.tsx src/router.test.tsx` | PASS — 3 files, 7 tests |
+
+## Task 4.1 bounded unit: scorer match setup flow (artboard 26)
+
+- Extended the immutable `SCORING.matchSetup` fixture with three setup steps and descriptions.
+- Implemented local forward-only step state in `MatchSetupPage`; mounting starts at step one, `Siguiente` advances without a back control, and the final step cannot advance further.
+- Preserved the artboard 25 player-selection modal query behavior and unrelated search values; no network, auth, persistence, WebSockets, backend, or scoring-rule behavior was added.
+- Added interaction coverage for first-step rendering, forward navigation, remount reset, and existing modal query behavior.
+
+### Task 4.1 scorer match setup verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/scoring/MatchSetupPage.test.tsx` (RED) | FAIL — 2 new flow assertions failed before implementation |
+| `cd frontend && bun run test -- src/features/scoring/MatchSetupPage.test.tsx src/features/scoring/PlayerSelectionModal.test.tsx src/fixtures/scoring-admin.test.ts` | PASS — 3 files, 11 tests |
+| `cd frontend && bun run test -- src/features/scoring/MatchSetupPage.test.tsx src/features/scoring/PlayerSelectionModal.test.tsx src/router.test.tsx` | PASS — 3 files, 12 tests |
+| `cd frontend && bun run test` | PASS — 30 files, 99 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && bun run build -- --outDir /tmp/voleytrack-scorer-match-setup-build-final` | PASS — output under `/tmp/voleytrack-scorer-match-setup-build-final` |

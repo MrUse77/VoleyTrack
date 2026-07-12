@@ -19,9 +19,14 @@ const sets = Object.freeze([
 ]);
 
 const matchSetup = Object.freeze({
-  id: "scoring-setup-liga-rosarina-02", matchId: liveMatch.id, title: "Configurar partido", stepLabel: "Seleccionar equipos",
+  id: "scoring-setup-liga-rosarina-02", matchId: liveMatch.id, title: "Configurar partido",
   tournamentName: PUBLIC_TOURNAMENTS.inProgress[0].name, scheduledLabel: liveMatch.scheduledLabel, venue: liveMatch.venue,
   homeTeam, awayTeam,
+  steps: Object.freeze([
+    Object.freeze({ id: "setup-step-teams", label: "Seleccionar equipos", description: "Elegí los equipos que disputan el partido." }),
+    Object.freeze({ id: "setup-step-sets", label: "Configurar sets", description: "Definí la configuración de sets para este partido." }),
+    Object.freeze({ id: "setup-step-confirm", label: "Confirmar partido", description: "Revisá los datos antes de comenzar la planilla." }),
+  ]),
 } satisfies ScoringSetupFixture);
 const consoleFixture = Object.freeze({
   id: "scoring-console-liga-rosarina-02", matchId: liveMatch.id, title: "Planilla en vivo", status: "live", statusLabel: "En vivo",
