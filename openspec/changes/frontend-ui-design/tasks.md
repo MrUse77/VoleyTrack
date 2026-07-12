@@ -147,9 +147,9 @@ Implement tournament tabs, team tabs, live match detail, player detail, tables/c
 Implement match setup/player modal, scoring console/substitution, point-entry steps, and post-match summary with local-only state.
 
 ### Task 4.1: Match setup flow
-- [ ] **RED**: Write failing tests for `/admin/matches/setup` (artboard 26): assert page renders match setup flow with forward-only steps; assert clicking "Next" advances to the next step; assert state resets on reload (returns to first step); assert `?modal=player-selection` opens player-selection modal (artboard 25)
-- [ ] **GREEN**: Implement `src/features/scoring/MatchSetupPage.tsx` with `useState` for flow step; advance forward only; render step content from fixtures; open modal via search value or local trigger
-- [x] **Bounded artboard 25 unit**: Implemented the local player-selection modal and wired `?modal=player-selection` to the setup route; artboard 26 forward-only setup flow remains out of scope.
+- [x] **RED**: Added failing interaction tests for `/admin/matches/setup` (artboard 26): page renders forward-only steps, clicking "Siguiente" advances, remount resets to the first step, and `?modal=player-selection` opens the player-selection modal (artboard 25)
+- [x] **GREEN**: Implemented `src/features/scoring/MatchSetupPage.tsx` with local `useState` flow step, forward-only advancement, fixture-driven step content, and query/local modal opening while preserving unrelated search values
+- [x] **Bounded artboard 25 unit**: Implemented the local player-selection modal and wired `?modal=player-selection` to the setup route.
 - [ ] **Evidence**: Match setup tests pass; flow advances forward; modal opens; visual comparison with artboards 25-26
 
 ### Task 4.2: Scoring console
