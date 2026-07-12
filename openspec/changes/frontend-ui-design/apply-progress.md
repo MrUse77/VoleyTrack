@@ -376,3 +376,16 @@ The gentle-pi `gentle_review` controller was investigated end to end this sessio
 | `cd frontend && bun run lint` | PASS |
 | `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
 | `cd frontend && bun run build -- --outDir /tmp/voleytrack-scorer-match-setup-build-final` | PASS — output under `/tmp/voleytrack-scorer-match-setup-build-final` |
+
+## Task 4.2 bounded unit: scorer console (artboard 27)
+
+- Added failing-first SSR and interaction coverage in `frontend/src/features/scoring/ScoringConsolePage.test.tsx` for fixture teams, current set, local score display, point recording, repeated points without volleyball-rule enforcement, and route registration.
+- Implemented `frontend/src/features/scoring/ScoringConsolePage.tsx` using immutable `SCORING.console` fixture data and local React state only. The `/admin/matches/$id/scoring` route now renders the page.
+- Artboard 28 substitution modal is explicitly out of scope; no modal behavior, persistence, APIs, auth, or real-time behavior was added.
+
+### Task 4.2 scorer console verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/scoring/ScoringConsolePage.test.tsx` (RED) | FAIL — module was missing before implementation |
+| `cd frontend && bun run test -- src/features/scoring/ScoringConsolePage.test.tsx src/router.test.tsx` | PASS — 2 files, 6 tests |

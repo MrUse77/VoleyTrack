@@ -152,10 +152,11 @@ Implement match setup/player modal, scoring console/substitution, point-entry st
 - [x] **Bounded artboard 25 unit**: Implemented the local player-selection modal and wired `?modal=player-selection` to the setup route.
 - [ ] **Evidence**: Match setup tests pass; flow advances forward; modal opens; visual comparison with artboards 25-26
 
-### Task 4.2: Scoring console
-- [ ] **RED**: Write failing tests for `/admin/matches/:id/scoring` (artboard 27): assert page renders scoring console with teams, score display, and point recording; assert clicking team score button updates local display state; assert no match-rule enforcement (sets, rotations, limits); assert `?modal=substitution` opens substitution modal (artboard 28); assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/scoring/ScoringConsolePage.tsx` with `useState` for score/point display; update local state on team selection; no volleyball-rule validation; open substitution modal via search value or local trigger
-- [ ] **Evidence**: Scoring console tests pass; score updates locally; modal opens; visual comparison with artboards 27-28
+### Task 4.2: Scoring console (artboard 27)
+- [x] **RED**: Added failing SSR and interaction tests for `/admin/matches/:id/scoring`: fixture teams, current set, score display, point recording, repeated points without volleyball-rule enforcement, and route registration.
+- [x] **GREEN**: Implemented `src/features/scoring/ScoringConsolePage.tsx` with immutable `SCORING.console` data and local `useState` score updates. No sets, rotations, limits, APIs, persistence, auth, or real-time behavior were added.
+- [x] **Bounded scope**: Artboard 28 substitution modal is explicitly out of scope for this unit.
+- [ ] **Evidence**: Focused SSR/interaction and router tests pass; visual comparison with artboard 27 remains pending.
 
 ### Task 4.3: Point entry flow
 - [ ] **RED**: Write failing tests for `/admin/matches/:id/point-entry` (artboard 29): assert page renders multi-step point-entry flow; assert `?step=<canonical-step>` opens specific step for review; assert clicking "Next" advances forward; assert state resets on reload (returns to first step)

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ARTBOARD_MANIFEST } from "./artboardManifest";
 import { LiveMatchPage } from "./features/public/LiveMatchPage";
 import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
+import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
@@ -106,6 +107,12 @@ describe("router", () => {
     expect(matchSetupRoute?.options?.validateSearch?.({ modal: "player-selection" })).toEqual({
       modal: "player-selection",
     });
+
+    const scoringRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/matches/$id/scoring",
+    );
+    expect(routePaths(router.routeTree)).toContain("/admin/matches/$id/scoring");
+    expect(scoringRoute?.options?.component).toBe(ScoringConsolePage);
   });
 
   it("exposes every canonical manifest route path", () => {
