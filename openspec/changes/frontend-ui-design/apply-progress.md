@@ -560,3 +560,24 @@ Visual comparison with artboard 34 remains pending.
 
 - The unit is restricted to state primitives, the UI states board, three representative public pages and their tests, router registration, and these SDD artifacts.
 - No commits, staging, push, PR, network, persistence, timer, or real integration behavior was added.
+
+## Task 5.3: Create player form (artboard 36, issue #50)
+
+- Replaced only `/admin/players/create` with `CreatePlayerPage`, using local controlled state for name, number, and position.
+- The form composes `FormField` for name and number with a local position select. Submit prevents default navigation and shows only `Jugador preparado localmente`; no request, persistence, authentication, or player creation occurs.
+- Added focused SSR and interaction coverage for Spanish form labels, typed values, network-free submission, and remount reset. Router coverage verifies component registration and real-router rendering at the canonical URL.
+- RED observed the missing `CreatePlayerPage` module, then the placeholder-route mismatch. GREEN passed after the page and route replacement. No refactor was necessary.
+
+### Task 5.3 verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/admin/CreatePlayerPage.test.tsx` (RED) | FAIL — `CreatePlayerPage` could not be resolved before implementation |
+| `cd frontend && bun run test -- src/features/admin/CreatePlayerPage.test.tsx src/router.test.tsx` (RED route) | FAIL — the route rendered the existing placeholder instead of `CreatePlayerPage` |
+| `cd frontend && bun run test -- src/features/admin/CreatePlayerPage.test.tsx src/router.test.tsx` (GREEN/TRIANGULATE) | PASS — 2 files, 17 tests |
+| `cd frontend && bun run test` | PASS — 40 files, 150 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && bun run test -- src/boundary.test.ts` | PASS — 1 file, 1 test; no network/auth/persistence violations |
+
+Visual comparison with artboard 36 and production build evidence remain pending. A production build was not run because its generated output would be outside the authorized edit surfaces.

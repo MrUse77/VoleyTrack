@@ -194,9 +194,9 @@ Implement staff registration, admin tournament tabs, creation forms, create-team
 - [x] **GREEN (artboard 34)**: Implemented `/admin/tournaments/:id/stats` with immutable local rankings, default Puntos state, Puntos/Ataques/Bloqueos local filter interaction, Estadísticas active, and the existing unknown-tournament fallback. Added focused SSR/interaction coverage plus concrete route registration and real-route rendering coverage; no API, auth, persistence, network, or mutation behavior was added.
 
 ### Task 5.3: Create player form
-- [ ] **RED**: Write failing test for `/admin/players/create` (artboard 36): assert page renders create-player form; assert form accepts input (name, number, position) and reflects typed values; assert submit prevents navigation/network; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/admin/CreatePlayerPage.tsx` with `useState` for form values; use `FormField` primitive; `onSubmit` prevents navigation/network; preserve Spanish copy
-- [ ] **Evidence**: Create player test passes; form reflects input; visual comparison with artboard 36
+- [x] **RED**: Added failing test for `/admin/players/create` (artboard 36) covering form rendering, typed name/number/position values, prevented local submission, and remount reset; observed failure because `CreatePlayerPage` did not exist and the route was still a placeholder.
+- [x] **GREEN**: Implemented `src/features/admin/CreatePlayerPage.tsx` with local `useState`, `FormField` for name and number, a local position select, and prevented local submission; replaced only the create-player placeholder route.
+- [x] **Evidence**: Focused create-player and router tests pass (17 tests); full frontend test suite passes (40 files, 150 tests); lint, TypeScript, and boundary tests pass. Visual comparison with artboard 36 remains pending.
 
 ### Task 5.4: Create team form with modal chain
 - [ ] **RED**: Write failing tests for `/admin/teams/create` (artboard 37): assert page renders create-team form; assert form accepts input and reflects typed values; assert `?modal=player` opens "Modal Jugador" (artboard 40); assert `?modal=assign-player` opens "Modal Asignar Jugador" (artboard 41); assert modal close returns to underlying route; assert state resets on reload
