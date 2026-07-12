@@ -518,3 +518,26 @@ Visual comparison with artboard 32 remains pending.
 | `cd frontend && bun run test -- src/boundary.test.ts` | PASS — 1 file, 1 test; no network/auth/persistence violations |
 
 Visual comparison with artboard 33 remains pending.
+
+## Task 5.2: Admin tournament stats (artboard 34, issue #46)
+
+- Replaced only `/admin/tournaments/$id/stats` with `AdminTournamentStatsPage`, using an immutable local ranking display selected by page-local state.
+- The default Puntos ranking reproduces the canonical artboard players, teams, and values. The Puntos, Ataques, and Bloqueos controls update only the in-memory leaderboard and reset to Puntos on remount.
+- Added Spanish tournament context, local Partidos/Tabla/Estadísticas navigation with Estadísticas active, and the established `Torneo no encontrado` fallback.
+- Added focused SSR/interaction coverage plus router registration and real-router navigation coverage. No API, auth, network, storage, WebSocket, domain, or mutation behavior was added.
+
+### Task 5.2 artboard 34 TDD and verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/admin/AdminTournamentStatsPage.test.tsx` (RED) | FAIL — `AdminTournamentStatsPage` module could not be resolved before implementation |
+| `cd frontend && bun run test -- src/features/admin/AdminTournamentStatsPage.test.tsx src/router.test.tsx` (GREEN/TRIANGULATE) | PASS — 2 files, 15 tests; covers default ranking, both alternate filters, remount reset, fallback, route registration, and real-router rendering |
+| `cd frontend && bun run test` | PASS — 37 files, 130 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && bun run test -- src/boundary.test.ts` | PASS — 1 file, 1 test; no network/auth/persistence violations |
+| `cd frontend && bun run build -- --outDir /tmp/voleytrack-admin-tournament-stats-artboard-34-build` | PASS |
+
+REFACTOR: No refactor was needed after the focused tests passed; rankings and filter state remain page-local.
+
+Visual comparison with artboard 34 remains pending.
