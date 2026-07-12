@@ -5,10 +5,13 @@ import { Sidebar, type SidebarNavigationGroup } from "../../components/navigatio
 import { PUBLIC_MATCHES, PUBLIC_TOURNAMENTS } from "../../fixtures";
 import { DashboardPage } from "./DashboardPage";
 
+let search: Record<string, string> = {};
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, search, to }: { children: ReactNode; search?: Record<string, string>; to: string }) => (
     <a href={search ? `${to}?${new URLSearchParams(search)}` : to}>{children}</a>
   ),
+  useLocation: () => ({ search }),
 }));
 
 const publicNavigation: SidebarNavigationGroup[] = [
@@ -46,6 +49,15 @@ describe("public dashboard", () => {
     expect(html).toContain(`href="/matches/${PUBLIC_MATCHES.live[0].id}/live"`);
     expect(html).toContain(`href="/matches/${PUBLIC_MATCHES.upcoming[0].id}/live"`);
     expect(html).toContain(`href="/tournaments/${PUBLIC_TOURNAMENTS.all[0].id}"`);
+  });
+
+  it("renders the explicit error state override without dashboard content", () => {
+    search = { state: "error" };
+    const html = renderToStaticMarkup(<DashboardPage />);
+
+    expect(html).toContain("No pudimos mostrar esta información");
+    expect(html).not.toContain("Partidos en vivo");
+    search = {};
   });
 
   it("keeps Dashboard active in the public sidebar at the root route", () => {

@@ -35,6 +35,14 @@ describe("public tournaments", () => {
     expect(html).toContain('aria-selected="true"');
   });
 
+  it("renders the explicit loading state override without tournament content", () => {
+    search = { state: "loading" };
+    const html = renderToStaticMarkup(<TournamentsPage />);
+
+    expect(html).toContain("Cargando contenido");
+    expect(html).not.toContain("Lista de torneos");
+  });
+
   it("links fixture-driven tournament cards to their canonical detail routes", () => {
     const html = renderTournaments();
 

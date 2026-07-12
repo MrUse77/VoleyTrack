@@ -4,6 +4,7 @@ import { Badge } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
 import { PageHeader } from "../../components/primitives/PageHeader";
 import { TabBar } from "../../components/primitives/TabBar";
+import { StateBoundary } from "../../components/states/StateBoundary";
 import { PUBLIC_MATCHES, type MatchFixture, type MatchStatus } from "../../fixtures";
 
 type MatchesFilter = "all" | MatchStatus;
@@ -48,7 +49,8 @@ export function MatchesPage() {
   const matches = visibleMatches(status);
 
   return (
-    <div className="space-y-8">
+    <StateBoundary>
+      <div className="space-y-8">
       <PageHeader
         title="Partidos"
         description="Explorá partidos en vivo, próximos encuentros y resultados finalizados."
@@ -102,6 +104,7 @@ export function MatchesPage() {
           </Card>
         ))}
       </section>
-    </div>
+      </div>
+    </StateBoundary>
   );
 }
