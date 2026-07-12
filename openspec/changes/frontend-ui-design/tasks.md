@@ -190,7 +190,8 @@ Implement staff registration, admin tournament tabs, creation forms, create-team
 - [x] **RED (artboard 32)**: Added failing SSR coverage for `/admin/tournaments/:id/matches`; observed failure: `AdminTournamentMatchesPage` module could not be resolved before implementation.
 - [x] **GREEN (artboard 32)**: Implemented `src/features/admin/AdminTournamentMatchesPage.tsx` with immutable admin fixtures selected by `:id`, Spanish tournament context, fixture-driven match rows, and local admin tab links with Matches active. Replaced only the matches placeholder route.
 - [x] **Evidence (artboard 32)**: Focused SSR and real-route coverage pass; full frontend tests, lint, TypeScript, boundary test, and Vite production build pass. Visual comparison remains pending.
-- [ ] **Deferred**: `/admin/tournaments/:id/standings` (artboard 33) and `/admin/tournaments/:id/stats` (artboard 34) remain explicit placeholders and require separate scoped implementation.
+- [x] **GREEN (artboard 33)**: Implemented `/admin/tournaments/:id/standings` with a fixture-selected admin tournament context, static standings table, local admin tab navigation with Tabla active, and an explicit unknown-tournament fallback. Added focused SSR and router registration/real-route coverage; no API, auth, persistence, network, or mutation behavior was added.
+    - [ ] **Deferred**: `/admin/tournaments/:id/stats` (artboard 34) remains an explicit placeholder and requires separate scoped implementation.
 
 ### Task 5.3: Create player form
 - [ ] **RED**: Write failing test for `/admin/players/create` (artboard 36): assert page renders create-player form; assert form accepts input (name, number, position) and reflects typed values; assert submit prevents navigation/network; assert state resets on reload
