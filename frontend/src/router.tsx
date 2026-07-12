@@ -29,6 +29,7 @@ import { AdminPage } from "./pages/AdminPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { PlanilleroPage } from "./pages/PlanilleroPage";
 import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
+import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 
 const rootRoute = createRootRoute({
 	component: () => <Outlet />,
@@ -231,7 +232,11 @@ const adminMatchSetupRoute = createRoute({
 	validateSearch: (search: Record<string, unknown>) => search,
 	component: MatchSetupPage,
 });
-const adminScoringRoute = placeholderRoute(adminShellRoute, "/admin/matches/$id/scoring", "Scoring console");
+const adminScoringRoute = createRoute({
+	getParentRoute: () => adminShellRoute,
+	path: "/admin/matches/$id/scoring",
+	component: ScoringConsolePage,
+});
 const adminPointEntryRoute = placeholderRoute(adminShellRoute, "/admin/matches/$id/point-entry", "Point entry");
 const adminSummaryRoute = placeholderRoute(adminShellRoute, "/admin/matches/$id/summary", "Post-match summary");
 const adminStaffRegisterRoute = placeholderRoute(adminShellRoute, "/admin/staff/register", "Staff registration");
