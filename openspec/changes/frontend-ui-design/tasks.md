@@ -182,9 +182,9 @@ Implement match setup/player modal, scoring console/substitution, point-entry st
 Implement staff registration, admin tournament tabs, creation forms, create-team modal chain, and management listings.
 
 ### Task 5.1: Staff registration
-- [ ] **RED**: Write failing test for `/admin/staff/register` (artboard 31): assert page renders staff registration form; assert form accepts input and reflects typed values; assert submit prevents navigation/network; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/admin/StaffRegisterPage.tsx` with `useState` for form values; use `FormField` primitive; `onSubmit` prevents navigation/network; preserve Spanish copy
-- [ ] **Evidence**: Staff registration test passes; form reflects input; visual comparison with artboard 31
+- [x] **RED**: Added failing SSR/interaction coverage for `/admin/staff/register`; observed failure: `StaffRegisterPage` module could not be resolved before implementation.
+- [x] **GREEN**: Implemented `src/features/admin/StaffRegisterPage.tsx` with controlled local `useState`, `FormField`, local-only submit feedback, and canonical Spanish copy; replaced only the staff registration placeholder route.
+- [ ] **Evidence**: Focused SSR/interaction and real-route tests pass; full frontend tests, lint, TypeScript, boundary test, and Vite production build pass. Visual comparison with artboard 31 remains pending.
 
 ### Task 5.2: Admin tournament tabs
 - [ ] **RED**: Write failing tests for `/admin/tournaments/:id/matches` (artboard 32), `/admin/tournaments/:id/standings` (artboard 33), `/admin/tournaments/:id/stats` (artboard 34): assert matches tab renders match list, standings tab renders standings table, stats tab renders statistics; assert tab bar switches content; assert state resets on reload

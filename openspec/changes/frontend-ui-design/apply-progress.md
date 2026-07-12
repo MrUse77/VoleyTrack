@@ -461,3 +461,24 @@ The gentle-pi `gentle_review` controller was investigated end to end this sessio
 
 - REFACTOR: no refactor was necessary after focused tests passed; the page remains a small presentational fixture lookup.
 - Visual comparison with artboard 30 remains pending.
+
+## Task 5.1: Staff registration (artboard 31, issue #40)
+
+- Replaced only `/admin/staff/register` with `StaffRegisterPage`; all staff identity and role values are controlled component-local state.
+- The form composes `FormField` for name and email with a local role select. Submit calls `preventDefault()` and displays only the in-place `Registro preparado localmente` feedback; it performs no navigation, request, persistence, authentication, or account creation.
+- Added focused SSR and interaction coverage for the canonical Spanish form, typed values, prevented submit, local feedback, and remount reset. Router coverage asserts both the route component registration and rendering at the real canonical URL.
+- RED observed that the new `StaffRegisterPage` module could not be resolved. GREEN and triangulation passed after the page and route replacement. REFACTOR: no further refactor was needed; local field updates remain isolated to the page.
+
+### Task 5.1 verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/admin/StaffRegisterPage.test.tsx` (RED) | FAIL — `StaffRegisterPage` module could not be resolved |
+| `cd frontend && bun run test -- src/features/admin/StaffRegisterPage.test.tsx src/router.test.tsx` (GREEN/TRIANGULATE) | PASS — 2 files, 10 tests |
+| `cd frontend && bun run test` | PASS — 34 files, 116 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && bun run test src/boundary.test.ts` | PASS — 1 file, 1 test |
+| `cd frontend && bun run build -- --outDir /tmp/voleytrack-staff-register-artboard-31-build` | PASS |
+
+Visual comparison with artboard 31 remains pending.
