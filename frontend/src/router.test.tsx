@@ -12,6 +12,7 @@ import { PostMatchSummaryPage } from "./features/scoring/PostMatchSummaryPage";
 import { StaffRegisterPage } from "./features/admin/StaffRegisterPage";
 import { AdminTournamentMatchesPage } from "./features/admin/AdminTournamentMatchesPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
+import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
 import { ADMIN } from "./fixtures";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
@@ -155,6 +156,11 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/tournaments/$id/standings",
     );
     expect(tournamentStandingsRoute?.options?.component).toBe(AdminTournamentStandingsPage);
+
+    const tournamentStatsRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/tournaments/$id/stats",
+    );
+    expect(tournamentStatsRoute?.options?.component).toBe(AdminTournamentStatsPage);
   });
 
   it("renders the substitution dialog when the real router navigates to its canonical URL", async () => {
@@ -257,6 +263,28 @@ describe("router", () => {
     expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/standings`);
     expect(container.textContent).toContain(tournament.name);
     expect(container.textContent).toContain("Tabla de posiciones");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders admin tournament stats when the real router navigates to the known fixture URL", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const tournament = ADMIN.tournaments[0];
+
+    await act(async () => {
+      await router.navigate({
+        to: "/admin/tournaments/$id/stats",
+        params: { id: tournament.id },
+      });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/stats`);
+    expect(container.textContent).toContain(tournament.name);
+    expect(container.textContent).toContain("Ranking de Jugadores · Puntos Totales");
 
     await act(async () => root.unmount());
     container.remove();
