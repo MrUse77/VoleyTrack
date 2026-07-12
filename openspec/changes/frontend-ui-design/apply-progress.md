@@ -414,3 +414,27 @@ The gentle-pi `gentle_review` controller was investigated end to end this sessio
 
 - Changed only the scoring console source/tests, scoring route/test, and these Task 4.2 artifacts (244 changed lines, below the 400-line unit cap).
 - Artboards 25–26 and 29–30 remain outside this issue's implementation scope; artboard 27 point scoring is unchanged. Visual comparison of artboard 28 remains pending.
+
+## Task 4.3 bounded unit: point entry flow (artboard 29, issue #36)
+
+- Replaced only the `/admin/matches/$id/point-entry` placeholder with fixture-driven `PointEntryPage`; artboards 25–28 and 30 remain unchanged.
+- The page owns local forward-only step state. A valid canonical `?step=point-step-team|point-step-action` selects its matching immutable fixture step on mount; missing or invalid values start at step one. `Siguiente` is disabled on the terminal step. No API, backend, auth, persistence, WebSocket, score mutation, or volleyball-rule behavior was added.
+- Added focused SSR, interaction, route-tree, and real-router URL query coverage. RED observed the missing `PointEntryPage` module; GREEN passed after the page and route replacement.
+
+### Task 4.3 verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/scoring/PointEntryPage.test.tsx` (RED) | FAIL — `PointEntryPage` module could not be resolved |
+| `cd frontend && bun run test -- src/features/scoring/PointEntryPage.test.tsx` (GREEN) | PASS — 1 file, 4 tests |
+| `cd frontend && bun run test -- src/features/scoring/PointEntryPage.test.tsx src/router.test.tsx` | PASS — 2 files, 10 tests |
+| `cd frontend && bun run test` | PASS — 32 files, 110 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && bun run test src/boundary.test.ts` | PASS — 1 file, 1 test |
+| `cd frontend && bun run build -- --outDir /tmp/voleytrack-scorer-point-entry-artboard-29-build` | PASS |
+
+### Task 4.3 boundary
+
+- Changed only `PointEntryPage`, its focused test, point-entry route/router test coverage, and these Task 4.3 artifacts. Generated build output is under `/tmp`; no commits, staging, push, or PR operations were performed.
+- Visual comparison with artboard 29 remains pending.

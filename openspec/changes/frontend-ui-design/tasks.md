@@ -163,9 +163,10 @@ Implement match setup/player modal, scoring console/substitution, point-entry st
 - [ ] **Visual evidence**: Compare artboards 27–28 at canonical dimensions.
 
 ### Task 4.3: Point entry flow
-- [ ] **RED**: Write failing tests for `/admin/matches/:id/point-entry` (artboard 29): assert page renders multi-step point-entry flow; assert `?step=<canonical-step>` opens specific step for review; assert clicking "Next" advances forward; assert state resets on reload (returns to first step)
-- [ ] **GREEN**: Implement `src/features/scoring/PointEntryPage.tsx` with `useState` for flow step initialized from optional `?step` search value; advance forward only; render step content from fixtures
-- [ ] **Evidence**: Point entry tests pass; flow advances forward; deep links work; visual comparison with artboard 29
+- [x] **RED**: Added failing tests for `/admin/matches/:id/point-entry` (artboard 29): SSR default step, canonical/invalid `?step` initialization, forward-only interaction, terminal disabled state, and remount reset. Observed failure: `PointEntryPage` module did not exist.
+- [x] **GREEN**: Implemented `src/features/scoring/PointEntryPage.tsx` with local `useState` initialized from a valid optional `?step` search value; invalid or absent values initialize step one, `Siguiente` advances only forward, and immutable `SCORING.pointEntry` fixtures provide content. Replaced only the point-entry placeholder route and added route-tree/real-router query coverage.
+- [x] **Automated evidence**: Focused tests (2 files, 10 tests), full frontend tests (32 files, 110 tests), lint, TypeScript, boundary test, and Vite production build to `/tmp/voleytrack-scorer-point-entry-artboard-29-build` pass.
+- [ ] **Visual evidence**: Compare with artboard 29 at canonical dimensions.
 
 ### Task 4.4: Post-match summary
 - [ ] **RED**: Write failing test for `/admin/matches/:id/summary` (artboard 30): assert page renders post-match summary with final score, teams, and match details from fixtures; assert state resets on reload
