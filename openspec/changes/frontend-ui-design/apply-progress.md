@@ -497,3 +497,24 @@ Visual comparison with artboard 31 remains pending.
 | Full frontend tests, lint, TypeScript, boundary test, and Vite production build | PASS — recorded for artboard 32 implementation |
 
 Visual comparison with artboard 32 remains pending.
+
+## Task 5.2: Admin tournament standings (artboard 33, issue #44)
+
+- Replaced only `/admin/tournaments/$id/standings` with `AdminTournamentStandingsPage`, selected by the immutable admin tournament fixture.
+- The display-only screen provides Spanish tournament context, a static local standings table, local Partidos/Tabla/Estadísticas links with Tabla active, and an explicit unknown-tournament fallback.
+- Added focused SSR coverage for context, table content, active navigation, and fallback behavior. Router coverage verifies component registration and real-route rendering at the known fixture URL.
+- No API, auth, persistence, network, WebSocket, mutation, or standings computation behavior was added. Artboard 34 remains a placeholder.
+
+### Task 5.2 artboard 33 TDD and verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/admin/AdminTournamentStandingsPage.test.tsx` (RED) | FAIL — `AdminTournamentStandingsPage` module could not be resolved before implementation |
+| `cd frontend && bun run test -- src/features/admin/AdminTournamentStandingsPage.test.tsx` (GREEN) | PASS — 1 file, 3 tests |
+| `cd frontend && bun run test -- src/features/admin/AdminTournamentStandingsPage.test.tsx src/router.test.tsx` (TRIANGULATE) | PASS — 2 files, 14 tests; covers route registration and real-router rendering |
+| `cd frontend && bun run test` | PASS — 36 files, 126 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && bun run test -- src/boundary.test.ts` | PASS — 1 file, 1 test; no network/auth/persistence violations |
+
+Visual comparison with artboard 33 remains pending.
