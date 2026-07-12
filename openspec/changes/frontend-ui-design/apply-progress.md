@@ -389,3 +389,28 @@ The gentle-pi `gentle_review` controller was investigated end to end this sessio
 | --- | --- |
 | `cd frontend && bun run test -- src/features/scoring/ScoringConsolePage.test.tsx` (RED) | FAIL — module was missing before implementation |
 | `cd frontend && bun run test -- src/features/scoring/ScoringConsolePage.test.tsx src/router.test.tsx` | PASS — 2 files, 6 tests |
+
+## Task 4.2 follow-up unit: scorer substitution modal (artboard 28, issue #34)
+
+- Extended only `ScoringConsolePage` and its existing scoring route with the URL-driven `?modal=substitution` artboard variant. The existing artboard 27 score display and repeated local point recording remain unchanged.
+- The substitution action copies the current search object and sets `modal: "substitution"`; every close path removes only that key, preserving unrelated query values.
+- The modal presents the immutable local home-team/player fixture context from `SCORING.console`, `PUBLIC_TEAMS`, and `PUBLIC_PLAYERS`. Its outgoing/incoming selections use page-local React state only and reset after a remount; no mutation, persistence, API, auth, WebSocket, or volleyball-rule behavior was added.
+- Added SSR coverage for the canonical modal query, interaction coverage for query-preserving open/close and local remount reset, route-tree coverage for the scoring route search contract, and real-router URL integration coverage for the canonical substitution URL.
+- The shared `Modal` now connects a rendered title to its dialog with `aria-labelledby`; the substitution dialog therefore exposes an accessible name.
+
+### Task 4.2 substitution modal TDD and verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/scoring/ScoringConsolePage.test.tsx src/router.test.tsx` (RED) | FAIL — the new accessible-dialog-name assertion found no `aria-labelledby` on the substitution dialog |
+| `cd frontend && bun run test -- src/features/scoring/ScoringConsolePage.test.tsx src/router.test.tsx` (GREEN/TRIANGULATE) | PASS — 2 files, 10 tests; covers the canonical query, real-router URL rendering, accessible dialog naming, preserved unrelated query values on open/close, unchanged repeated scoring, and remount reset |
+| `cd frontend && bun run test` | PASS — 31 files, 105 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && bun run test src/boundary.test.ts` | PASS — 1 file, 1 test |
+| `cd frontend && bun run build -- --outDir /tmp/voleytrack-scorer-substitution-artboard-28-build` | Not rerun — generated output is outside the authorized edit surfaces |
+
+### Task 4.2 substitution modal boundary
+
+- Changed only the scoring console source/tests, scoring route/test, and these Task 4.2 artifacts (244 changed lines, below the 400-line unit cap).
+- Artboards 25–26 and 29–30 remain outside this issue's implementation scope; artboard 27 point scoring is unchanged. Visual comparison of artboard 28 remains pending.

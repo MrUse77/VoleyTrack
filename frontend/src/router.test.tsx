@@ -1,3 +1,7 @@
+// @vitest-environment jsdom
+import { act } from "react";
+import { createRoot } from "react-dom/client";
+import { RouterProvider } from "@tanstack/react-router";
 import { describe, expect, it } from "vitest";
 import { ARTBOARD_MANIFEST } from "./artboardManifest";
 import { LiveMatchPage } from "./features/public/LiveMatchPage";
@@ -87,7 +91,7 @@ describe("router", () => {
     expect(allPaths).not.toContain("/dashboard");
   });
 
-  it("exposes the match setup route and its player selection search contract", () => {
+  it("exposes scorer routes and their modal search contracts", () => {
     const topLevelRoutes = router.routeTree.children ?? [];
     const adminShellRoute = topLevelRoutes.find((route) => route.id === "/admin");
     const adminChildren = adminShellRoute?.children as
@@ -113,6 +117,32 @@ describe("router", () => {
     );
     expect(routePaths(router.routeTree)).toContain("/admin/matches/$id/scoring");
     expect(scoringRoute?.options?.component).toBe(ScoringConsolePage);
+    expect(scoringRoute?.options?.validateSearch?.({ modal: "substitution", view: "scoreboard" })).toEqual({
+      modal: "substitution",
+      view: "scoreboard",
+    });
+  });
+
+  it("renders the substitution dialog when the real router navigates to its canonical URL", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({
+        to: "/admin/matches/$id/scoring",
+        params: { id: "match-1" },
+        search: { modal: "substitution" },
+      });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/matches/match-1/scoring");
+    expect(window.location.search).toBe("?modal=substitution");
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Sustitución - Equipo Local");
+
+    await act(async () => root.unmount());
+    container.remove();
   });
 
   it("exposes every canonical manifest route path", () => {

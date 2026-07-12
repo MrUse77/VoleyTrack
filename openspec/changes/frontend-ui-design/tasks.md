@@ -152,11 +152,15 @@ Implement match setup/player modal, scoring console/substitution, point-entry st
 - [x] **Bounded artboard 25 unit**: Implemented the local player-selection modal and wired `?modal=player-selection` to the setup route.
 - [ ] **Evidence**: Match setup tests pass; flow advances forward; modal opens; visual comparison with artboards 25-26
 
-### Task 4.2: Scoring console (artboard 27)
-- [x] **RED**: Added failing SSR and interaction tests for `/admin/matches/:id/scoring`: fixture teams, current set, score display, point recording, repeated points without volleyball-rule enforcement, and route registration.
-- [x] **GREEN**: Implemented `src/features/scoring/ScoringConsolePage.tsx` with immutable `SCORING.console` data and local `useState` score updates. No sets, rotations, limits, APIs, persistence, auth, or real-time behavior were added.
-- [x] **Bounded scope**: Artboard 28 substitution modal is explicitly out of scope for this unit.
-- [ ] **Evidence**: Focused SSR/interaction and router tests pass; visual comparison with artboard 27 remains pending.
+### Task 4.2: Scoring console and substitution modal (artboards 27–28)
+- [x] **RED (artboard 27)**: Added failing SSR and interaction tests for `/admin/matches/:id/scoring`: fixture teams, current set, score display, point recording, repeated points without volleyball-rule enforcement, and route registration.
+- [x] **GREEN (artboard 27)**: Implemented `src/features/scoring/ScoringConsolePage.tsx` with immutable `SCORING.console` data and local `useState` score updates. No sets, rotations, limits, APIs, persistence, auth, or real-time behavior were added.
+- [x] **Original boundary (issue #33)**: Artboard 28 was deliberately excluded from the artboard 27 unit.
+- [x] **RED/GREEN (issue #34, artboard 28)**: Added then satisfied focused SSR, interaction, route-tree, and real-router URL coverage for `?modal=substitution`, including query-preserving open/close behavior and local selection reset after remount.
+- [x] **Accessibility (issue #34)**: The shared `Modal` associates its rendered title with the dialog through `aria-labelledby`, giving the substitution dialog an accessible name.
+- [x] **Bounded scope (issue #34)**: The substitution modal uses immutable local team/player fixtures and URL-driven modal state only. It changes no artboard 27 point scoring, volleyball rules, backend/API/auth/persistence/WebSocket behavior, and leaves artboards 25–26 and 29–30 untouched.
+- [x] **Automated evidence (issue #34)**: Focused tests (2 files, 10 tests), full frontend tests (31 files, 105 tests), lint, TypeScript, and boundary test pass. Production build was not rerun because generated output is outside the authorized edit surfaces.
+- [ ] **Visual evidence**: Compare artboards 27–28 at canonical dimensions.
 
 ### Task 4.3: Point entry flow
 - [ ] **RED**: Write failing tests for `/admin/matches/:id/point-entry` (artboard 29): assert page renders multi-step point-entry flow; assert `?step=<canonical-step>` opens specific step for review; assert clicking "Next" advances forward; assert state resets on reload (returns to first step)

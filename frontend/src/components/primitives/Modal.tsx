@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from "react";
+import { useId, type MouseEvent, type ReactNode } from "react";
 
 type ModalProps = {
   children: ReactNode;
@@ -8,6 +8,8 @@ type ModalProps = {
 };
 
 export function Modal({ children, isOpen, onClose, title }: ModalProps) {
+  const titleId = useId();
+
   if (!isOpen) {
     return null;
   }
@@ -24,9 +26,14 @@ export function Modal({ children, isOpen, onClose, title }: ModalProps) {
       onClick={handleBackdropClick}
       role="presentation"
     >
-      <section aria-modal="true" className="w-full max-w-lg rounded-2xl border border-vt-raised-border bg-vt-raised p-6 shadow-2xl" role="dialog">
+      <section
+        aria-labelledby={title ? titleId : undefined}
+        aria-modal="true"
+        className="w-full max-w-lg rounded-2xl border border-vt-raised-border bg-vt-raised p-6 shadow-2xl"
+        role="dialog"
+      >
         <div className="mb-4 flex items-center justify-between gap-4">
-          {title ? <h2 className="text-lg font-bold text-vt-text">{title}</h2> : <span />}
+          {title ? <h2 className="text-lg font-bold text-vt-text" id={titleId}>{title}</h2> : <span />}
           <button
             aria-label="Close modal"
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-vt-border bg-vt-surface text-vt-text hover:bg-vt-panel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
