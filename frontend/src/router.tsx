@@ -33,6 +33,7 @@ import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 import { PointEntryPage } from "./features/scoring/PointEntryPage";
 import { PostMatchSummaryPage } from "./features/scoring/PostMatchSummaryPage";
 import { StaffRegisterPage } from "./features/admin/StaffRegisterPage";
+import { AdminTournamentMatchesPage } from "./features/admin/AdminTournamentMatchesPage";
 
 const rootRoute = createRootRoute({
 	component: () => <Outlet />,
@@ -257,7 +258,11 @@ const adminStaffRegisterRoute = createRoute({
 	path: "/admin/staff/register",
 	component: StaffRegisterPage,
 });
-const adminTournamentMatchesRoute = placeholderRoute(adminShellRoute, "/admin/tournaments/$id/matches", "Admin tournament matches");
+const adminTournamentMatchesRoute = createRoute({
+	getParentRoute: () => adminShellRoute,
+	path: "/admin/tournaments/$id/matches",
+	component: AdminTournamentMatchesPage,
+});
 const adminTournamentStandingsRoute = placeholderRoute(adminShellRoute, "/admin/tournaments/$id/standings", "Admin tournament standings");
 const adminTournamentStatsRoute = placeholderRoute(adminShellRoute, "/admin/tournaments/$id/stats", "Admin tournament stats");
 const adminUiStatesRoute = placeholderRoute(adminShellRoute, "/admin/ui-states", "UI states");

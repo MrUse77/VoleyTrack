@@ -10,6 +10,8 @@ import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 import { PointEntryPage } from "./features/scoring/PointEntryPage";
 import { PostMatchSummaryPage } from "./features/scoring/PostMatchSummaryPage";
 import { StaffRegisterPage } from "./features/admin/StaffRegisterPage";
+import { AdminTournamentMatchesPage } from "./features/admin/AdminTournamentMatchesPage";
+import { ADMIN } from "./fixtures";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
@@ -142,6 +144,11 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/staff/register",
     );
     expect(staffRegisterRoute?.options?.component).toBe(StaffRegisterPage);
+
+    const tournamentMatchesRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/tournaments/$id/matches",
+    );
+    expect(tournamentMatchesRoute?.options?.component).toBe(AdminTournamentMatchesPage);
   });
 
   it("renders the substitution dialog when the real router navigates to its canonical URL", async () => {
@@ -200,6 +207,49 @@ describe("router", () => {
 
     expect(window.location.pathname).toBe("/admin/staff/register");
     expect(container.textContent).toContain("Registrar planillero");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders admin tournament matches when the real router navigates to the known fixture URL", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const tournament = ADMIN.tournaments[0];
+
+    await act(async () => {
+      await router.navigate({
+        to: "/admin/tournaments/$id/matches",
+        params: { id: tournament.id },
+      });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/matches`);
+    expect(container.textContent).toContain(tournament.name);
+    expect(container.textContent).toContain("Partidos del torneo");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the unknown tournament fallback when the real router navigates to its URL", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({
+        to: "/admin/tournaments/$id/matches",
+        params: { id: "missing-tournament" },
+      });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/tournaments/missing-tournament/matches");
+    expect(container.textContent).toContain("Torneo no encontrado");
+    expect(container.querySelector('a[href="/admin/tournaments"]')).not.toBeNull();
 
     await act(async () => root.unmount());
     container.remove();
