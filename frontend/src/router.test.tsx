@@ -9,6 +9,7 @@ import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
 import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 import { PointEntryPage } from "./features/scoring/PointEntryPage";
 import { PostMatchSummaryPage } from "./features/scoring/PostMatchSummaryPage";
+import { StaffRegisterPage } from "./features/admin/StaffRegisterPage";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
@@ -136,6 +137,11 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/matches/$id/summary",
     );
     expect(summaryRoute?.options?.component).toBe(PostMatchSummaryPage);
+
+    const staffRegisterRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/staff/register",
+    );
+    expect(staffRegisterRoute?.options?.component).toBe(StaffRegisterPage);
   });
 
   it("renders the substitution dialog when the real router navigates to its canonical URL", async () => {
@@ -177,6 +183,23 @@ describe("router", () => {
     expect(window.location.pathname).toBe("/admin/matches/match-1/point-entry");
     expect(window.location.search).toBe("?step=point-step-action");
     expect(container.textContent).toContain("Registrar acción");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders staff registration when the real router navigates to its canonical URL", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/staff/register" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/staff/register");
+    expect(container.textContent).toContain("Registrar planillero");
 
     await act(async () => root.unmount());
     container.remove();
