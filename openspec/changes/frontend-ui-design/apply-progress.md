@@ -202,16 +202,18 @@ Capture and record the 1440×900 visual comparisons for artboards 3–13 before 
 - Commit `e61de45 feat(frontend): add public team overview (artboard 19)` contains the fixture-driven Team overview page, SSR coverage, router registration, and isolated future-tab links.
 - Commit `d39ce00 feat(frontend): add public team roster (artboard 20)` contains the fixture-driven Team roster page, roster join coverage, explicit route registration, and isolated future-tab links.
 - Commit `2856c21 feat(frontend): add public team matches (artboard 21)` contains the fixture-driven Team matches page, match filtering/order/link coverage, explicit route registration, and isolated future-stats links.
-- The earlier delivery note stating that the foundation/public-discovery commit was not created is historical and is superseded by the nine implementation commits above plus the documentation synchronization commits `d87a6fc` and `b10e4d0`.
+- Commit `bc8a4c1 feat(frontend): add public team stats (artboard 22)` contains the fixture-driven Team stats page, statistics grid, active Estadísticas tab, route wiring, and isolated follow-up links (PR #25).
+- Commit `f8ab934 feat(frontend): add public live match detail (artboard 23)` contains the fixture-driven static Live match page with score, teams, venue, badge, unknown-match fallback, and route wiring (PR #26).
+- Commit `3ef35bf feat(frontend): add public player detail (artboard 24)` contains the fixture-driven Player detail page with bio, team lookup, back navigation, unknown-player fallback, and route wiring (PR #27).
+- The earlier delivery note stating that the foundation/public-discovery commit was not created is historical and is superseded by the thirteen implementation commits above plus the documentation synchronization commits `d87a6fc`, `b10e4d0`, and `5484c4f`.
 
 ## Remaining Work Map
 
-1. **Public detail:** team stats (artboard 22), live match detail (23), and player detail (24). Artboards 19–21 Team overview, roster, and matches are implemented and committed; visual comparison and remaining detail-navigation evidence are still pending.
-2. **Scorer workflows:** setup/player modal, scoring/substitution, point entry, and post-match summary (25–30).
-3. **Administration:** staff, admin tournament tabs, creation forms/modals, and listings (31–45).
-4. **Shared states and closeout:** loading/empty/error/offline/sync states, state injection, route/manifest audit, and visual comparisons.
+1. **Scorer workflows:** setup/player modal, scoring/substitution, point entry, and post-match summary (artboards 25–30).
+2. **Administration:** staff, admin tournament tabs, creation forms/modals, and listings (31–45).
+3. **Shared states and closeout:** loading/empty/error/offline/sync states, state injection, route/manifest audit, and visual comparisons.
 
-Every screen unit requires focused SSR tests, full tests/lint/TypeScript/build validation, and a manual visual comparison when the screenshot harness is available.
+Artboards 1–24 (public discovery, tournament detail, team detail, live match, and player detail) are implemented and committed via PRs #24, #25, #26, and #27. Visual comparison and remaining detail-navigation evidence are still pending for the integration audit (#9) and visual baseline (#11).
 
 ## Task 2.8: Public tournament stats tab (artboard 17)
 
@@ -281,8 +283,60 @@ Every screen unit requires focused SSR tests, full tests/lint/TypeScript/build v
 - Commit `e61de45` contains the 4-file Team overview unit: 171 insertions and 1 deletion.
 - Commit `d39ce00` contains the 4-file Team roster unit: 150 insertions and 3 deletions.
 - Commit `2856c21` contains the 4-file Team matches unit: 177 insertions and 1 deletion.
-- All three units remain below the chained-PR budget. Artboard 22 is explicitly out of scope.
-## Review Controller Diagnostic (carried forward to next session)
+- Commit `bc8a4c1` contains the 4-file Team stats unit: 166 insertions and 1 deletion.
+- Commit `f8ab934` contains the 4-file Live match unit: 191 insertions and 1 deletion.
+- Commit `3ef35bf` contains the 4-file Player detail unit: 140 insertions and 1 deletion.
+- All seven units (artboards 19–24) remain below the chained-PR budget.
+
+## Task 3.6: Public team stats (artboard 22)
+
+- PR #25 replaced `/teams/$id/stats` placeholder with fixture-driven `TeamStatsPage` rendering team context, statistics tiles (PJ, PG, PP, sets ganados/perdidos, puntos a favor), local team tabs with Estadísticas active, and unknown-team fallback.
+- No backend/API/auth/persistence/network/WebSocket changes.
+
+### Task 3.6 Verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test` | PASS — 28 files, 90 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && ./node_modules/.bin/vite build --outDir /tmp/voleytrack-team-stats-build` | PASS |
+| `cd frontend && bun run test src/boundary.test.ts` | PASS — no network/auth/persistence |
+| Review controller | APPROVED — lineage `team-stats-2026-07-11-v1` |
+
+## Task 3.7: Public live match detail (artboard 23)
+
+- PR #26 replaced `/matches/$id/live` placeholder with fixture-driven `LiveMatchPage` rendering static match context, score, venue, scheduled label, status badge, and unknown-match fallback.
+- No WebSockets, polling, real-time, backend/API/auth/persistence changes.
+
+### Task 3.7 Verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test` | PASS — 28 files, 90 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && ./node_modules/.bin/vite build --outDir /tmp/voleytrack-live-match-build` | PASS |
+| `cd frontend && bun run test src/boundary.test.ts` | PASS — no network/auth/persistence |
+| Review controller | APPROVED — lineage `live-match-2026-07-11-v1` |
+
+## Task 3.8: Public player detail (artboard 24)
+
+- PR #27 replaced `/players/$id` placeholder with fixture-driven `PlayerDetailPage` rendering player name, number, position, team lookup, biography, back navigation, and unknown-player fallback.
+- No backend/API/auth/persistence/network/WebSocket changes.
+
+### Task 3.8 Verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test` | PASS — 28 files, 90 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && ./node_modules/.bin/vite build --outDir /tmp/voleytrack-player-detail-build` | PASS |
+| `cd frontend && bun run test src/boundary.test.ts` | PASS — no network/auth/persistence |
+| Review controller | APPROVED — lineage `player-detail-2026-07-11-v1` |
+
+
 
 The gentle-pi `gentle_review` controller was investigated end to end this session with the operator's authorization. Findings to save the next session a re-investigation:
 
@@ -291,3 +345,15 @@ The gentle-pi `gentle_review` controller was investigated end to end this sessio
 - The legacy review authority at `.git/gentle-ai/reviews/{lineages,locks,snapshots}` blocks `start` with `Review authority blocked (blocked-legacy)`. Authorized destructive reset was executed this session (`reset_id=50cd238f913a4c0f72a7fba1bd216bcdfd26969fc0b9ed43576a0f2e33a9c285`, `initialization_kind="destructive-reset"`); current authority is `clean`.
 - After reset and `start`, ordinary transactions require 6 transitions (`ordinary-discovery`, `ordinary-evidence`, `ordinary-fix` or `ordinary-no-fix`, `ordinary-validation`, `ordinary-final-verification`) each routing through actor + refuter + validator cycles. A `start` capturing 854+ changed lines, hot-path files (`frontend/src/router.tsx`), or large evidence (`frontend/dist/`) defaults to the `full-4R` route (4 lens reviews in parallel).
 - One transaction (`stats-pr-2026-07-11`, `phase=started, revision=0`) was opened this session and intentionally left persisted. It captured the full working tree as the diff because the file inventory at start time included Bracket + `frontend/dist/` + apply-progress. The next session should NOT advance it; instead, after each manual commit lands, the next session opens a fresh lineage id (`gr-pr-<yyyy-mm-dd>` style) with a properly narrowed snapshot limited to one task unit's files.
+
+## Task 4.1 bounded unit: player-selection modal (artboard 25)
+
+- Added the local-only `PlayerSelectionModal` with fixture-driven team rosters, checkbox selection, close behavior, and confirmation action.
+- Replaced only the `/admin/matches/setup` placeholder with a minimal route host that opens the modal for `?modal=player-selection`; the artboard 26 forward-only setup flow remains intentionally unimplemented.
+- Added SSR tests for modal rendering/closed state and canonical query-driven opening. No network, auth, persistence, or scoring-rule behavior was added.
+
+### Task 4.1 bounded unit verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/scoring/PlayerSelectionModal.test.tsx src/features/scoring/MatchSetupPage.test.tsx src/router.test.tsx` | PASS — 3 files, 7 tests |

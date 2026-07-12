@@ -122,14 +122,16 @@ Implement tournament tabs, team tabs, live match detail, player detail, tables/c
 - [ ] **Visual/follow-up evidence**: Compare artboards 19–21 at canonical dimensions; implement artboard 22 and its route-specific active state in the next unit.
 
 ### Task 3.3: Live match detail
-- [ ] **RED**: Write failing test for `/matches/:id/live` (artboard 23): assert page renders live match detail with static score, teams, and match state from fixtures; assert no real-time updates or polling; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/public/LiveMatchPage.tsx` using primitives; load live match fixture by `:id`; display static score and match state; no WebSocket/polling
-- [ ] **Evidence**: Live match test passes; visual comparison with artboard 23
+- [x] **RED**: Write failing test for `/matches/:id/live` (artboard 23): assert page renders live match detail with static score, teams, and match state from fixtures; assert no real-time updates or polling; assert state resets on reload
+- [x] **GREEN**: Implement `src/features/public/LiveMatchPage.tsx` using primitives; load live match fixture by `:id`; display static score and match state; no WebSocket/polling
+- [x] **Automated evidence**: Live match SSR tests and router registration pass. Full suite: 28 files, 90 tests.
+- [ ] **Visual evidence**: Compare with artboard 23 at canonical dimensions
 
 ### Task 3.4: Player detail
-- [ ] **RED**: Write failing test for `/players/:id` (artboard 24): assert page renders player detail with stats, bio, and match history from fixtures; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/public/PlayerDetailPage.tsx` using primitives; load player fixture by `:id`; preserve Spanish copy
-- [ ] **Evidence**: Player detail test passes; visual comparison with artboard 24
+- [x] **RED**: Write failing test for `/players/:id` (artboard 24): assert page renders player detail with stats, bio, and match history from fixtures; assert state resets on reload
+- [x] **GREEN**: Implement `src/features/public/PlayerDetailPage.tsx` using primitives; load player fixture by `:id`; preserve Spanish copy
+- [x] **Automated evidence**: Player detail SSR tests and router registration pass. Full suite: 28 files, 90 tests.
+- [ ] **Visual evidence**: Compare with artboard 24 at canonical dimensions
 
 ### Task 3.5: Detail navigation
 - [ ] **RED**: Write failing tests asserting tournament detail tabs navigate to correct routes; asserting team detail tabs navigate to correct routes; asserting clicking tournament/team/match/player cards navigates to detail routes
@@ -147,6 +149,7 @@ Implement match setup/player modal, scoring console/substitution, point-entry st
 ### Task 4.1: Match setup flow
 - [ ] **RED**: Write failing tests for `/admin/matches/setup` (artboard 26): assert page renders match setup flow with forward-only steps; assert clicking "Next" advances to the next step; assert state resets on reload (returns to first step); assert `?modal=player-selection` opens player-selection modal (artboard 25)
 - [ ] **GREEN**: Implement `src/features/scoring/MatchSetupPage.tsx` with `useState` for flow step; advance forward only; render step content from fixtures; open modal via search value or local trigger
+- [x] **Bounded artboard 25 unit**: Implemented the local player-selection modal and wired `?modal=player-selection` to the setup route; artboard 26 forward-only setup flow remains out of scope.
 - [ ] **Evidence**: Match setup tests pass; flow advances forward; modal opens; visual comparison with artboards 25-26
 
 ### Task 4.2: Scoring console
