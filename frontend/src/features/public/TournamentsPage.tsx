@@ -4,6 +4,7 @@ import { Badge } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
 import { PageHeader } from "../../components/primitives/PageHeader";
 import { TabBar } from "../../components/primitives/TabBar";
+import { StateBoundary } from "../../components/states/StateBoundary";
 import { PUBLIC_TOURNAMENTS, type TournamentFixture } from "../../fixtures";
 
 type TournamentFilter = "todos" | "en-curso" | "proximos" | "finalizados";
@@ -51,7 +52,8 @@ export function TournamentsPage() {
   const tournaments = visibleTournaments(status);
 
   return (
-    <div className="space-y-8">
+    <StateBoundary>
+      <div className="space-y-8">
       <PageHeader
         title="Torneos"
         description="Explorá torneos activos, posiciones, próximos partidos y resultados recientes."
@@ -105,6 +107,7 @@ export function TournamentsPage() {
           ))}
         </div>
       </section>
-    </div>
+      </div>
+    </StateBoundary>
   );
 }

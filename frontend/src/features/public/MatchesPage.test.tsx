@@ -34,6 +34,14 @@ describe("public matches", () => {
     expect(html).toContain('aria-selected="true"');
   });
 
+  it("renders the explicit empty state override without match content", () => {
+    search = { state: "empty" };
+    const html = renderToStaticMarkup(<MatchesPage />);
+
+    expect(html).toContain("No hay resultados");
+    expect(html).not.toContain("Lista de partidos");
+  });
+
   it("links fixture-driven match cards to their canonical live detail routes", () => {
     const html = renderMatches();
 

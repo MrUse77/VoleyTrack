@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Badge } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
 import { PageHeader } from "../../components/primitives/PageHeader";
+import { StateBoundary } from "../../components/states/StateBoundary";
 import { PUBLIC_MATCHES, PUBLIC_TEAMS, PUBLIC_TOURNAMENTS } from "../../fixtures";
 
 const matchBadgeVariant = {
@@ -28,7 +29,8 @@ export function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <StateBoundary>
+      <div className="space-y-8">
       <PageHeader
         title="Dashboard público"
         description="Seguí partidos en vivo, próximos encuentros, torneos activos y estadísticas generales."
@@ -110,6 +112,7 @@ export function DashboardPage() {
           ))}
         </div>
       </section>
-    </div>
+      </div>
+    </StateBoundary>
   );
 }

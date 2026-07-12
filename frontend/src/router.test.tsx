@@ -13,6 +13,7 @@ import { StaffRegisterPage } from "./features/admin/StaffRegisterPage";
 import { AdminTournamentMatchesPage } from "./features/admin/AdminTournamentMatchesPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
 import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
+import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
 import { ADMIN } from "./fixtures";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
@@ -147,6 +148,11 @@ describe("router", () => {
     );
     expect(staffRegisterRoute?.options?.component).toBe(StaffRegisterPage);
 
+    const uiStatesRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/ui-states",
+    );
+    expect(uiStatesRoute?.options?.component).toBe(UIStatesBoardPage);
+
     const tournamentMatchesRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/tournaments/$id/matches",
     );
@@ -161,6 +167,25 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/tournaments/$id/stats",
     );
     expect(tournamentStatsRoute?.options?.component).toBe(AdminTournamentStatsPage);
+  });
+
+  it("renders the loading state when the real router receives a representative state override", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/tournaments", search: { state: "loading" } });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/tournaments");
+    expect(window.location.search).toBe("?state=loading");
+    expect(container.textContent).toContain("Cargando contenido");
+    expect(container.textContent).not.toContain("Lista de torneos");
+
+    await act(async () => root.unmount());
+    container.remove();
   });
 
   it("renders the substitution dialog when the real router navigates to its canonical URL", async () => {
@@ -219,6 +244,25 @@ describe("router", () => {
 
     expect(window.location.pathname).toBe("/admin/staff/register");
     expect(container.textContent).toContain("Registrar planillero");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the five-state board through the real admin router shell", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/ui-states" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/ui-states");
+    expect(container.querySelector('a[href="/admin"]')).not.toBeNull();
+    expect(container.textContent).toContain("Estados de interfaz");
+    expect(container.querySelectorAll('[data-testid="ui-state"]')).toHaveLength(5);
 
     await act(async () => root.unmount());
     container.remove();

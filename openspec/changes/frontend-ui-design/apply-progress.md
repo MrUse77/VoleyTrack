@@ -541,3 +541,22 @@ Visual comparison with artboard 33 remains pending.
 REFACTOR: No refactor was needed after the focused tests passed; rankings and filter state remain page-local.
 
 Visual comparison with artboard 34 remains pending.
+
+## Task 6: Shared states (issue #48)
+
+- Added five presentational, mock-only state primitives (`LoadingState`, `EmptyState`, `ErrorState`, `OfflineState`, and `SyncState`) plus `StateBoundary` under `src/components/states/`.
+- `StateBoundary` replaces its children only for explicit `?state=loading|empty|error|offline|sync` values. It does not issue requests, infer connectivity, use timers, or persist state.
+- Added `/admin/ui-states`, which renders the five panels together, and replaced the admin placeholder route.
+- Wrapped the root dashboard, `/matches`, and `/tournaments` content in the boundary. Focused coverage verifies `error`, `empty`, and `loading` overrides respectively; router coverage verifies the real `/tournaments?state=loading` URL.
+- No visual comparison at 1440×900 was performed; artboard 35 fidelity remains pending.
+
+### Task 6 verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/components/states/StateBoundary.test.tsx src/features/admin/UIStatesBoardPage.test.tsx src/features/public/DashboardPage.test.tsx src/features/public/MatchesPage.test.tsx src/features/public/TournamentsPage.test.tsx src/router.test.tsx src/boundary.test.ts` | PASS — 7 files, 45 tests |
+
+### Task 6 boundary
+
+- The unit is restricted to state primitives, the UI states board, three representative public pages and their tests, router registration, and these SDD artifacts.
+- No commits, staging, push, PR, network, persistence, timer, or real integration behavior was added.
