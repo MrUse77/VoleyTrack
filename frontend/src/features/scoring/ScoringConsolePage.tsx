@@ -1,14 +1,37 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "@tanstack/react-router";
+import { Modal } from "../../components/primitives/Modal";
 import { Badge } from "../../components/ui/Badge";
 import { SectionShell } from "../../components/ui/SectionShell";
-import { SCORING } from "../../fixtures";
+import { PUBLIC_PLAYERS, PUBLIC_TEAMS, SCORING } from "../../fixtures";
 
 export function ScoringConsolePage() {
   const fixture = SCORING.console;
+  const location = useLocation() as { search: Record<string, unknown> };
+  const navigate = useNavigate({ from: "/admin/matches/$id/scoring" });
   const [score, setScore] = useState(fixture.score);
+  const [leavingPlayerId, setLeavingPlayerId] = useState("");
+  const [enteringPlayerId, setEnteringPlayerId] = useState("");
+  const isSubstitutionOpen = location.search.modal === "substitution";
+  const substitutionTeam = PUBLIC_TEAMS.find((team) => team.id === fixture.homeTeamId);
+  const substitutionPlayers = PUBLIC_PLAYERS.filter((player) => player.teamId === fixture.homeTeamId);
 
   const recordPoint = (team: "home" | "away") => {
     setScore((current) => ({ ...current, [team]: current[team] + 1 }));
+  };
+
+  const setSubstitutionOpen = (open: boolean) => {
+    navigate({
+      search: (previous) => {
+        const next = { ...previous };
+        if (open) {
+          next.modal = "substitution";
+        } else {
+          delete next.modal;
+        }
+        return next;
+      },
+    });
   };
 
   return (
@@ -67,6 +90,7 @@ export function ScoringConsolePage() {
             <button
               className="rounded-lg border border-vt-border bg-vt-raised px-4 py-2 text-sm font-semibold text-vt-text hover:border-vt-accent"
               key={label}
+              onClick={label === "Sustitución" ? () => setSubstitutionOpen(true) : undefined}
               type="button"
             >
               {label}
@@ -74,6 +98,70 @@ export function ScoringConsolePage() {
           ))}
         </div>
       </div>
+      <Modal
+        isOpen={isSubstitutionOpen}
+        onClose={() => setSubstitutionOpen(false)}
+        title="Sustitución - Equipo Local"
+      >
+        <p className="mb-5 text-sm text-vt-muted">
+          Seleccioná quién entra a la cancha y quién va a la banca.
+        </p>
+        <p className="mb-5 text-sm font-semibold text-vt-text">
+          {substitutionTeam?.name ?? fixture.homeTeamName}
+        </p>
+        <div className="grid gap-4">
+          <label className="grid gap-2 text-sm font-semibold text-vt-text" htmlFor="substitution-leaving-player">
+            Jugador que SALE (en cancha)
+            <select
+              aria-label="Jugador que SALE (en cancha)"
+              className="rounded-lg border border-vt-border bg-vt-surface px-3 py-2 text-sm font-normal text-vt-text"
+              id="substitution-leaving-player"
+              onChange={(event) => setLeavingPlayerId(event.target.value)}
+              value={leavingPlayerId}
+            >
+              <option value="">Seleccioná un jugador</option>
+              {substitutionPlayers.map((player) => (
+                <option key={player.id} value={player.id}>
+                  #{player.number} {player.fullName}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm font-semibold text-vt-text" htmlFor="substitution-entering-player">
+            Jugador que ENTRA (banca)
+            <select
+              aria-label="Jugador que ENTRA (banca)"
+              className="rounded-lg border border-vt-border bg-vt-surface px-3 py-2 text-sm font-normal text-vt-text"
+              id="substitution-entering-player"
+              onChange={(event) => setEnteringPlayerId(event.target.value)}
+              value={enteringPlayerId}
+            >
+              <option value="">Seleccioná un jugador</option>
+              {substitutionPlayers.map((player) => (
+                <option key={player.id} value={player.id}>
+                  #{player.number} {player.fullName}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            className="rounded-lg border border-vt-border bg-vt-surface px-4 py-2 text-sm font-semibold text-vt-text hover:border-vt-accent"
+            onClick={() => setSubstitutionOpen(false)}
+            type="button"
+          >
+            Cancelar
+          </button>
+          <button
+            className="rounded-lg bg-vt-accent px-4 py-2 text-sm font-semibold text-slate-950 hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
+            onClick={() => setSubstitutionOpen(false)}
+            type="button"
+          >
+            Confirmar Sustitución
+          </button>
+        </div>
+      </Modal>
     </SectionShell>
   );
 }

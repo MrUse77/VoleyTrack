@@ -235,6 +235,7 @@ const adminMatchSetupRoute = createRoute({
 const adminScoringRoute = createRoute({
 	getParentRoute: () => adminShellRoute,
 	path: "/admin/matches/$id/scoring",
+	validateSearch: (search: Record<string, unknown>) => search,
 	component: ScoringConsolePage,
 });
 const adminPointEntryRoute = placeholderRoute(adminShellRoute, "/admin/matches/$id/point-entry", "Point entry");
