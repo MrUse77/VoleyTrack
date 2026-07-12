@@ -8,6 +8,7 @@ import { LiveMatchPage } from "./features/public/LiveMatchPage";
 import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
 import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 import { PointEntryPage } from "./features/scoring/PointEntryPage";
+import { PostMatchSummaryPage } from "./features/scoring/PostMatchSummaryPage";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
@@ -130,6 +131,11 @@ describe("router", () => {
     expect(pointEntryRoute?.options?.validateSearch?.({ step: "point-step-action" })).toEqual({
       step: "point-step-action",
     });
+
+    const summaryRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/matches/$id/summary",
+    );
+    expect(summaryRoute?.options?.component).toBe(PostMatchSummaryPage);
   });
 
   it("renders the substitution dialog when the real router navigates to its canonical URL", async () => {
@@ -171,6 +177,27 @@ describe("router", () => {
     expect(window.location.pathname).toBe("/admin/matches/match-1/point-entry");
     expect(window.location.search).toBe("?step=point-step-action");
     expect(container.textContent).toContain("Registrar acción");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the post-match summary when the real router navigates to the known fixture URL", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({
+        to: "/admin/matches/$id/summary",
+        params: { id: "match-liga-rosarina-04" },
+      });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/matches/match-liga-rosarina-04/summary");
+    expect(container.textContent).toContain("Resumen del partido");
+    expect(container.textContent).toContain("Finalizado");
 
     await act(async () => root.unmount());
     container.remove();

@@ -169,9 +169,9 @@ Implement match setup/player modal, scoring console/substitution, point-entry st
 - [ ] **Visual evidence**: Compare with artboard 29 at canonical dimensions.
 
 ### Task 4.4: Post-match summary
-- [ ] **RED**: Write failing test for `/admin/matches/:id/summary` (artboard 30): assert page renders post-match summary with final score, teams, and match details from fixtures; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/scoring/PostMatchSummaryPage.tsx` using primitives; load match summary fixture by `:id`; preserve Spanish copy
-- [ ] **Evidence**: Post-match summary test passes; visual comparison with artboard 30
+- [x] **RED**: Added a failing SSR test for `/admin/matches/:id/summary` (artboard 30). Observed failure: `PostMatchSummaryPage` module could not be resolved.
+- [x] **GREEN**: Implemented `src/features/scoring/PostMatchSummaryPage.tsx` with immutable canonical summary fixtures, primitives, known-match selection by `:id`, and a clear unknown-match fallback; replaced only the summary placeholder route.
+- [ ] **Evidence**: Focused SSR and real-router coverage pass; visual comparison with artboard 30 remains pending.
 
 **Slice 4 PR**: ~400 lines; delivers match setup, scoring console, point entry, and post-match summary
 

@@ -31,6 +31,7 @@ import { PlanilleroPage } from "./pages/PlanilleroPage";
 import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
 import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 import { PointEntryPage } from "./features/scoring/PointEntryPage";
+import { PostMatchSummaryPage } from "./features/scoring/PostMatchSummaryPage";
 
 const rootRoute = createRootRoute({
 	component: () => <Outlet />,
@@ -245,7 +246,11 @@ const adminPointEntryRoute = createRoute({
 	validateSearch: (search: Record<string, unknown>) => search,
 	component: PointEntryPage,
 });
-const adminSummaryRoute = placeholderRoute(adminShellRoute, "/admin/matches/$id/summary", "Post-match summary");
+const adminSummaryRoute = createRoute({
+	getParentRoute: () => adminShellRoute,
+	path: "/admin/matches/$id/summary",
+	component: PostMatchSummaryPage,
+});
 const adminStaffRegisterRoute = placeholderRoute(adminShellRoute, "/admin/staff/register", "Staff registration");
 const adminTournamentMatchesRoute = placeholderRoute(adminShellRoute, "/admin/tournaments/$id/matches", "Admin tournament matches");
 const adminTournamentStandingsRoute = placeholderRoute(adminShellRoute, "/admin/tournaments/$id/standings", "Admin tournament standings");

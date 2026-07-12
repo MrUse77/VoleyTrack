@@ -438,3 +438,26 @@ The gentle-pi `gentle_review` controller was investigated end to end this sessio
 
 - Changed only `PointEntryPage`, its focused test, point-entry route/router test coverage, and these Task 4.3 artifacts. Generated build output is under `/tmp`; no commits, staging, push, or PR operations were performed.
 - Visual comparison with artboard 29 remains pending.
+
+## Task 4.4 bounded unit: post-match summary (artboard 30, issue #38)
+
+- Replaced only `/admin/matches/$id/summary` with `PostMatchSummaryPage`, selected by the canonical immutable `SCORING.summary.matchId` fixture.
+- The display-only page renders the final score, both team names, Finalizado status, and each fixture set row. An unrecognized route ID renders a clear `Partido no encontrado` fallback.
+- Focused SSR coverage verifies canonical fixture content and the unknown-match fallback; router coverage verifies component registration and real navigation to the known fixture URL. No mutations, APIs, auth, persistence, WebSockets, or rule enforcement were added.
+
+### Task 4.4 TDD and focused verification
+
+| Command | Result |
+| --- | --- |
+| `cd frontend && bun run test -- src/features/scoring/PostMatchSummaryPage.test.tsx` (RED) | FAIL — `PostMatchSummaryPage` module could not be resolved |
+| `cd frontend && bun run test -- src/features/scoring/PostMatchSummaryPage.test.tsx src/router.test.tsx` (GREEN/TRIANGULATE) | PASS — 2 files, 9 tests |
+| `cd frontend && bun run test` | PASS — 33 files, 113 tests |
+| `cd frontend && bun run lint` | PASS |
+| `cd frontend && ./node_modules/.bin/tsc -b --noEmit --pretty false` | PASS |
+| `cd frontend && bun run test src/boundary.test.ts` | PASS — 1 file, 1 test |
+| `cd frontend && bun run build -- --outDir /tmp/voleytrack-scorer-post-match-summary-artboard-30-build` | PASS |
+
+### Task 4.4 remaining evidence
+
+- REFACTOR: no refactor was necessary after focused tests passed; the page remains a small presentational fixture lookup.
+- Visual comparison with artboard 30 remains pending.
