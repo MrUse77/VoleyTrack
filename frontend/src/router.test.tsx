@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ARTBOARD_MANIFEST } from "./artboardManifest";
 import { LiveMatchPage } from "./features/public/LiveMatchPage";
+import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
@@ -83,6 +84,28 @@ describe("router", () => {
     expect(playerDetailRoute?.options?.component).toBe(PlayerDetailPage);
     expect(publicPaths).not.toContain("dashboard");
     expect(allPaths).not.toContain("/dashboard");
+  });
+
+  it("exposes the match setup route and its player selection search contract", () => {
+    const topLevelRoutes = router.routeTree.children ?? [];
+    const adminShellRoute = topLevelRoutes.find((route) => route.id === "/admin");
+    const adminChildren = adminShellRoute?.children as
+      | Array<{
+          fullPath: string;
+          options?: {
+            component?: unknown;
+            validateSearch?: (search: Record<string, unknown>) => Record<string, unknown>;
+          };
+        }>
+      | undefined;
+    const matchSetupRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/matches/setup",
+    );
+
+    expect(matchSetupRoute?.options?.component).toBe(MatchSetupPage);
+    expect(matchSetupRoute?.options?.validateSearch?.({ modal: "player-selection" })).toEqual({
+      modal: "player-selection",
+    });
   });
 
   it("exposes every canonical manifest route path", () => {
