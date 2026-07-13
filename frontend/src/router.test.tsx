@@ -15,6 +15,7 @@ import { CreateTeamPage } from "./features/admin/CreateTeamPage";
 import { CreateTournamentPage } from "./features/admin/CreateTournamentPage";
 import { CreateMatchPage } from "./features/admin/CreateMatchPage";
 import { AdminTournamentMatchesPage } from "./features/admin/AdminTournamentMatchesPage";
+import { AdminTournamentsPage } from "./features/admin/AdminTournamentsPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
 import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
 import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
@@ -180,6 +181,11 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/ui-states",
     );
     expect(uiStatesRoute?.options?.component).toBe(UIStatesBoardPage);
+
+    const tournamentsRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/tournaments",
+    );
+    expect(tournamentsRoute?.options?.component).toBe(AdminTournamentsPage);
 
     const tournamentMatchesRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/tournaments/$id/matches",
@@ -402,6 +408,24 @@ describe("router", () => {
     expect(container.querySelector('a[href="/admin"]')).not.toBeNull();
     expect(container.textContent).toContain("Estados de interfaz");
     expect(container.querySelectorAll('[data-testid="ui-state"]')).toHaveLength(5);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders admin tournaments through the real admin router shell", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/tournaments" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/tournaments");
+    expect(container.textContent).toContain("Administrá y consultá los torneos registrados.");
+    expect(container.textContent).toContain(ADMIN.tournaments[0].name);
 
     await act(async () => root.unmount());
     container.remove();
