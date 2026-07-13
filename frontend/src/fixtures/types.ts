@@ -28,6 +28,47 @@ export type TournamentFixture = Readonly<{
   dateLabel: string;
   location: string;
   category: string;
+  standings: readonly TournamentStandingFixture[];
+  statLeaders: readonly TournamentStatLeaderFixture[];
+  bracketRounds: readonly TournamentBracketRoundFixture[];
+}>;
+
+export type TournamentStandingFixture = Readonly<{
+  position: number;
+  teamName: string;
+  teamId?: string;
+  played: number;
+  won: number;
+  lost: number;
+  sets: string;
+  points: number;
+}>;
+
+export type TournamentStatLeaderFixture = Readonly<{
+  category: string;
+  playerName: string;
+  playerId?: string;
+  teamName: string;
+  teamId?: string;
+  value: number;
+  unit: string;
+}>;
+
+export type TournamentBracketMatchFixture = Readonly<{
+  displayId: string;
+  matchId?: string;
+  homeTeamName: string;
+  homeTeamId?: string;
+  awayTeamName: string;
+  awayTeamId?: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  status: "played" | "live" | "upcoming";
+}>;
+
+export type TournamentBracketRoundFixture = Readonly<{
+  round: string;
+  matches: readonly TournamentBracketMatchFixture[];
 }>;
 
 export type TeamFixture = Readonly<{

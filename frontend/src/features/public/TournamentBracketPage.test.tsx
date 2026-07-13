@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PUBLIC_TOURNAMENTS } from "../../fixtures";
+import { PUBLIC_MATCHES, PUBLIC_TOURNAMENTS } from "../../fixtures";
 import { TournamentBracketPage } from "./TournamentBracketPage";
 
 let tournamentId = PUBLIC_TOURNAMENTS.inProgress[0].id;
@@ -32,6 +32,35 @@ describe("public tournament bracket", () => {
     expect(html).toContain("Cuadro");
     for (const round of ["Cuartos de final", "Semifinal", "Final"]) {
       expect(html).toContain(round);
+    }
+    for (const round of tournament.bracketRounds) {
+      for (const match of round.matches) {
+        expect(html).toContain(match.homeTeamName);
+        expect(html).toContain(match.awayTeamName);
+      }
+    }
+  });
+
+  it("links only bracket entries with canonical match identities", () => {
+    const tournament = PUBLIC_TOURNAMENTS.inProgress[0];
+    const html = renderTournamentBracket(tournament.id);
+
+    for (const round of tournament.bracketRounds) {
+      for (const match of round.matches) {
+        if ("matchId" in match && match.matchId) {
+          expect(html).toContain(`href="/matches/${match.matchId}/live"`);
+          expect(html).toContain(`href="/teams/${match.homeTeamId}"`);
+          expect(html).toContain(`href="/teams/${match.awayTeamId}"`);
+        }
+      }
+    }
+    for (const matches of Object.values(PUBLIC_MATCHES)) {
+      for (const match of matches) {
+        const linked = tournament.bracketRounds.some((round) => round.matches.some(
+          (bracketMatch) => "matchId" in bracketMatch && bracketMatch.matchId === match.id,
+        ));
+        expect(html.includes(`href="/matches/${match.id}/live"`)).toBe(linked);
+      }
     }
   });
 
