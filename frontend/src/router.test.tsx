@@ -2,7 +2,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ARTBOARD_MANIFEST } from "./artboardManifest";
 import { LiveMatchPage } from "./features/public/LiveMatchPage";
 import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
@@ -22,7 +22,7 @@ import { AdminTournamentsPage } from "./features/admin/AdminTournamentsPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
 import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
 import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
-import { ADMIN } from "./fixtures";
+import { ADMIN, PUBLIC_MATCHES, PUBLIC_TOURNAMENTS } from "./fixtures";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
@@ -606,6 +606,159 @@ describe("router", () => {
     expect(window.location.pathname).toBe("/admin/matches/match-liga-rosarina-04/summary");
     expect(container.textContent).toContain("Resumen del partido");
     expect(container.textContent).toContain("Finalizado");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it.each([
+    { route: "/", content: "Dashboard público", activeHref: "/", activeLabel: "Dashboard" },
+    { route: "/matches", content: "Todos", activeHref: "/matches", activeLabel: "Matches" },
+    { route: "/matches?status=live", content: "En vivo", activeHref: "/matches", activeLabel: "Matches" },
+    { route: "/matches?status=today", content: "Hoy", activeHref: "/matches", activeLabel: "Matches" },
+    { route: "/matches?status=upcoming", content: "Próximos", activeHref: "/matches", activeLabel: "Matches" },
+    { route: "/matches?status=finished", content: "Finalizados", activeHref: "/matches", activeLabel: "Matches" },
+    { route: "/tournaments", content: "Todos", activeHref: "/tournaments", activeLabel: "Tournaments" },
+    { route: "/tournaments?status=todos", content: "Todos", activeHref: "/tournaments", activeLabel: "Tournaments" },
+    { route: "/tournaments?status=en-curso", content: "En curso", activeHref: "/tournaments", activeLabel: "Tournaments" },
+    { route: "/tournaments?status=proximos", content: "Próximos", activeHref: "/tournaments", activeLabel: "Tournaments" },
+    { route: "/tournaments?status=finalizados", content: "Finalizados", activeHref: "/tournaments", activeLabel: "Tournaments" },
+  ])("renders public artboard route $route with its active sidebar navigation", async ({ route, content, activeHref, activeLabel }) => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const [pathname, searchString] = route.split("?");
+    const search = Object.fromEntries(new URLSearchParams(searchString));
+
+    await act(async () => {
+      await router.navigate({ to: pathname as string, search });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(`${window.location.pathname}${window.location.search}`).toBe(route);
+    expect(container.textContent).toContain(content);
+    expect(container.querySelector(`a[aria-current="page"][href="${activeHref}"]`)?.textContent).toContain(activeLabel);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the public audit routes from local fixtures without runtime requests", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    for (const route of ARTBOARD_MANIFEST.filter((entry) => entry.index >= 3 && entry.index <= 13)) {
+      const [pathname, searchString] = route.route.split("?");
+      await act(async () => {
+        await router.navigate({
+          to: pathname as string,
+          search: Object.fromEntries(new URLSearchParams(searchString)),
+        });
+        root.render(<RouterProvider router={router} />);
+      });
+    }
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    await act(async () => root.unmount());
+    container.remove();
+    vi.unstubAllGlobals();
+  });
+
+  it("updates and resets public match filters when the real router changes search", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/matches", search: { status: "live" } });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(container.textContent).toContain(PUBLIC_MATCHES.live[0].scheduledLabel);
+
+    await act(async () => {
+      await router.navigate({ to: "/matches", search: { status: "finished" } });
+    });
+
+    expect(container.textContent).toContain(PUBLIC_MATCHES.finished[0].scheduledLabel);
+    expect(container.textContent).not.toContain(PUBLIC_MATCHES.live[0].scheduledLabel);
+
+    await act(async () => {
+      await router.navigate({ to: "/matches" });
+    });
+
+    expect(container.textContent).toContain(PUBLIC_MATCHES.live[0].scheduledLabel);
+    expect(container.textContent).toContain(PUBLIC_MATCHES.finished[0].scheduledLabel);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("updates and resets public tournament filters when the real router changes search", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/tournaments", search: { status: "en-curso" } });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(container.textContent).toContain(PUBLIC_TOURNAMENTS.inProgress[0].name);
+
+    await act(async () => {
+      await router.navigate({ to: "/tournaments", search: { status: "finalizados" } });
+    });
+
+    expect(container.textContent).toContain(PUBLIC_TOURNAMENTS.finished[0].name);
+    expect(container.textContent).not.toContain(PUBLIC_TOURNAMENTS.inProgress[0].name);
+
+    await act(async () => {
+      await router.navigate({ to: "/tournaments" });
+    });
+
+    expect(container.textContent).toContain(PUBLIC_TOURNAMENTS.inProgress[0].name);
+    expect(container.textContent).toContain(PUBLIC_TOURNAMENTS.finished[0].name);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("traverses public fixture links through their canonical routes", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    await act(async () => {
+      container.querySelector('a[href="/matches?status=live"]')?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(`${window.location.pathname}${window.location.search}`).toBe("/matches?status=live");
+    expect(container.textContent).toContain(PUBLIC_MATCHES.live[0].scheduledLabel);
+
+    await act(async () => {
+      await router.navigate({ to: "/" });
+    });
+
+    await act(async () => {
+      container.querySelector(`a[href="/tournaments/${PUBLIC_TOURNAMENTS.all[0].id}"]`)?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(window.location.pathname).toBe(`/tournaments/${PUBLIC_TOURNAMENTS.all[0].id}`);
+    expect(container.textContent).toContain(PUBLIC_TOURNAMENTS.all[0].name);
 
     await act(async () => root.unmount());
     container.remove();

@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Badge } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
 import { PageHeader } from "../../components/primitives/PageHeader";
@@ -45,7 +44,15 @@ function visibleMatches(status: MatchesFilter): readonly MatchFixture[] {
 
 export function MatchesPage() {
   const location = useLocation() as { search: Record<string, unknown> };
-  const [status, setStatus] = useState<MatchesFilter>(() => matchFilter(location.search.status));
+  const navigate = useNavigate();
+  const status = matchFilter(location.search.status);
+  const setStatus = (nextStatus: MatchesFilter) => {
+    navigate({
+      to: ".",
+      search: (current) => ({ ...current, status: nextStatus }),
+    });
+  };
+
   const matches = visibleMatches(status);
 
   return (
