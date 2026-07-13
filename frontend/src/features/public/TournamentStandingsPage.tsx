@@ -3,17 +3,7 @@ import { Badge } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
 import { DataTable, type DataTableColumn } from "../../components/primitives/DataTable";
 import { PageHeader } from "../../components/primitives/PageHeader";
-import { PUBLIC_TOURNAMENTS, type TournamentFixture } from "../../fixtures";
-
-type StandingsRow = {
-  position: number;
-  team: string;
-  played: number;
-  won: number;
-  lost: number;
-  sets: string;
-  points: number;
-};
+import { PUBLIC_TOURNAMENTS, type TournamentFixture, type TournamentStandingFixture } from "../../fixtures";
 
 const tournamentTabs = [
   { label: "Resumen", suffix: "" },
@@ -23,20 +13,9 @@ const tournamentTabs = [
   { label: "Cuadro", suffix: "/bracket" },
 ] as const;
 
-const standings = Object.freeze([
-  { position: 1, team: "River Plate", played: 6, won: 6, lost: 0, sets: "16-6", points: 16 },
-  { position: 2, team: "Ciudad Voley", played: 6, won: 4, lost: 2, sets: "14-8", points: 13 },
-  { position: 3, team: "UPCN San Juan", played: 5, won: 4, lost: 1, sets: "13-7", points: 12 },
-  { position: 4, team: "Boca Juniors", played: 6, won: 3, lost: 3, sets: "11-11", points: 10 },
-  { position: 5, team: "Bolívar Voley", played: 5, won: 2, lost: 3, sets: "9-12", points: 7 },
-  { position: 6, team: "Monteros Voley", played: 6, won: 1, lost: 5, sets: "7-15", points: 4 },
-  { position: 7, team: "Obras San Juan", played: 5, won: 1, lost: 4, sets: "6-14", points: 4 },
-  { position: 8, team: "Once Unidos", played: 5, won: 0, lost: 5, sets: "4-15", points: 1 },
-] satisfies readonly StandingsRow[]);
-
-const columns: DataTableColumn<StandingsRow>[] = [
+const columns: DataTableColumn<TournamentStandingFixture>[] = [
   { header: "#", key: "position" },
-  { header: "Equipo", key: "team" },
+  { header: "Equipo", key: "teamName", render: (standing) => standing.teamId ? <Link className="font-semibold text-vt-accent hover:underline" to={`/teams/${standing.teamId}` as string}>{standing.teamName}</Link> : standing.teamName },
   { header: "PJ", key: "played" },
   { header: "PG", key: "won" },
   { header: "PP", key: "lost" },
@@ -115,7 +94,7 @@ export function TournamentStandingsPage() {
       <section aria-label="Tabla de posiciones">
         <h2 className="mb-4 text-xl font-bold text-vt-accent">Tabla de posiciones</h2>
         <Card className="overflow-hidden border-vt-border bg-vt-raised p-0">
-          <DataTable columns={columns} getRowKey={(row) => row.team} rows={[...standings]} />
+          <DataTable columns={columns} getRowKey={(row) => row.teamName} rows={[...tournament.standings]} />
         </Card>
       </section>
     </div>

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PUBLIC_TOURNAMENTS } from "../../fixtures";
+import { PUBLIC_PLAYERS, PUBLIC_TEAMS, PUBLIC_TOURNAMENTS } from "../../fixtures";
 import { TournamentStatsPage } from "./TournamentStatsPage";
 
 let tournamentId = PUBLIC_TOURNAMENTS.inProgress[0].id;
@@ -30,11 +30,29 @@ describe("public tournament stats", () => {
     expect(html).toContain(tournament.name);
     expect(html).toContain(tournament.statusLabel);
     expect(html).toContain("Estadísticas");
-    for (const label of ["Puntos", "Remates", "Bloqueos", "Saques", "Recepciones"]) {
-      expect(html).toContain(label);
+    for (const leader of tournament.statLeaders) {
+      expect(html).toContain(leader.category);
+      expect(html).toContain(leader.playerName);
     }
-    for (const leader of ["Valentina Ruiz", "Camila Sosa"]) {
-      expect(html).toContain(leader);
+  });
+
+  it("links leaders to their canonical player and team records", () => {
+    const tournament = PUBLIC_TOURNAMENTS.inProgress[0];
+    const html = renderTournamentStats(tournament.id);
+
+    for (const leader of tournament.statLeaders) {
+      if (leader.playerId) {
+        expect(html).toContain(`href="/players/${leader.playerId}"`);
+      }
+      if (leader.teamId) {
+        expect(html).toContain(`href="/teams/${leader.teamId}"`);
+      }
+    }
+    for (const player of PUBLIC_PLAYERS) {
+      expect(html).toContain(`href="/players/${player.id}"`);
+    }
+    for (const team of PUBLIC_TEAMS) {
+      expect(html).toContain(`href="/teams/${team.id}"`);
     }
   });
 

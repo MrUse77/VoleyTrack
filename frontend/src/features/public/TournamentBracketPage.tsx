@@ -2,16 +2,7 @@ import { Link, useParams } from "@tanstack/react-router";
 import { Badge } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
 import { PageHeader } from "../../components/primitives/PageHeader";
-import { PUBLIC_TOURNAMENTS, type TournamentFixture } from "../../fixtures";
-
-type BracketMatch = {
-  matchId: string;
-  homeTeam: string;
-  awayTeam: string;
-  homeScore: number | null;
-  awayScore: number | null;
-  status: "played" | "live" | "upcoming";
-};
+import { PUBLIC_TOURNAMENTS, type TournamentBracketMatchFixture, type TournamentFixture } from "../../fixtures";
 
 const tournamentTabs = [
   { label: "Resumen", suffix: "" },
@@ -20,22 +11,6 @@ const tournamentTabs = [
   { label: "Estadísticas", suffix: "/stats" },
   { label: "Cuadro", suffix: "/bracket" },
 ] as const;
-
-const bracketRounds = Object.freeze([
-  { round: "Cuartos de final", matches: Object.freeze([
-    { matchId: "qf-1", homeTeam: "River Plate", awayTeam: "Once Unidos", homeScore: 3, awayScore: 0, status: "played" },
-    { matchId: "qf-2", homeTeam: "Ciudad Voley", awayTeam: "Obras San Juan", homeScore: 3, awayScore: 1, status: "played" },
-    { matchId: "qf-3", homeTeam: "UPCN San Juan", awayTeam: "Monteros Voley", homeScore: 3, awayScore: 2, status: "played" },
-    { matchId: "qf-4", homeTeam: "Boca Juniors", awayTeam: "Bolívar Voley", homeScore: 2, awayScore: 2, status: "live" },
-  ] satisfies readonly BracketMatch[]) },
-  { round: "Semifinal", matches: Object.freeze([
-    { matchId: "sf-1", homeTeam: "River Plate", awayTeam: "Ciudad Voley", homeScore: null, awayScore: null, status: "upcoming" },
-    { matchId: "sf-2", homeTeam: "UPCN San Juan", awayTeam: "Boca Juniors", homeScore: null, awayScore: null, status: "upcoming" },
-  ] satisfies readonly BracketMatch[]) },
-  { round: "Final", matches: Object.freeze([
-    { matchId: "f-1", homeTeam: "Por definir", awayTeam: "Por definir", homeScore: null, awayScore: null, status: "upcoming" },
-  ] satisfies readonly BracketMatch[]) },
-] as const);
 
 const statusVariants = {
   finished: "default",
@@ -124,12 +99,12 @@ export function TournamentBracketPage() {
       <section aria-label="Cuadro del torneo">
         <h2 className="mb-4 text-xl font-bold text-vt-accent">Cuadro de eliminación</h2>
         <div className="space-y-6">
-          {bracketRounds.map((round) => (
+          {tournament.bracketRounds.map((round) => (
             <div key={round.round}>
               <h3 className="mb-3 text-lg font-bold text-vt-text">{round.round}</h3>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {round.matches.map((match) => (
-                  <BracketMatchCard key={match.matchId} match={match} />
+                  <BracketMatchCard key={match.displayId} match={match} />
                 ))}
               </div>
             </div>
@@ -140,27 +115,25 @@ export function TournamentBracketPage() {
   );
 }
 
-function BracketMatchCard({ match }: { match: BracketMatch }) {
+function BracketMatchCard({ match }: { match: TournamentBracketMatchFixture }) {
   return (
     <Card className="border-vt-border bg-vt-raised p-4">
       <div className="flex items-center justify-between">
         <Badge variant={matchStatusVariants[match.status]}>{matchStatusLabel[match.status]}</Badge>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-vt-muted">
-          ID {match.matchId}
-        </span>
+        {match.matchId ? <Link className="text-[11px] font-semibold uppercase tracking-[0.08em] text-vt-muted hover:text-vt-text" to={`/matches/${match.matchId}/live` as string}>ID {match.displayId}</Link> : <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-vt-muted">ID {match.displayId}</span>}
       </div>
       <dl className="mt-4 space-y-2">
-        <BracketTeamRow name={match.homeTeam} score={renderScore(match.homeScore)} highlight={match.homeScore !== null && match.homeScore > (match.awayScore ?? 0)} />
-        <BracketTeamRow name={match.awayTeam} score={renderScore(match.awayScore)} highlight={match.awayScore !== null && match.awayScore > (match.homeScore ?? 0)} />
+        <BracketTeamRow id={match.homeTeamId} name={match.homeTeamName} score={renderScore(match.homeScore)} highlight={match.homeScore !== null && match.homeScore > (match.awayScore ?? 0)} />
+        <BracketTeamRow id={match.awayTeamId} name={match.awayTeamName} score={renderScore(match.awayScore)} highlight={match.awayScore !== null && match.awayScore > (match.homeScore ?? 0)} />
       </dl>
     </Card>
   );
 }
 
-function BracketTeamRow({ name, score, highlight }: { name: string; score: string; highlight: boolean }) {
+function BracketTeamRow({ id, name, score, highlight }: { id?: string; name: string; score: string; highlight: boolean }) {
   return (
     <div className="flex items-center justify-between rounded-lg bg-vt-panel px-3 py-2">
-      <span className={`text-sm font-semibold ${highlight ? "text-vt-text" : "text-vt-muted"}`}>{name}</span>
+      {id ? <Link className={`text-sm font-semibold hover:underline ${highlight ? "text-vt-text" : "text-vt-muted"}`} to={`/teams/${id}` as string}>{name}</Link> : <span className={`text-sm font-semibold ${highlight ? "text-vt-text" : "text-vt-muted"}`}>{name}</span>}
       <span className={`text-sm font-black ${highlight ? "text-vt-accent" : "text-vt-muted"}`}>{score}</span>
     </div>
   );

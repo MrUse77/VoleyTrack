@@ -2,15 +2,7 @@ import { Link, useParams } from "@tanstack/react-router";
 import { Badge } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
 import { PageHeader } from "../../components/primitives/PageHeader";
-import { PUBLIC_TOURNAMENTS, type TournamentFixture } from "../../fixtures";
-
-type StatLeader = {
-  category: string;
-  player: string;
-  team: string;
-  value: number;
-  unit: string;
-};
+import { PUBLIC_TOURNAMENTS, type TournamentFixture, type TournamentStatLeaderFixture } from "../../fixtures";
 
 const tournamentTabs = [
   { label: "Resumen", suffix: "" },
@@ -19,14 +11,6 @@ const tournamentTabs = [
   { label: "Estadísticas", suffix: "/stats" },
   { label: "Cuadro", suffix: "/bracket" },
 ] as const;
-
-const statLeaders = Object.freeze([
-  { category: "Puntos", player: "Valentina Ruiz", team: "Club Atlético San Jorge", value: 142, unit: "pts" },
-  { category: "Remates", player: "Camila Sosa", team: "Rosario Central Vóley", value: 87, unit: "remates" },
-  { category: "Bloqueos", player: "Valentina Ruiz", team: "Club Atlético San Jorge", value: 34, unit: "bloqueos" },
-  { category: "Saques", player: "Camila Sosa", team: "Rosario Central Vóley", value: 19, unit: "aces" },
-  { category: "Recepciones", player: "Valentina Ruiz", team: "Club Atlético San Jorge", value: 156, unit: "recepciones" },
-] satisfies readonly StatLeader[]);
 
 const statusVariants = {
   finished: "default",
@@ -99,7 +83,7 @@ export function TournamentStatsPage() {
       <section aria-label="Líderes estadísticos">
         <h2 className="mb-4 text-xl font-bold text-vt-accent">Líderes del torneo</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {statLeaders.map((leader) => (
+          {tournament.statLeaders.map((leader) => (
             <StatLeaderCard key={leader.category} leader={leader} />
           ))}
         </div>
@@ -108,12 +92,12 @@ export function TournamentStatsPage() {
   );
 }
 
-function StatLeaderCard({ leader }: { leader: StatLeader }) {
+function StatLeaderCard({ leader }: { leader: TournamentStatLeaderFixture }) {
   return (
     <Card className="border-vt-border bg-vt-raised p-5">
       <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-vt-muted">{leader.category}</p>
-      <p className="mt-3 text-lg font-black text-vt-text">{leader.player}</p>
-      <p className="mt-1 text-xs text-vt-muted">{leader.team}</p>
+      {leader.playerId ? <Link className="mt-3 block text-lg font-black text-vt-text hover:underline" to={`/players/${leader.playerId}` as string}>{leader.playerName}</Link> : <p className="mt-3 text-lg font-black text-vt-text">{leader.playerName}</p>}
+      {leader.teamId ? <Link className="mt-1 inline-block text-xs text-vt-muted hover:text-vt-text" to={`/teams/${leader.teamId}` as string}>{leader.teamName}</Link> : <p className="mt-1 text-xs text-vt-muted">{leader.teamName}</p>}
       <p className="mt-4 text-3xl font-black text-vt-accent">
         {leader.value} <span className="text-base font-semibold text-vt-muted">{leader.unit}</span>
       </p>
