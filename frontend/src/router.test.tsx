@@ -22,7 +22,7 @@ import { AdminTournamentsPage } from "./features/admin/AdminTournamentsPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
 import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
 import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
-import { ADMIN, PUBLIC_MATCHES, PUBLIC_TOURNAMENTS } from "./fixtures";
+import { ADMIN, PUBLIC_MATCHES, PUBLIC_PLAYERS, PUBLIC_TEAMS, PUBLIC_TOURNAMENTS } from "./fixtures";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
@@ -759,6 +759,63 @@ describe("router", () => {
 
     expect(window.location.pathname).toBe(`/tournaments/${PUBLIC_TOURNAMENTS.all[0].id}`);
     expect(container.textContent).toContain(PUBLIC_TOURNAMENTS.all[0].name);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("traverses canonical public detail tabs and entity links through the real router", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const tournament = PUBLIC_TOURNAMENTS.all[0];
+    const team = PUBLIC_TEAMS[0];
+    const player = PUBLIC_PLAYERS[0];
+    const match = PUBLIC_MATCHES.live[0];
+
+    async function navigate(to: string) {
+      await act(async () => {
+        await router.navigate({ to });
+        root.render(<RouterProvider router={router} />);
+      });
+    }
+
+    async function follow(href: string) {
+      const link = container.querySelector(`a[href="${href}"]`);
+      expect(link).not.toBeNull();
+      await act(async () => {
+        link?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+      });
+      expect(window.location.pathname).toBe(href);
+    }
+
+    for (const suffix of ["/matches", "/standings", "/stats", "/bracket"]) {
+      await navigate(`/tournaments/${tournament.id}`);
+      await follow(`/tournaments/${tournament.id}${suffix}`);
+    }
+
+    for (const suffix of ["/roster", "/matches", "/stats"]) {
+      await navigate(`/teams/${team.id}`);
+      await follow(`/teams/${team.id}${suffix}`);
+    }
+
+    await navigate("/tournaments");
+    await follow(`/tournaments/${tournament.id}`);
+
+    await navigate(`/tournaments/${tournament.id}/matches`);
+    await follow(`/matches/${match.id}/live`);
+
+    await navigate(`/tournaments/${tournament.id}/stats`);
+    await follow(`/players/${player.id}`);
+
+    await navigate(`/tournaments/${tournament.id}/bracket`);
+    await follow(`/teams/${team.id}`);
+
+    await navigate(`/teams/${team.id}`);
+    await follow(`/players/${player.id}`);
+
+    await navigate(`/players/${player.id}`);
+    await follow(`/teams/${team.id}`);
 
     await act(async () => root.unmount());
     container.remove();
