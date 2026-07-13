@@ -161,6 +161,9 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/teams/create",
     );
     expect(createTeamRoute?.options?.component).toBe(CreateTeamPage);
+      expect(createTeamRoute?.options?.validateSearch?.({ modal: "player" })).toEqual({
+        modal: "player",
+      });
 
     const createTournamentRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/tournaments/create",
@@ -319,6 +322,31 @@ describe("router", () => {
 
     expect(window.location.pathname).toBe("/admin/teams/create");
     expect(container.textContent).toContain("Crear Nuevo Equipo");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the add-player dialog only for the canonical create-team modal URL", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/create", search: { modal: "player" } });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/teams/create");
+    expect(window.location.search).toBe("?modal=player");
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador");
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/create", search: { modal: "unexpected" } });
+    });
+
+    expect(window.location.search).toBe("?modal=unexpected");
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
 
     await act(async () => root.unmount());
     container.remove();
