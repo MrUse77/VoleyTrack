@@ -12,6 +12,7 @@ import { PostMatchSummaryPage } from "./features/scoring/PostMatchSummaryPage";
 import { StaffRegisterPage } from "./features/admin/StaffRegisterPage";
 import { CreatePlayerPage } from "./features/admin/CreatePlayerPage";
 import { CreateTeamPage } from "./features/admin/CreateTeamPage";
+import { CreateTournamentPage } from "./features/admin/CreateTournamentPage";
 import { AdminTournamentMatchesPage } from "./features/admin/AdminTournamentMatchesPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
 import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
@@ -160,6 +161,11 @@ describe("router", () => {
     );
     expect(createTeamRoute?.options?.component).toBe(CreateTeamPage);
 
+    const createTournamentRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/tournaments/create",
+    );
+    expect(createTournamentRoute?.options?.component).toBe(CreateTournamentPage);
+
     const uiStatesRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/ui-states",
     );
@@ -273,6 +279,23 @@ describe("router", () => {
 
     expect(window.location.pathname).toBe("/admin/players/create");
     expect(container.textContent).toContain("Crear jugador");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders create tournament through the real admin router shell", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/tournaments/create" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/tournaments/create");
+    expect(container.textContent).toContain("Crear Torneo");
 
     await act(async () => root.unmount());
     container.remove();
