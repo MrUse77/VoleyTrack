@@ -8,7 +8,7 @@ const tournamentTabs = [
   { label: "Partidos", suffix: "/matches" },
   { label: "Tabla", suffix: "/standings" },
   { label: "Estadísticas", suffix: "/stats" },
-  { label: "Llave", suffix: "/bracket" },
+  { label: "Cuadro", suffix: "/bracket" },
 ] as const;
 
 const statusVariants = {

@@ -69,10 +69,14 @@ export function TeamDetailPage() {
         <h2 className="text-xl font-bold text-vt-text">Plantel</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {roster.map((player) => (
-            <div className="rounded-xl border border-vt-border bg-vt-panel p-4" key={player.id}>
+            <Link
+              className="rounded-xl border border-vt-border bg-vt-panel p-4 transition hover:border-vt-accent"
+              key={player.id}
+              to={`/players/${player.id}` as string}
+            >
               <p className="font-bold text-vt-text">#{player.number} {player.fullName}</p>
               <p className="mt-1 text-sm text-vt-muted">{player.position}</p>
-            </div>
+            </Link>
           ))}
         </div>
       </Card>
