@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { FormField } from "../../components/primitives/FormField";
 
@@ -14,6 +14,8 @@ const initialForm: TeamForm = {
 
 export function CreateTeamPage() {
   const [form, setForm] = useState<TeamForm>(initialForm);
+  const { search } = useLocation();
+  const isPlayerModalOpen = search.modal === "player";
 
   const updateField = <Field extends keyof TeamForm>(field: Field, value: TeamForm[Field]) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -50,12 +52,13 @@ export function CreateTeamPage() {
         <div className="mt-4 rounded-lg border border-slate-700 bg-slate-900 px-4 py-10 text-center text-sm text-slate-500">
           Aún no hay jugadores. Haz clic en &quot;Agregar Jugador&quot;.
         </div>
-        <button
-          className="mt-1 h-10 w-50 rounded-lg border border-blue-500 text-sm font-bold text-blue-500"
-          type="button"
+        <Link
+          className="mt-1 flex h-10 w-50 items-center justify-center rounded-lg border border-blue-500 text-sm font-bold text-blue-500"
+          search={{ modal: "player" }}
+          to={"/admin/teams/create" as string}
         >
           + Agregar Jugador
-        </button>
+        </Link>
         <div className="mt-7 grid grid-cols-2 gap-5">
           <button className="h-12 rounded-lg bg-vt-accent text-sm font-bold text-black" type="submit">
             Registrar Equipo
@@ -68,6 +71,31 @@ export function CreateTeamPage() {
           </Link>
         </div>
       </form>
+      {isPlayerModalOpen ? (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-6"
+          role="dialog"
+        >
+          <section
+            aria-labelledby="add-player-modal-title"
+            className="w-full max-w-md rounded-2xl border border-slate-700 bg-vt-raised p-6"
+          >
+            <h3 id="add-player-modal-title" className="text-xl font-black text-white">
+              Agregar Jugador
+            </h3>
+            <p className="mt-2 text-sm text-vt-muted">
+              La incorporación de jugadores estará disponible próximamente.
+            </p>
+            <Link
+              className="mt-6 flex h-10 items-center justify-center rounded-lg border border-slate-700 text-sm font-bold text-white"
+              to={"/admin/teams/create" as string}
+            >
+              Cancelar
+            </Link>
+          </section>
+        </div>
+      ) : null}
     </section>
   );
 }
