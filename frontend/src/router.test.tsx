@@ -16,6 +16,7 @@ import { CreateTournamentPage } from "./features/admin/CreateTournamentPage";
 import { CreateMatchPage } from "./features/admin/CreateMatchPage";
 import { AdminTournamentMatchesPage } from "./features/admin/AdminTournamentMatchesPage";
 import { AdminMatchesPage } from "./features/admin/AdminMatchesPage";
+import { AdminPlayersPage } from "./features/admin/AdminPlayersPage";
 import { AdminTeamsPage } from "./features/admin/AdminTeamsPage";
 import { AdminTournamentsPage } from "./features/admin/AdminTournamentsPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
@@ -198,6 +199,11 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/teams",
     );
     expect(teamsRoute?.options?.component).toBe(AdminTeamsPage);
+
+    const playersRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/players",
+    );
+    expect(playersRoute?.options?.component).toBe(AdminPlayersPage);
 
     const tournamentMatchesRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/tournaments/$id/matches",
@@ -456,6 +462,24 @@ describe("router", () => {
     expect(window.location.pathname).toBe("/admin/teams");
     expect(container.textContent).toContain("Administrá y consultá los equipos registrados.");
     expect(container.textContent).toContain(ADMIN.teams[0].name);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders admin players through the real admin router shell", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/players" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/players");
+    expect(container.textContent).toContain("Administrá y consultá los jugadores registrados.");
+    expect(container.textContent).toContain(ADMIN.players[0].fullName);
 
     await act(async () => root.unmount());
     container.remove();
