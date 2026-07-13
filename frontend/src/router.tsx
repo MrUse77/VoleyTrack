@@ -294,7 +294,7 @@ const adminTeamCreateRoute = createRoute({
 	getParentRoute: () => adminShellRoute,
 	path: "/admin/teams/create",
 	validateSearch: (search: Record<string, unknown>) =>
-		search.modal === "player" ? { modal: "player" } : {},
+		search.modal === "assign-player" ? { modal: "assign-player" } : {},
 	component: CreateTeamPage,
 });
 const adminTournamentCreateRoute = createRoute({

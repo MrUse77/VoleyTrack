@@ -15,7 +15,7 @@ const initialForm: TeamForm = {
 export function CreateTeamPage() {
   const [form, setForm] = useState<TeamForm>(initialForm);
   const { search } = useLocation();
-  const isPlayerModalOpen = search.modal === "player";
+  const isPlayerModalOpen = search.modal === "assign-player";
 
   const updateField = <Field extends keyof TeamForm>(field: Field, value: TeamForm[Field]) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -54,7 +54,7 @@ export function CreateTeamPage() {
         </div>
         <Link
           className="mt-1 flex h-10 w-50 items-center justify-center rounded-lg border border-blue-500 text-sm font-bold text-blue-500"
-          search={{ modal: "player" }}
+          search={{ modal: "assign-player" }}
           to={"/admin/teams/create" as string}
         >
           + Agregar Jugador
