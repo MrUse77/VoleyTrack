@@ -165,10 +165,13 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/teams/create",
     );
     expect(createTeamRoute?.options?.component).toBe(CreateTeamPage);
-    expect(createTeamRoute?.options?.validateSearch?.({ modal: "assign-player" })).toEqual({
-      modal: "assign-player",
+    expect(createTeamRoute?.options?.validateSearch?.({ modal: "player" })).toEqual({
+      modal: "player",
     });
-    expect(createTeamRoute?.options?.validateSearch?.({ modal: "player" })).toEqual({});
+    expect(createTeamRoute?.options?.validateSearch?.({ modal: "assign-player" })).toEqual({
+      modal: "player",
+    });
+    expect(createTeamRoute?.options?.validateSearch?.({ modal: "unexpected" })).toEqual({});
 
     const createTournamentRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/tournaments/create",
@@ -358,12 +361,12 @@ describe("router", () => {
     const root = createRoot(container);
 
     await act(async () => {
-      await router.navigate({ to: "/admin/teams/create", search: { modal: "assign-player" } });
+      await router.navigate({ to: "/admin/teams/create", search: { modal: "player" } });
       root.render(<RouterProvider router={router} />);
     });
 
     expect(window.location.pathname).toBe("/admin/teams/create");
-    expect(window.location.search).toBe("?modal=assign-player");
+    expect(window.location.search).toBe("?modal=player");
     expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador");
 
     await act(async () => root.unmount());
@@ -376,18 +379,18 @@ describe("router", () => {
     const root = createRoot(container);
 
     await act(async () => {
-      await router.navigate({ to: "/admin/teams/create", search: { modal: "player" } });
+      await router.navigate({ to: "/admin/teams/create", search: { modal: "unexpected" } });
       root.render(<RouterProvider router={router} />);
     });
 
-    expect(window.location.search).toBe("?modal=player");
+    expect(window.location.search).toBe("?modal=unexpected");
     expect(container.querySelector('[role="dialog"]')).toBeNull();
 
     await act(async () => {
-      await router.navigate({ to: "/admin/teams/create", search: { modal: "unexpected" } });
+      await router.navigate({ to: "/admin/teams/create", search: { modal: "unknown" } });
     });
 
-    expect(window.location.search).toBe("?modal=unexpected");
+    expect(window.location.search).toBe("?modal=unknown");
     expect(container.querySelector('[role="dialog"]')).toBeNull();
 
     await act(async () => root.unmount());
