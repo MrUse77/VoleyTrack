@@ -9,6 +9,7 @@ let search: Record<string, string> = {};
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
   useLocation: () => ({ search }),
+  useNavigate: () => vi.fn(),
 }));
 
 function renderMatches(status?: string) {

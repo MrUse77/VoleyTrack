@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Badge } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
 import { PageHeader } from "../../components/primitives/PageHeader";
@@ -48,7 +47,15 @@ function visibleTournaments(status: TournamentFilter): readonly TournamentFixtur
 
 export function TournamentsPage() {
   const location = useLocation() as { search: Record<string, unknown> };
-  const [status, setStatus] = useState<TournamentFilter>(() => tournamentFilter(location.search.status));
+  const navigate = useNavigate();
+  const status = tournamentFilter(location.search.status);
+  const setStatus = (nextStatus: TournamentFilter) => {
+    navigate({
+      to: ".",
+      search: (current) => ({ ...current, status: nextStatus }),
+    });
+  };
+
   const tournaments = visibleTournaments(status);
 
   return (
