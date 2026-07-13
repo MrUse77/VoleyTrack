@@ -7,7 +7,7 @@ import { TournamentDetailPage } from "./TournamentDetailPage";
 let tournamentId = PUBLIC_TOURNAMENTS.inProgress[0].id;
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
+  Link: ({ children, to, ...props }: { children: ReactNode; to: string; "aria-current"?: "page" }) => <a href={to} {...props}>{children}</a>,
   useParams: () => ({ id: tournamentId }),
 }));
 
@@ -47,6 +47,7 @@ describe("public tournament detail", () => {
     expect(html).toContain("Tabla");
     expect(html).toContain("Estadísticas");
     expect(html).toContain("Cuadro");
+    expect(html).toContain('aria-current="page"');
   });
 
   it("selects a different fixture when the route id changes", () => {

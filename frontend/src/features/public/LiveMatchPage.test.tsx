@@ -33,6 +33,8 @@ describe("public live match detail", () => {
 		expect(html).toContain(match.scheduledLabel);
 		expect(html).toContain(String(match.score!.home));
 		expect(html).toContain(String(match.score!.away));
+		expect(html).toContain(`href="/teams/${match.homeTeamId}"`);
+		expect(html).toContain(`href="/teams/${match.awayTeamId}"`);
 	});
 
 	it("renders a live badge when match status is live", () => {

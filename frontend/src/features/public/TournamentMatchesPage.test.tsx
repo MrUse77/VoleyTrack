@@ -54,7 +54,7 @@ describe("public tournament matches", () => {
     expect(html).toContain("Partidos");
     expect(html).toContain("Tabla");
     expect(html).toContain("Estadísticas");
-    expect(html).toContain("Llave");
+    expect(html).toContain("Cuadro");
   });
 
   it("renders a not-found state without match data for an unknown tournament", () => {

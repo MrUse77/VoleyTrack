@@ -43,6 +43,9 @@ describe("public team detail", () => {
     expect(html).toContain(player!.fullName);
     expect(html).toContain(player!.position);
     expect(html).toContain(String(player!.number));
+    for (const playerId of team.rosterPlayerIds) {
+      expect(html).toContain(`href="/players/${playerId}"`);
+    }
   });
 
   it("renders local tabs with the summary tab active", () => {

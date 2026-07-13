@@ -94,13 +94,15 @@ export function LiveMatchPage() {
 				</h2>
 				<dl className="mt-5 grid gap-4 sm:grid-cols-2">
 					<SummaryDetail label="Estado" value={match.badgeLabel} />
-					<SummaryDetail
+					<TeamSummaryDetail
+						id={match.homeTeamId}
 						label="Equipo local"
-						value={match.homeTeamName}
+						name={match.homeTeamName}
 					/>
-					<SummaryDetail
+					<TeamSummaryDetail
+						id={match.awayTeamId}
 						label="Equipo visitante"
-						value={match.awayTeamName}
+						name={match.awayTeamName}
 					/>
 					<SummaryDetail label="Sede" value={match.venue} />
 					<SummaryDetail
@@ -109,6 +111,28 @@ export function LiveMatchPage() {
 					/>
 				</dl>
 			</Card>
+		</div>
+	);
+}
+
+function TeamSummaryDetail({
+	id,
+	label,
+	name,
+}: { id: string; label: string; name: string }) {
+	return (
+		<div>
+			<dt className="text-xs font-bold uppercase tracking-[0.08em] text-vt-muted">
+				{label}
+			</dt>
+			<dd className="mt-1 text-sm text-vt-text">
+				<Link
+					className="font-semibold text-vt-accent hover:underline"
+					to={`/teams/${id}` as string}
+				>
+					{name}
+				</Link>
+			</dd>
 		</div>
 	);
 }
