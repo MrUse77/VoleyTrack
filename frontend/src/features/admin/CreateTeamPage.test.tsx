@@ -103,7 +103,7 @@ describe("CreateTeamPage", () => {
   });
 
   it("opens the local-only add-player modal through the canonical URL and exposes a close path", () => {
-    window.history.replaceState({}, "", "/admin/teams/create?modal=player");
+    window.history.replaceState({}, "", "/admin/teams/create?modal=assign-player");
     const page = renderPage();
 
     try {
@@ -125,7 +125,7 @@ describe("CreateTeamPage", () => {
     form.addEventListener("submit", submitSpy);
 
     try {
-      expect(addPlayer?.getAttribute("href")).toBe("/admin/teams/create?modal=player");
+      expect(addPlayer?.getAttribute("href")).toBe("/admin/teams/create?modal=assign-player");
       expect(page.container.querySelector('[role="dialog"]')).toBeNull();
       expect(page.container.textContent).toContain("Aún no hay jugadores");
       expect(submitSpy).not.toHaveBeenCalled();

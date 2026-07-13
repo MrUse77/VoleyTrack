@@ -161,9 +161,10 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/teams/create",
     );
     expect(createTeamRoute?.options?.component).toBe(CreateTeamPage);
-      expect(createTeamRoute?.options?.validateSearch?.({ modal: "player" })).toEqual({
-        modal: "player",
-      });
+    expect(createTeamRoute?.options?.validateSearch?.({ modal: "assign-player" })).toEqual({
+      modal: "assign-player",
+    });
+    expect(createTeamRoute?.options?.validateSearch?.({ modal: "player" })).toEqual({});
 
     const createTournamentRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/tournaments/create",
@@ -327,7 +328,25 @@ describe("router", () => {
     container.remove();
   });
 
-  it("renders the add-player dialog only for the canonical create-team modal URL", async () => {
+  it("renders the add-player dialog for the canonical create-team modal URL", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/create", search: { modal: "assign-player" } });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/teams/create");
+    expect(window.location.search).toBe("?modal=assign-player");
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("does not render the add-player dialog for invalid create-team modal URLs", async () => {
     const container = document.createElement("div");
     document.body.append(container);
     const root = createRoot(container);
@@ -337,9 +356,8 @@ describe("router", () => {
       root.render(<RouterProvider router={router} />);
     });
 
-    expect(window.location.pathname).toBe("/admin/teams/create");
     expect(window.location.search).toBe("?modal=player");
-    expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador");
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
 
     await act(async () => {
       await router.navigate({ to: "/admin/teams/create", search: { modal: "unexpected" } });
