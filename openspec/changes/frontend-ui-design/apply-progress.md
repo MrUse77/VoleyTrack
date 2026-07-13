@@ -581,3 +581,10 @@ Visual comparison with artboard 34 remains pending.
 | `cd frontend && bun run test -- src/boundary.test.ts` | PASS — 1 file, 1 test; no network/auth/persistence violations |
 
 Visual comparison with artboard 36 and production build evidence remain pending. A production build was not run because its generated output would be outside the authorized edit surfaces.
+
+## Task 5.4: Create team local shell (artboard 37, issue #52)
+
+- Replaced only `/admin/teams/create` with `CreateTeamPage`, using local controlled state for `Nombre del Club` and `Entrenador (Coach)`.
+- The canonical desktop card presents the artboard 37 title, subtitle, input placeholders, empty-player message, add-player control, submit control, and cancel link. Submit calls `preventDefault()` and remains in place; it issues no request, persistence, authentication, or creation outcome.
+- Artboards 40–41, modal behavior, player selection, submit outcomes, persistence, API/auth/network, and integration remain explicitly out of scope.
+- RED observed the missing `CreateTeamPage` module. GREEN focused page and router tests pass (2 files, 18 tests), including component registration and real navigation to the canonical URL. Visual comparison with artboard 37 remains pending.
