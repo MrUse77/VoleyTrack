@@ -199,9 +199,10 @@ Implement staff registration, admin tournament tabs, creation forms, create-team
 - [x] **Evidence**: Focused create-player and router tests pass (17 tests); full frontend test suite passes (40 files, 150 tests); lint, TypeScript, and boundary tests pass. Visual comparison with artboard 36 remains pending.
 
 ### Task 5.4: Create team form with modal chain
-- [ ] **RED**: Write failing tests for `/admin/teams/create` (artboard 37): assert page renders create-team form; assert form accepts input and reflects typed values; assert `?modal=player` opens "Modal Jugador" (artboard 40); assert `?modal=assign-player` opens "Modal Asignar Jugador" (artboard 41); assert modal close returns to underlying route; assert state resets on reload
-- [ ] **GREEN**: Implement `src/features/admin/CreateTeamPage.tsx` with `useState` for form values and modal state; use `Modal` primitive; open modals via search values or local triggers; close via close control, cancel, or backdrop (`event.target === event.currentTarget`); preserve Spanish copy
-- [ ] **Evidence**: Create team tests pass; modal chain works; visual comparison with artboards 37, 40-41
+- [x] **Issue #52 RED**: Added failing tests for `/admin/teams/create` (artboard 37) covering the canonical Spanish desktop shell, local club/coach input values, and a prevented network-free submit. Observed failure: `CreateTeamPage` could not be resolved before implementation.
+- [x] **Issue #52 GREEN**: Implemented `src/features/admin/CreateTeamPage.tsx` with local `useState` for the club and coach fields; replaced only the create-team placeholder route; preserved canonical artboard 37 copy.
+- [ ] **Deferred**: `?modal=player` (artboard 40), `?modal=assign-player` (artboard 41), modal close paths, player selection, and submission outcomes remain outside Issue #52's local shell scope.
+- [ ] **Evidence**: Visual comparison with artboard 37 remains pending.
 
 ### Task 5.5: Create tournament form
 - [ ] **RED**: Write failing test for `/admin/tournaments/create` (artboard 38): assert page renders create-tournament form; assert form accepts input (name, format, dates) and reflects typed values; assert submit prevents navigation/network; assert state resets on reload
