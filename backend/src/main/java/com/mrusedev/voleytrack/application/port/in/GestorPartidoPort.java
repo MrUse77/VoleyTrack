@@ -1,7 +1,12 @@
 package com.mrusedev.voleytrack.application.port.in;
 
-import com.mrusedev.voleytrack.application.dto.*;
-import com.mrusedev.voleytrack.domain.*;
+import com.mrusedev.voleytrack.application.dto.AlineacionPreviewDTO;
+import com.mrusedev.voleytrack.application.dto.ConfirmacionDTO;
+import com.mrusedev.voleytrack.application.dto.DatosInicioPartidoDTO;
+import com.mrusedev.voleytrack.application.dto.EquiposDTO;
+import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
+import com.mrusedev.voleytrack.application.dto.JugadorDTO;
+import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,21 +15,21 @@ public interface GestorPartidoPort {
 
     DatosInicioPartidoDTO cargarDatosInicio(UUID partidoId);
 
-    InicioSetDTO crearSet(Partido partido);
+    InicioSetDTO crearSet(UUID partidoId);
 
-    Alineacion crearAlineacion(Equipo equipo);
+    AlineacionPreviewDTO crearAlineacion(UUID setId, UUID equipoId);
 
-    List<Jugador> cargarJugadoresDisponibles(Equipo equipo);
+    List<JugadorDTO> cargarJugadoresDisponibles(UUID equipoId);
 
-    AlineacionPreviewDTO agregarJugadorAAlineacion(Jugador jugador, int posicion, Alineacion alineacion);
+    AlineacionPreviewDTO agregarJugadorAAlineacion(UUID setId, UUID equipoId, UUID jugadorId, int posicion);
 
-    void seleccionarEquipoSaqueInicial(Equipo equipo, SetPartido set);
+    void seleccionarEquipoSaqueInicial(UUID setId, UUID equipoId);
 
-    ConfirmacionDTO confirmarInicioPartido(Partido partido, SetPartido set);
+    ConfirmacionDTO confirmarInicioPartido(UUID partidoId, UUID setId);
 
-    EquiposDTO iniciarAnotacion(Partido partido);
+    EquiposDTO iniciarAnotacion(UUID partidoId);
 
-    OpcionesPuntoDTO cargarOpcionesPunto(SetPartido set, Equipo equipo);
+    OpcionesPuntoDTO cargarOpcionesPunto(UUID setId, UUID equipoId);
 
-    ConfirmacionDTO confirmarPunto(Partido partido, Equipo equipo, Jugador jugador, TipoFundamento tipoFundamento);
+    ConfirmacionDTO confirmarPunto(UUID partidoId, UUID equipoId, UUID jugadorId, String tipoFundamento);
 }

@@ -79,7 +79,8 @@ class GestorPartidoTransactionalIntegrationTest {
 
         // Act & Assert: the RuntimeException propagates out of @Transactional
         assertThatThrownBy(() ->
-                gestor.confirmarPunto(partido, equipoLocal, jugador, TipoFundamento.ATAQUE))
+                gestor.confirmarPunto(
+                            partido.getId(), equipoLocal.getId(), jugador.getId(), "ATAQUE"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Simulated DB failure");
 

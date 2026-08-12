@@ -11,12 +11,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -78,8 +81,9 @@ class GestorPartidoTest {
     @Test
     void crearSetDevuelveDatosDelSet() {
         partido.iniciar();
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
 
-        InicioSetDTO dto = gestor.crearSet(partido);
+        InicioSetDTO dto = gestor.crearSet(partido.getId());
 
         assertThat(dto.numeroSet()).isEqualTo(1);
         assertThat(dto.esTieBreak()).isFalse();
@@ -89,29 +93,45 @@ class GestorPartidoTest {
     // ── crearAlineacion ──
 
     @Test
-    void crearAlineacionDevuelveAlineacionVacia() {
-        Alineacion alineacion = gestor.crearAlineacion(equipoLocal);
+    void crearAlineacionDevuelvePreviewVacio() {
+        SetPartido set = partido.iniciarSet();
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
 
-        assertThat(alineacion.getEquipo()).isEqualTo(equipoLocal);
-        assertThat(alineacion.getJugadoresEnCancha()).isEmpty();
+        AlineacionPreviewDTO preview = gestor.crearAlineacion(set.getId(), equipoLocal.getId());
+
+        assertThat(preview.equipoId()).isEqualTo(equipoLocal.getId());
+        assertThat(preview.equipoNombre()).isEqualTo("Club Local");
+        assertThat(preview.jugadores()).isEmpty();
+        assertThat(set.getAlineacion(equipoLocal)).isNotNull();
     }
 
     // ── cargarJugadoresDisponibles ──
 
     @Test
     void cargarJugadoresDisponiblesDevuelveActivos() {
-        var disponibles = gestor.cargarJugadoresDisponibles(equipoLocal);
+        when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
+        when(jugadorRepo.buscarPorEquipo(equipoLocal.getId())).thenReturn(List.of(jugador));
 
-        assertThat(disponibles).contains(jugador);
+        var disponibles = gestor.cargarJugadoresDisponibles(equipoLocal.getId());
+
+        assertThat(disponibles).hasSize(1);
+        assertThat(disponibles.get(0).nombre()).isEqualTo("Jugador");
+        assertThat(disponibles.get(0).dorsal()).isEqualTo(10);
     }
 
     // ── agregarJugadorAAlineacion ──
 
     @Test
     void agregarJugadorALaAlineacionDevuelvePreview() {
-        Alineacion alineacion = new Alineacion(equipoLocal);
+        SetPartido set = partido.iniciarSet();
+        set.crearAlineacion(equipoLocal);
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
+        when(jugadorRepo.buscarPorId(jugador.getId())).thenReturn(Optional.of(jugador));
 
-        AlineacionPreviewDTO preview = gestor.agregarJugadorAAlineacion(jugador, 1, alineacion);
+        AlineacionPreviewDTO preview = gestor.agregarJugadorAAlineacion(
+                set.getId(), equipoLocal.getId(), jugador.getId(), 1);
 
         assertThat(preview.jugadores()).hasSize(1);
         assertThat(preview.jugadores().get(0).jugadorId()).isEqualTo(jugador.getId());
@@ -123,8 +143,10 @@ class GestorPartidoTest {
     @Test
     void seleccionarEquipoSaqueInicialAsignaCorrectamente() {
         SetPartido set = partido.iniciarSet();
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
 
-        gestor.seleccionarEquipoSaqueInicial(equipoLocal, set);
+        gestor.seleccionarEquipoSaqueInicial(set.getId(), equipoLocal.getId());
 
         assertThat(set.getSaque()).isEqualTo(equipoLocal);
     }
@@ -136,8 +158,10 @@ class GestorPartidoTest {
         SetPartido set = partido.iniciarSet();
         when(partidoRepo.guardar(any())).thenReturn(partido);
         when(setRepo.guardar(any(), any())).thenReturn(set);
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
 
-        ConfirmacionDTO result = gestor.confirmarInicioPartido(partido, set);
+        ConfirmacionDTO result = gestor.confirmarInicioPartido(partido.getId(), set.getId());
 
         assertThat(result.exitoso()).isTrue();
         assertThat(partido.getEstado()).isEqualTo(EstadoPartido.EN_CURSO);
@@ -150,8 +174,9 @@ class GestorPartidoTest {
     void iniciarAnotacionDevuelveDatosDeEquipos() {
         partido.iniciar();
         partido.iniciarSet();
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
 
-        EquiposDTO dto = gestor.iniciarAnotacion(partido);
+        EquiposDTO dto = gestor.iniciarAnotacion(partido.getId());
 
         assertThat(dto.local().nombre()).isEqualTo("Club Local");
         assertThat(dto.visitante().nombre()).isEqualTo("Club Visitante");
@@ -168,8 +193,12 @@ class GestorPartidoTest {
         when(partidoRepo.guardar(any())).thenReturn(partido);
         when(setRepo.guardar(any(), any())).thenReturn(set);
         when(eventoRepo.guardar(any(), any())).thenAnswer(inv -> inv.getArgument(0));
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+        when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
+        when(jugadorRepo.buscarPorId(jugador.getId())).thenReturn(Optional.of(jugador));
 
-        ConfirmacionDTO result = gestor.confirmarPunto(partido, equipoLocal, jugador, TipoFundamento.ATAQUE);
+        ConfirmacionDTO result = gestor.confirmarPunto(
+                partido.getId(), equipoLocal.getId(), jugador.getId(), "ATAQUE");
 
         assertThat(result.exitoso()).isTrue();
         assertThat(result.mensaje()).contains("Punto registrado");
@@ -181,8 +210,12 @@ class GestorPartidoTest {
         Equipo desconocido = new Equipo(UUID.randomUUID(), "Otro", "X");
         partido.iniciar();
         partido.iniciarSet().iniciar();
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+        when(equipoRepo.buscarPorId(desconocido.getId())).thenReturn(Optional.of(desconocido));
+        when(jugadorRepo.buscarPorId(jugador.getId())).thenReturn(Optional.of(jugador));
 
-        ConfirmacionDTO result = gestor.confirmarPunto(partido, desconocido, jugador, TipoFundamento.ATAQUE);
+        ConfirmacionDTO result = gestor.confirmarPunto(
+                partido.getId(), desconocido.getId(), jugador.getId(), "ATAQUE");
 
         assertThat(result.exitoso()).isFalse();
     }
@@ -195,8 +228,10 @@ class GestorPartidoTest {
         when(partidoRepo.guardar(any())).thenReturn(partido);
         when(setRepo.guardar(any(), any()))
                 .thenThrow(new RuntimeException("DB failure"));
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
 
-        assertThatThrownBy(() -> gestor.confirmarInicioPartido(partido, set))
+        assertThatThrownBy(() -> gestor.confirmarInicioPartido(partido.getId(), set.getId()))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("DB failure");
     }
@@ -209,9 +244,13 @@ class GestorPartidoTest {
         when(partidoRepo.guardar(any())).thenReturn(partido);
         when(setRepo.guardar(any(), any()))
                 .thenThrow(new RuntimeException("DB failure"));
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+        when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
+        when(jugadorRepo.buscarPorId(jugador.getId())).thenReturn(Optional.of(jugador));
 
         assertThatThrownBy(() ->
-                gestor.confirmarPunto(partido, equipoLocal, jugador, TipoFundamento.ATAQUE))
+                gestor.confirmarPunto(
+                        partido.getId(), equipoLocal.getId(), jugador.getId(), "ATAQUE"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("DB failure");
     }
@@ -221,12 +260,15 @@ class GestorPartidoTest {
         Equipo desconocido = new Equipo(UUID.randomUUID(), "Otro", "X");
         partido.iniciar();
         partido.iniciarSet().iniciar();
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+        when(equipoRepo.buscarPorId(desconocido.getId())).thenReturn(Optional.of(desconocido));
+        when(jugadorRepo.buscarPorId(jugador.getId())).thenReturn(Optional.of(jugador));
 
-        // The domain should reject before any repo call
-        gestor.confirmarPunto(partido, desconocido, jugador, TipoFundamento.ATAQUE);
+        // The domain should reject before any persistence call
+        gestor.confirmarPunto(partido.getId(), desconocido.getId(), jugador.getId(), "ATAQUE");
 
         // Verify no persistence was invoked — domain rejection short-circuits the call
-        verifyNoInteractions(partidoRepo);
+        verify(partidoRepo, never()).guardar(any());
         verifyNoInteractions(setRepo);
         verifyNoInteractions(eventoRepo);
     }
@@ -238,9 +280,12 @@ class GestorPartidoTest {
         partido.iniciar();
         SetPartido set = partido.iniciarSet();
         set.crearAlineacion(equipoLocal);
-        gestor.agregarJugadorAAlineacion(jugador, 1, set.getAlineacion(equipoLocal));
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
+        when(jugadorRepo.buscarPorId(jugador.getId())).thenReturn(Optional.of(jugador));
+        gestor.agregarJugadorAAlineacion(set.getId(), equipoLocal.getId(), jugador.getId(), 1);
 
-        OpcionesPuntoDTO opciones = gestor.cargarOpcionesPunto(set, equipoLocal);
+        OpcionesPuntoDTO opciones = gestor.cargarOpcionesPunto(set.getId(), equipoLocal.getId());
 
         assertThat(opciones.jugadores()).hasSize(1);
     }
@@ -249,8 +294,10 @@ class GestorPartidoTest {
     void cargarOpcionesPuntoSinAlineacionDevuelveVacio() {
         partido.iniciar();
         SetPartido set = partido.iniciarSet();
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
 
-        OpcionesPuntoDTO opciones = gestor.cargarOpcionesPunto(set, equipoLocal);
+        OpcionesPuntoDTO opciones = gestor.cargarOpcionesPunto(set.getId(), equipoLocal.getId());
 
         assertThat(opciones.jugadores()).isEmpty();
     }
