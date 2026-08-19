@@ -40,7 +40,7 @@ export function AdminPage() {
 				<Surface key={card.title} className="p-4 sm:p-5">
 					<div className="flex items-start justify-between gap-4">
 						<div className="space-y-3">
-							<div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-vt-border bg-black/20 text-vt-accent">
+							<div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-vt-border bg-vt-panel text-vt-accent">
 								{card.icon}
 							</div>
 							<div className="space-y-1">
@@ -50,7 +50,7 @@ export function AdminPage() {
 						</div>
 						<Badge tone="muted" className="shrink-0">{card.meta}</Badge>
 					</div>
-					<div className="mt-4 rounded-2xl border border-vt-border/70 bg-black/20 px-4 py-3 text-sm text-vt-text/80">
+					<div className="mt-4 rounded-2xl border border-vt-border bg-vt-panel px-4 py-3 text-sm text-vt-text/80">
 						{card.action}
 					</div>
 				</Surface>

@@ -11,7 +11,7 @@ const queue = [
 
 function QueueRow({ label, detail, status }: { label: string; detail: string; status: string }) {
 	return (
-		<div className="flex items-center justify-between gap-3 rounded-2xl border border-vt-border/70 bg-black/20 px-4 py-3">
+		<div className="flex items-center justify-between gap-3 rounded-2xl border border-vt-border bg-vt-panel px-4 py-3">
 			<div>
 				<p className="text-sm font-semibold text-white">{label}</p>
 				<p className="text-xs text-vt-muted">{detail}</p>
@@ -23,7 +23,7 @@ function QueueRow({ label, detail, status }: { label: string; detail: string; st
 
 function MetricCard({ label, value, hint }: { label: string; value: string; hint: string }) {
 	return (
-		<div className="rounded-[18px] border border-vt-border/80 bg-black/20 p-4">
+		<div className="rounded-[18px] border border-vt-border bg-vt-panel p-4">
 			<p className="text-[10px] font-bold uppercase tracking-[0.24em] text-vt-muted">{hint}</p>
 			<p className="mt-2 text-3xl font-black tracking-[-0.05em] text-white">{value}</p>
 			<p className="mt-1 text-sm text-vt-muted">{label}</p>
@@ -59,7 +59,7 @@ export function PlanilleroPage() {
 								<button className="rounded-2xl bg-vt-accent px-4 py-3 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#ff9b59]" type="button">
 									Open score sheet
 								</button>
-								<button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-vt-border bg-black/20 px-4 py-3 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:border-vt-accent/30" type="button">
+								<button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-vt-border bg-vt-panel px-4 py-3 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:border-vt-accent/30" type="button">
 									Log incident
 									<AlertTriangle className="h-4 w-4" />
 								</button>
@@ -71,7 +71,7 @@ export function PlanilleroPage() {
 						<Surface className="p-4 sm:p-5">
 							<div className="flex items-start justify-between gap-4">
 								<div className="space-y-3">
-									<div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-vt-border bg-black/20 text-vt-accent">
+									<div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-vt-border bg-vt-panel text-vt-accent">
 										<ClipboardList className="h-5 w-5" />
 									</div>
 									<div className="space-y-1">
@@ -85,7 +85,7 @@ export function PlanilleroPage() {
 								</div>
 								<Badge tone="muted" className="shrink-0">3 queued</Badge>
 							</div>
-							<div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-vt-border/70 bg-black/20 px-4 py-3 text-sm text-vt-text/80">
+							<div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-vt-border bg-vt-panel px-4 py-3 text-sm text-vt-text/80">
 								<span>Open the current sheet and confirm rotations.</span>
 								<ArrowRight className="h-4 w-4 text-vt-accent" />
 							</div>
@@ -101,17 +101,17 @@ export function PlanilleroPage() {
 						</Surface>
 
 						<Surface className="grid gap-3 p-4 sm:grid-cols-3">
-							<div className="rounded-2xl border border-vt-border/70 bg-black/20 p-4">
+							<div className="rounded-2xl border border-vt-border bg-vt-panel p-4">
 								<Clock3 className="h-5 w-5 text-vt-accent" />
 								<p className="mt-3 text-sm font-semibold text-white">Timing checks</p>
 								<p className="mt-1 text-xs text-vt-muted">Service timer and substitutions</p>
 							</div>
-							<div className="rounded-2xl border border-vt-border/70 bg-black/20 p-4">
+							<div className="rounded-2xl border border-vt-border bg-vt-panel p-4">
 								<ClipboardCheck className="h-5 w-5 text-vt-accent" />
 								<p className="mt-3 text-sm font-semibold text-white">Sheet sync</p>
 								<p className="mt-1 text-xs text-vt-muted">Confirmed by referee table</p>
 							</div>
-							<div className="rounded-2xl border border-vt-border/70 bg-black/20 p-4">
+							<div className="rounded-2xl border border-vt-border bg-vt-panel p-4">
 								<AlertTriangle className="h-5 w-5 text-vt-accent" />
 								<p className="mt-3 text-sm font-semibold text-white">Incident log</p>
 								<p className="mt-1 text-xs text-vt-muted">Cards, disputes, and pauses</p>

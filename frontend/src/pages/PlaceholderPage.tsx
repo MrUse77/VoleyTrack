@@ -13,7 +13,7 @@ export function PlaceholderPage({
 }: PlaceholderPageProps) {
   return (
     <SectionShell eyebrow={eyebrow} title={title} description={description}>
-      <div className="rounded-[20px] border border-dashed border-white/10 bg-black/20 px-5 py-12 text-sm leading-6 text-vt-muted">
+      <div className="rounded-[20px] border border-dashed border-vt-border bg-vt-panel px-5 py-12 text-sm leading-6 text-vt-muted">
         This section is reserved for the next rebuild batch. The runtime route is
         already in place, but its screen is not implemented yet.
       </div>

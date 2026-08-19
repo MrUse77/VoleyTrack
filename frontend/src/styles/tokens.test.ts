@@ -9,6 +9,11 @@ const adminShellPath = fileURLToPath(new URL("../layouts/AdminShell.tsx", import
 const shellUtilityBarPath = fileURLToPath(new URL("../components/ShellUtilityBar.tsx", import.meta.url));
 const navItemPath = fileURLToPath(new URL("../components/ui/NavItem.tsx", import.meta.url));
 const shellTopbarPath = fileURLToPath(new URL("../components/ShellTopbar.tsx", import.meta.url));
+const scoringConsolePath = fileURLToPath(new URL("../features/scoring/ScoringConsolePage.tsx", import.meta.url));
+const placeholderPagePath = fileURLToPath(new URL("../pages/PlaceholderPage.tsx", import.meta.url));
+const adminPagePath = fileURLToPath(new URL("../pages/AdminPage.tsx", import.meta.url));
+const loginPagePath = fileURLToPath(new URL("../pages/LoginPage.tsx", import.meta.url));
+const planilleroPagePath = fileURLToPath(new URL("../pages/PlanilleroPage.tsx", import.meta.url));
 
 describe("design tokens", () => {
   it("defines the canonical palette and desktop canvas policy", () => {
@@ -78,5 +83,23 @@ describe("design tokens", () => {
     expect(readFileSync(shellTopbarPath, "utf8")).toContain("border-vt-border");
     expect(readFileSync(shellTopbarPath, "utf8")).toContain("bg-vt-surface");
     expect(readFileSync(shellUtilityBarPath, "utf8")).toContain("bg-vt-panel");
+  });
+
+  it("normalizes generic page surfaces to canonical tokens without white/black leaks", () => {
+    for (const filePath of [scoringConsolePath, placeholderPagePath, adminPagePath, loginPagePath, planilleroPagePath]) {
+      const source = readFileSync(filePath, "utf8");
+
+      expect(source).toMatch(/bg-vt-(panel|surface|raised)/);
+      expect(source).toContain("border-vt-border");
+      expect(source).not.toContain("border-white/");
+      expect(source).not.toContain("bg-white/");
+      expect(source).not.toContain("bg-black/");
+    }
+
+    expect(readFileSync(scoringConsolePath, "utf8")).toMatch(/bg-vt-(panel|surface)/);
+    expect(readFileSync(placeholderPagePath, "utf8")).toContain("bg-vt-panel");
+    expect(readFileSync(adminPagePath, "utf8")).toContain("bg-vt-panel");
+    expect(readFileSync(loginPagePath, "utf8")).toContain("bg-vt-panel");
+    expect(readFileSync(planilleroPagePath, "utf8")).toContain("bg-vt-panel");
   });
 });

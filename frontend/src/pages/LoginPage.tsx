@@ -11,7 +11,7 @@ export function LoginPage() {
       <div className="pointer-events-none absolute bottom-0 right-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
 
       <div className="relative grid w-full max-w-7xl items-stretch gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="flex flex-col justify-between rounded-[28px] border border-white/10 bg-white/[0.03] p-6 sm:p-8 lg:p-10">
+        <section className="flex flex-col justify-between rounded-[28px] border border-vt-border bg-vt-panel p-6 sm:p-8 lg:p-10">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-vt-accent/30 bg-vt-accent/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-vt-accent">
               <Volleyball className="h-3.5 w-3.5" />
@@ -39,7 +39,7 @@ export function LoginPage() {
             ].map(([title, copy]) => (
               <article
                 key={title}
-                className="rounded-[20px] border border-white/10 bg-black/20 p-4"
+                className="rounded-[20px] border border-vt-border bg-vt-panel p-4"
               >
                 <p className="text-sm font-bold uppercase tracking-[0.22em] text-white">
                   {title}
@@ -50,8 +50,8 @@ export function LoginPage() {
           </div>
         </section>
 
-        <section className="flex items-center justify-center rounded-[28px] border border-white/10 bg-vt-panel/90 p-4 sm:p-6 lg:p-8">
-          <form className="w-full max-w-md space-y-6 rounded-[24px] border border-vt-border bg-black/25 p-6 shadow-[0_20px_70px_rgba(0,0,0,0.35)] sm:p-8">
+        <section className="flex items-center justify-center rounded-[28px] border border-vt-border bg-vt-panel/90 p-4 sm:p-6 lg:p-8">
+          <form className="w-full max-w-md space-y-6 rounded-[24px] border border-vt-border bg-vt-surface p-6 shadow-[0_20px_70px_rgba(0,0,0,0.35)] sm:p-8">
             <div className="space-y-2">
               <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-vt-muted">
                 Welcome back
