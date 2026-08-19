@@ -14,6 +14,7 @@ const placeholderPagePath = fileURLToPath(new URL("../pages/PlaceholderPage.tsx"
 const adminPagePath = fileURLToPath(new URL("../pages/AdminPage.tsx", import.meta.url));
 const loginPagePath = fileURLToPath(new URL("../pages/LoginPage.tsx", import.meta.url));
 const planilleroPagePath = fileURLToPath(new URL("../pages/PlanilleroPage.tsx", import.meta.url));
+const createTeamPagePath = fileURLToPath(new URL("../features/admin/CreateTeamPage.tsx", import.meta.url));
 
 describe("design tokens", () => {
   it("defines the canonical palette and desktop canvas policy", () => {
@@ -101,5 +102,19 @@ describe("design tokens", () => {
     expect(readFileSync(adminPagePath, "utf8")).toContain("bg-vt-panel");
     expect(readFileSync(loginPagePath, "utf8")).toContain("bg-vt-panel");
     expect(readFileSync(planilleroPagePath, "utf8")).toContain("bg-vt-panel");
+  });
+
+  it("normalizes CreateTeamPage slate tokens to vt", () => {
+    const source = readFileSync(createTeamPagePath, "utf8");
+
+    expect(source).toContain("border-vt-border");
+    expect(source).toContain("bg-vt-panel");
+    expect(source).toContain("bg-vt-raised");
+    expect(source).toContain("text-vt-muted");
+    expect(source).toContain("text-vt-background");
+    expect(source).not.toContain("slate-");
+    expect(source).not.toContain("bg-slate-");
+    expect(source).not.toContain("border-slate-");
+    expect(source).not.toContain("text-slate-");
   });
 });
