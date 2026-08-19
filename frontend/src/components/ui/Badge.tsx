@@ -1,23 +1,24 @@
+import { Badge as PrimitiveBadge } from "../primitives/Badge";
 import type { HTMLAttributes } from "react";
 
 type BadgeTone = "accent" | "muted" | "success" | "neutral";
 
-const toneClasses: Record<BadgeTone, string> = {
-  accent: "border-vt-accent/35 bg-vt-accent/10 text-vt-accent",
-  muted: "border-white/10 bg-white/5 text-vt-text/80",
-  success: "border-emerald-400/30 bg-emerald-500/10 text-emerald-300",
-  neutral: "border-white/10 bg-black/20 text-vt-muted",
+type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
+  tone?: BadgeTone;
+  variant?: "default" | "success" | "danger" | "accent";
 };
 
-interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  tone?: BadgeTone;
+function mapToneToVariant(tone: BadgeTone | undefined, variant: BadgeProps["variant"]): "default" | "success" | "danger" | "accent" | undefined {
+  if (variant) return variant;
+  if (!tone) return undefined;
+  if (tone === "muted" || tone === "neutral") return "default";
+  if (tone === "success") return "success";
+  return "accent";
 }
 
-export function Badge({ tone = "neutral", className = "", ...props }: BadgeProps) {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] ${toneClasses[tone]} ${className}`.trim()}
-      {...props}
-    />
-  );
+export function Badge({ tone = "neutral", variant, className = "", ...props }: BadgeProps) {
+  const resolvedVariant = mapToneToVariant(tone, variant);
+  return <PrimitiveBadge variant={resolvedVariant} className={className} {...props} />;
 }
+
+export type { BadgeProps };

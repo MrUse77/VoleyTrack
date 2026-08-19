@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -12,7 +13,23 @@ import { Modal } from "./Modal";
 import { PageHeader } from "./PageHeader";
 import { TabBar } from "./TabBar";
 
+const sourceRoot = fileURLToPath(new URL("../../", import.meta.url));
 const tokensPath = fileURLToPath(new URL("../../styles/tokens.css", import.meta.url));
+
+function productionTsxFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      const path = join(directory, entry.name);
+
+      if (entry.isDirectory()) {
+        return ["generated", "__generated__"].includes(entry.name) ? [] : productionTsxFiles(path);
+      }
+
+      if (!entry.name.endsWith(".tsx") || /\.(?:test|spec|gen)\.tsx$/.test(entry.name)) return [];
+      return [path];
+    })
+    .sort();
+}
 
 describe("core primitives", () => {
   it("renders token-driven button variants and an accessible icon button", () => {
@@ -34,13 +51,31 @@ describe("core primitives", () => {
     expect(iconVariant).toContain("w-10");
   });
 
-  it("renders a raised card with its content slot", () => {
-    const html = renderToStaticMarkup(<Card>Card content</Card>);
+  it("renders a surface card by default and raises it only when requested", () => {
+    const defaultHtml = renderToStaticMarkup(<Card>Card content</Card>);
+    const raisedHtml = renderToStaticMarkup(<Card variant="raised">Raised content</Card>);
 
-    expect(html).toContain("Card content");
-    expect(html).toContain("bg-vt-raised");
-    expect(html).toContain("border-vt-raised-border");
-    expect(html).toContain("rounded-2xl");
+    expect(defaultHtml).toContain("Card content");
+    expect(defaultHtml).toContain("bg-vt-surface");
+    expect(defaultHtml).toContain("border-vt-border");
+    expect(defaultHtml).not.toContain("bg-vt-raised");
+    expect(defaultHtml).not.toContain("border-vt-raised-border");
+    expect(defaultHtml).toContain("rounded-2xl");
+    expect(raisedHtml).toContain("Raised content");
+    expect(raisedHtml).toContain("bg-vt-raised");
+    expect(raisedHtml).toContain("border-vt-raised-border");
+  });
+
+  it("keeps Card background selection behind the typed variant API", () => {
+    const explicitBackgroundCards = productionTsxFiles(sourceRoot).flatMap((file) => {
+      const source = readFileSync(file, "utf8");
+
+      return [...source.matchAll(/<Card\b[^>]*>/gs)]
+        .filter(([openingTag]) => /\bbg-vt-(?:raised|surface)\b/.test(openingTag))
+        .map(([openingTag]) => `${relative(sourceRoot, file)}: ${openingTag.replace(/\s+/g, " ")}`);
+    });
+
+    expect(explicitBackgroundCards).toEqual([]);
   });
 
   it("associates a dark-theme input with its label and helper text", () => {
@@ -111,7 +146,7 @@ describe("core primitives", () => {
     expect(html).toContain("border-vt-border");
   });
 
-  it("renders semantic badges and page header content slots", () => {
+  it("renders semantic badges and the default page header hierarchy", () => {
     const html = renderToStaticMarkup(
       <>
         <Badge variant="success">Live</Badge>
@@ -119,9 +154,37 @@ describe("core primitives", () => {
       </>,
     );
 
-    expect(html).toContain("bg-vt-success/20");
+    expect(html).toContain("text-[10px]");
+    expect(html).toContain("font-bold");
+    expect(html).toContain("uppercase");
+    expect(html).toContain("tracking-[0.2em]");
+    expect(html).toContain("rounded-full");
+    expect(html).toContain("border");
+    expect(html).toContain("border-vt-success/30");
+    expect(html).toContain("bg-vt-success/10");
+    expect(html).not.toContain("bg-white");
+    expect(html).not.toContain("bg-black");
     expect(html).toContain("Matches");
+    expect(html).toMatch(/<h1 class="[^"]*text-\[32px\][^"]*font-black[^"]*">Matches<\/h1>/);
     expect(html).toContain("Season overview");
+    expect(html).toContain("text-sm");
+    expect(html).toContain("leading-6");
     expect(html).toContain("Add match");
+    expect(html).toMatch(/<header class="[^"]*flex-col[^"]*items-stretch[^"]*sm:flex-row[^"]*sm:items-start[^"]*sm:justify-between/);
+    expect(html).toMatch(/<div class="[^"]*w-full[^"]*min-w-0[^"]*flex-wrap[^"]*sm:w-auto[^"]*sm:justify-end">.*Add match/);
+  });
+
+  it("renders the compact page header with dashboard typography", () => {
+    const html = renderToStaticMarkup(
+      <PageHeader
+        description="Live matches and tournament summaries."
+        title="Public dashboard"
+        variant="compact"
+      />,
+    );
+
+    expect(html).toMatch(/<h1 class="[^"]*text-\[26px\][^"]*font-bold[^"]*">Public dashboard<\/h1>/);
+    expect(html).toMatch(/<p class="[^"]*text-\[13px\][^"]*">Live matches and tournament summaries.<\/p>/);
+    expect(html).not.toContain('variant="compact"');
   });
 });
