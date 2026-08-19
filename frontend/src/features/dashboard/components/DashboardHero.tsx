@@ -73,7 +73,7 @@ export function DashboardHero({ hero, spotlight }: DashboardHeroProps) {
                 <Badge tone="success">Match point</Badge>
               </div>
 
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl border border-white/6 bg-black/20 p-4">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl border border-vt-border bg-vt-panel p-4">
                 <div>
                   <p className="text-sm text-vt-muted">{hero.homeTeam}</p>
                   <p className="text-5xl font-black text-white">{hero.homeScore}</p>
@@ -92,7 +92,7 @@ export function DashboardHero({ hero, spotlight }: DashboardHeroProps) {
 
             <div className="grid gap-2 text-xs text-vt-text/80">
               {hero.setScores.map((setScore) => (
-                <div key={setScore} className="rounded-lg border border-white/6 bg-white/3 px-3 py-2">
+                <div key={setScore} className="rounded-lg border border-vt-border bg-vt-panel px-3 py-2">
                   {setScore}
                 </div>
               ))}

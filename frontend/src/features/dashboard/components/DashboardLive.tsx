@@ -28,7 +28,7 @@ export function DashboardLive({ hero, liveMatches, spotlight }: DashboardLivePro
           {liveMatches.slice(0, 4).map((match) => (
             <Surface
               key={`${match.league}${match.teams[0]}${match.teams[1]}`}
-              className="p-4 transition hover:border-vt-accent/30 hover:bg-white/5"
+              className="p-4 transition hover:border-vt-accent/30 hover:bg-vt-panel"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 space-y-2">
