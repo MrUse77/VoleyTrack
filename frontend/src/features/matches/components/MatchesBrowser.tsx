@@ -22,7 +22,7 @@ export function MatchesBrowser({ matchCenter }: MatchesBrowserProps) {
 					return (
 						<button
 							key={filter.label}
-							className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] transition ${active ? "border-vt-accent bg-vt-accent/10 text-white" : "border-white/10 bg-black/20 text-vt-muted hover:text-white"}`}
+							className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] transition ${active ? "border-vt-accent bg-vt-accent/10 text-white" : "border-vt-border bg-vt-panel text-vt-muted hover:text-white"}`}
 							aria-current={active ? "page" : undefined}
 							type="button"
 							onClick={() => setFilter(filterLabel)}
@@ -36,7 +36,7 @@ export function MatchesBrowser({ matchCenter }: MatchesBrowserProps) {
 			<div className="space-y-6">
 				{visibleSections.map((section) => (
 					<Surface key={section.category} className="p-4 sm:p-5">
-						<div className="flex items-center justify-between gap-3 border-b border-white/6 pb-3">
+						<div className="flex items-center justify-between gap-3 border-b border-vt-border pb-3">
 							<div>
 								<p className="text-[10px] font-bold uppercase tracking-[0.28em] text-vt-muted">
 									{section.title}
@@ -45,7 +45,7 @@ export function MatchesBrowser({ matchCenter }: MatchesBrowserProps) {
 						</div>
 
 						{section.items.length === 0 ? (
-							<div className="mt-4 rounded-2xl border border-dashed border-white/10 bg-black/20 px-4 py-8 text-sm text-vt-muted">
+							<div className="mt-4 rounded-2xl border border-dashed border-vt-border bg-vt-panel px-4 py-8 text-sm text-vt-muted">
 								{section.emptyState}
 							</div>
 						) : (
@@ -53,7 +53,7 @@ export function MatchesBrowser({ matchCenter }: MatchesBrowserProps) {
 								{section.items.map((match) => (
 									<article
 										key={`${match.league}${match.teams[0]}${match.teams[1]}`}
-										className="rounded-2xl border border-white/8 bg-black/20 p-4 transition hover:border-vt-accent/30 hover:bg-white/5"
+										className="rounded-2xl border border-vt-border bg-vt-panel p-4 transition hover:border-vt-accent/30 hover:bg-vt-panel"
 									>
 										<div className="flex items-start justify-between gap-4">
 											<div className="min-w-0 space-y-2">
