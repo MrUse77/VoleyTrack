@@ -18,7 +18,7 @@ export function ShellUtilityBar({ className = "" }: ShellUtilityBarProps) {
 
         <div className="flex items-center gap-2">
           {["ALL", "LIVE", "UPCOMING", "RESULTS"].map((filter) => (
-            <button key={filter} className="rounded-full border border-vt-border/80 bg-black/20 px-3 py-1 text-xs font-semibold text-vt-muted transition hover:border-vt-accent/30 hover:text-white" type="button">
+            <button key={filter} className="rounded-full border border-vt-border bg-vt-surface px-3 py-1 text-xs font-semibold text-vt-muted transition hover:border-vt-accent/30 hover:text-white" type="button">
               {filter}
             </button>
           ))}

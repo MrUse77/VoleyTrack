@@ -38,11 +38,11 @@ export const ShellTopbar = ({ className = "" }: ShellTopbarProps) => {
           <Badge tone="muted" className="hidden md:inline-flex">
             Live
           </Badge>
-          <button className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-vt-border/70 bg-black/20 text-vt-muted transition hover:border-vt-accent/30 hover:text-white" type="button" aria-label="Notifications">
+          <button className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-vt-border bg-vt-panel text-vt-muted transition hover:border-vt-accent/30 hover:text-white" type="button" aria-label="Notifications">
             <span aria-hidden="true">🔔</span>
           </button>
 
-          <button className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-vt-border bg-black/20 text-sm font-semibold text-white transition hover:border-vt-accent/30" type="button" aria-label="User avatar">
+          <button className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-vt-border bg-vt-panel text-sm font-semibold text-white transition hover:border-vt-accent/30" type="button" aria-label="User avatar">
             AV
           </button>
         </div>
