@@ -188,7 +188,7 @@ export function ScoringConsolePage() {
               {teams.map((team) => (
                 <button
                   aria-label={`Anotar punto para ${team.name}`}
-                  className="min-h-14 rounded-xl bg-vt-accent px-4 py-3 text-left text-sm font-bold text-slate-950 transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
+                  className="min-h-14 rounded-xl bg-vt-accent px-4 py-3 text-left text-sm font-bold text-vt-background transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
                   key={team.key}
                   onClick={() => recordPoint(team.key)}
                   type="button"
@@ -405,7 +405,7 @@ export function ScoringConsolePage() {
           </button>
           <button
             aria-disabled={!canConfirmSubstitution}
-            className="min-h-11 rounded-lg bg-vt-accent px-4 py-2 text-sm font-semibold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
+            className="min-h-11 rounded-lg bg-vt-accent px-4 py-2 text-sm font-semibold text-vt-background transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
             disabled={!canConfirmSubstitution}
             onClick={confirmSubstitution}
             type="button"

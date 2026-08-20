@@ -11,7 +11,7 @@ export function DashboardHero({ hero, spotlight }: DashboardHeroProps) {
   return (
     <Surface className="overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
       <div className="grid gap-0 lg:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.95fr)]">
-        <div className="relative min-h-[340px] bg-gradient-to-br from-slate-900 via-vt-surface to-slate-950 p-5 sm:p-6">
+        <div className="relative min-h-[340px] bg-gradient-to-br from-vt-panel via-vt-surface to-vt-background p-5 sm:p-6">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,140,66,0.16),transparent_38%),linear-gradient(135deg,rgba(255,255,255,0.02),transparent_70%)]" />
           <div className="relative flex h-full flex-col justify-between gap-8">
             <div className="flex items-center justify-between gap-3">

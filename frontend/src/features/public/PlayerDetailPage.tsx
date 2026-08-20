@@ -96,7 +96,7 @@ export function PlayerDetailPage() {
 			>
 				<Card
 					aria-labelledby="player-name"
-					className="relative overflow-hidden border-transparent bg-slate-900 p-6 sm:p-8 min-[1416px]:h-[180px] min-[1416px]:p-0"
+					className="relative overflow-hidden border-transparent bg-vt-panel p-6 sm:p-8 min-[1416px]:h-[180px] min-[1416px]:p-0"
 					data-testid="player-hero"
 				>
 					<span
@@ -194,7 +194,7 @@ export function PlayerDetailPage() {
 										className="flex flex-wrap items-start text-sm font-bold leading-4"
 										key={stat.id}
 									>
-										<p className="w-[150px] text-slate-200">{stat.label}</p>
+										<p className="w-[150px] text-vt-muted">{stat.label}</p>
 										<p className={`ml-auto w-[60px] text-right min-[1416px]:ml-1.5 ${tone.text}`}>
 											{stat.value}
 										</p>

@@ -15,6 +15,11 @@ const adminPagePath = fileURLToPath(new URL("../pages/AdminPage.tsx", import.met
 const loginPagePath = fileURLToPath(new URL("../pages/LoginPage.tsx", import.meta.url));
 const planilleroPagePath = fileURLToPath(new URL("../pages/PlanilleroPage.tsx", import.meta.url));
 const createTeamPagePath = fileURLToPath(new URL("../features/admin/CreateTeamPage.tsx", import.meta.url));
+const playerDetailPath = fileURLToPath(new URL("../features/public/PlayerDetailPage.tsx", import.meta.url));
+const playerSelectionModalPath = fileURLToPath(new URL("../features/scoring/PlayerSelectionModal.tsx", import.meta.url));
+const matchSetupPath = fileURLToPath(new URL("../features/scoring/MatchSetupPage.tsx", import.meta.url));
+const pointEntryPath = fileURLToPath(new URL("../features/scoring/PointEntryPage.tsx", import.meta.url));
+const dashboardHeroPath = fileURLToPath(new URL("../features/dashboard/components/DashboardHero.tsx", import.meta.url));
 
 describe("design tokens", () => {
   it("defines the canonical palette and desktop canvas policy", () => {
@@ -116,5 +121,35 @@ describe("design tokens", () => {
     expect(source).not.toContain("bg-slate-");
     expect(source).not.toContain("border-slate-");
     expect(source).not.toContain("text-slate-");
+  });
+
+  it("normalizes remaining slate tokens in PlayerDetail and scoring pages", () => {
+    for (const filePath of [playerDetailPath, playerSelectionModalPath, matchSetupPath, scoringConsolePath, pointEntryPath, dashboardHeroPath]) {
+      const source = readFileSync(filePath, "utf8");
+      expect(source).not.toContain("bg-slate-");
+      expect(source).not.toContain("text-slate-");
+      expect(source).not.toContain("from-slate-");
+      expect(source).not.toContain("to-slate-");
+      expect(source).not.toContain("border-slate-");
+    }
+
+    const playerDetail = readFileSync(playerDetailPath, "utf8");
+    expect(playerDetail).toContain("bg-vt-panel");
+    expect(playerDetail).toContain("text-vt-muted");
+    expect(playerDetail).not.toContain("bg-slate-900");
+    expect(playerDetail).not.toContain("text-slate-200");
+
+    for (const filePath of [playerSelectionModalPath, matchSetupPath, scoringConsolePath, pointEntryPath]) {
+      const source = readFileSync(filePath, "utf8");
+      expect(source).toContain("text-vt-background");
+      expect(source).not.toContain("text-slate-950");
+    }
+
+    const hero = readFileSync(dashboardHeroPath, "utf8");
+    expect(hero).toContain("via-vt-surface");
+    expect(hero).toMatch(/from-vt-(panel|surface)/);
+    expect(hero).toMatch(/to-vt-(background|panel)/);
+    expect(hero).not.toContain("from-slate-900");
+    expect(hero).not.toContain("to-slate-950");
   });
 });
