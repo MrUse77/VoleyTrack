@@ -1,80 +1,77 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { Card } from "../../components/primitives/Card";
-import { PUBLIC_PLAYERS, PUBLIC_TEAMS, type TeamFixture } from "../../fixtures";
-
-const teamTabs = [
-  { label: "Resumen", suffix: "" },
-  { label: "Plantel", suffix: "/roster" },
-  { label: "Partidos", suffix: "/matches" },
-  { label: "Estadísticas", suffix: "/stats" },
-] as const;
-
-function findTeam(id: string): TeamFixture | undefined {
-  return PUBLIC_TEAMS.find((team) => team.id === id);
-}
+import {
+  findTeamJourney,
+  TeamJourney,
+  TeamNotFound,
+  TeamPlayerName,
+  teamRosterRows,
+} from "./TeamJourney";
 
 export function TeamRosterPage() {
   const { id } = useParams({ strict: false }) as { id: string };
-  const team = findTeam(id);
+  const context = findTeamJourney(id);
 
-  if (!team) {
-    return (
-      <Card>
-        <h1 className="text-2xl font-bold text-vt-text">Equipo no encontrado</h1>
-        <Link className="mt-4 inline-block text-sm font-semibold text-vt-accent" to={"/teams" as string}>
-          ← Volver a equipos
-        </Link>
-      </Card>
-    );
-  }
+  if (!context) return <TeamNotFound />;
 
-  const roster = team.rosterPlayerIds
-    .map((playerId) => PUBLIC_PLAYERS.find((player) => player.id === playerId))
-    .filter((player): player is (typeof PUBLIC_PLAYERS)[number] => player !== undefined);
+  const roster = teamRosterRows(context);
 
   return (
-    <div className="space-y-6">
-      <header>
-        <Link className="text-sm font-semibold text-vt-accent" to={"/teams" as string}>← Equipos</Link>
-        <p className="mt-5 text-sm text-vt-muted">Equipos / {team.name} / Plantel</p>
-        <h1 className="mt-2 text-3xl font-black text-vt-text">{team.name}</h1>
-        <p className="mt-2 text-sm text-vt-muted">{team.city} · {team.category}</p>
-      </header>
-
-      <nav aria-label="Navegación del equipo" className="rounded-2xl border border-vt-border bg-vt-raised p-2">
-        <div className="flex flex-wrap gap-2">
-          {teamTabs.map((tab) => (
-            <Link
-              aria-current={tab.suffix === "/roster" ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab.suffix === "/roster" ? "bg-vt-accent text-vt-canvas" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
-              key={tab.label}
-              to={`/teams/${team.id}${tab.suffix}` as string}
-            >
-              {tab.label}
-            </Link>
-          ))}
-        </div>
-      </nav>
-
-      <Card>
-        <h2 className="text-xl font-bold text-vt-text">Plantel</h2>
-        {roster.length > 0 ? (
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {roster.map((player) => (
-              <Link
-                className="rounded-xl border border-vt-border bg-vt-panel p-4 transition hover:border-vt-accent"
-                key={player.id}
-                to={`/players/${player.id}` as string}
-              >
-                <p className="font-bold text-vt-text">#{player.number} {player.fullName}</p>
-                <p className="mt-1 text-sm text-vt-muted">{player.position}</p>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-vt-muted">No hay jugadores registrados para este equipo.</p>
-        )}
-      </Card>
-    </div>
+    <TeamJourney activeTab="roster" {...context}>
+      <section aria-labelledby="team-roster-title">
+        <h2 className="mb-4 text-lg font-bold leading-6 text-vt-accent" id="team-roster-title">Plantel Completo</h2>
+        <Card
+          className="overflow-hidden p-0 min-[1416px]:h-[520px]"
+          data-testid="team-roster-panel"
+        >
+          {roster.length > 0 ? (
+            <div className="overflow-x-auto" data-testid="team-roster-table">
+              <table className="w-full min-w-[920px] table-fixed border-collapse text-left min-[1416px]:min-w-[1104px]">
+                <colgroup data-testid="team-roster-columns">
+                  <col className="w-[242px]" />
+                  <col className="w-[190px]" />
+                  <col className="w-[100px]" />
+                  <col className="w-[150px]" />
+                  <col className="w-[150px]" />
+                  <col className="w-[150px]" />
+                  <col className="w-[122px]" />
+                </colgroup>
+                <thead className="bg-vt-panel">
+                  <tr className="h-10 text-[11px] tracking-[0.08em] text-vt-muted">
+                    <th className="px-[18px] font-bold" scope="col">JUGADOR</th>
+                    <th className="px-4 font-bold" scope="col">POSICIÓN</th>
+                    <th className="px-4 text-right font-bold" scope="col">#</th>
+                    <th className="px-4 text-right font-bold" scope="col">PUNTOS</th>
+                    <th className="px-4 text-right font-bold" scope="col">ATAQUES</th>
+                    <th className="px-4 text-right font-bold" scope="col">BLOQUEOS</th>
+                    <th className="px-[18px] text-right font-bold" scope="col">SAQUES</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {roster.map(({ player, stats }) => (
+                    <tr className="h-[50px] border-t border-vt-border text-sm" key={player.id}>
+                      <th className="px-[18px] font-black" scope="row">
+                        <TeamPlayerName
+                          className="text-vt-text"
+                          player={player}
+                        />
+                      </th>
+                      <td className="px-4 text-vt-muted">{player.position}</td>
+                      <td className="px-4 text-right text-vt-muted">{player.number}</td>
+                      <td className="px-4 text-right font-black text-vt-text">{stats?.points ?? "—"}</td>
+                      <td className="px-4 text-right text-vt-text">{stats?.attacks ?? "—"}</td>
+                      <td className="px-4 text-right text-vt-text">{stats?.blocks ?? "—"}</td>
+                      <td className="px-[18px] text-right text-vt-text">{stats?.aces ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="p-6 text-sm text-vt-muted">No hay jugadores registrados para este equipo.</p>
+          )}
+        </Card>
+      </section>
+    </TeamJourney>
   );
 }
