@@ -57,6 +57,7 @@ describe("public team detail", () => {
     expectSharedTeamJourney(html, `/teams/${riverPlate.id}`);
     expect(html).toContain("max-w-[1104px]");
     expect(html).toContain("min-[1428px]:ml-1");
+    expect(html).toContain("min-[1600px]:mx-auto");
     expect(html).not.toContain("min-[1416px]:ml-1");
     expect(html).toContain("min-[1416px]:grid-cols-[536px_540px]");
     expect(html).toContain("min-[1416px]:translate-x-2");
@@ -85,6 +86,11 @@ describe("public team detail", () => {
 
     expect(html).toContain('aria-label="Vista previa del plantel"');
     expect(html).toContain('data-testid="team-overview-roster"');
+        const rosterCard = html.match(/<div[^>]*data-testid="team-overview-roster"[^>]*>/)?.[0] ?? "";
+        expect(rosterCard).not.toBe("");
+        expect(rosterCard).toContain("min-w-0");
+        expect(html).toContain("overflow-x-auto");
+        expect(html).toContain("min-w-[492px]");
     expect(html).toContain("min-[1416px]:h-[512px]");
     expect(html).toContain('data-testid="team-overview-roster-columns"');
     for (const width of ["w-[270px]", "w-[60px]", "w-[42px]"]) expect(html).toContain(width);

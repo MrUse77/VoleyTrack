@@ -65,7 +65,7 @@ export function TeamDetailPage() {
 
         <Card
           aria-label="Vista previa del plantel"
-          className="p-6 min-[1416px]:h-[512px]"
+          className="min-w-0 p-6 min-[1416px]:h-[512px]"
           data-testid="team-overview-roster"
         >
           <h2 className="text-lg font-bold leading-6 text-vt-text">Plantel y Estadísticas</h2>

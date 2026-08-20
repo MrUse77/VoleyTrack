@@ -116,6 +116,17 @@ describe("public player detail", () => {
 		expect(html).not.toContain("min-[1416px]:ml-3");
 		expect(html).toContain("min-[1416px]:grid-cols-[repeat(2,540px)]");
 		expect(html).toContain("min-[1416px]:h-[400px]");
+
+		for (const titleId of [
+			"player-stat-breakdown-title",
+			"player-recent-matches-title",
+		]) {
+			const card = html.match(
+				new RegExp(`<div[^>]*aria-labelledby="${titleId}"[^>]*>`),
+			)?.[0] ?? "";
+			expect(card).not.toBe("");
+			expect(card).toContain("min-w-0");
+		}
 	});
 
 	it("renders every existing standalone public player coherently", () => {

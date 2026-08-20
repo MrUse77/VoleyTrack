@@ -168,7 +168,7 @@ export function TeamJourney({ activeTab, children, detail, team }: TeamJourneyPr
   return (
     <StateBoundary>
       <div
-        className="w-full max-w-[1104px] min-[1416px]:-mt-1 min-[1428px]:ml-1"
+        className="w-full max-w-[1104px] min-[1416px]:-mt-1 min-[1428px]:ml-1 min-[1600px]:mx-auto"
         data-testid="team-journey-content"
       >
         <Card

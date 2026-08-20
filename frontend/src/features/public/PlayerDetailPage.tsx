@@ -177,7 +177,7 @@ export function PlayerDetailPage() {
 				<div className="mt-6 grid gap-6 min-[1416px]:grid-cols-[repeat(2,540px)]">
 					<Card
 						aria-labelledby="player-stat-breakdown-title"
-						className="border-vt-raised min-[1416px]:h-[400px]"
+						className="min-w-0 border-vt-raised min-[1416px]:h-[400px]"
 					>
 						<h2
 							className="text-lg font-bold leading-6 text-white"
@@ -219,7 +219,7 @@ export function PlayerDetailPage() {
 
 					<Card
 						aria-labelledby="player-recent-matches-title"
-						className="border-vt-raised min-[1416px]:h-[400px]"
+						className="min-w-0 border-vt-raised min-[1416px]:h-[400px]"
 					>
 						<h2
 							className="text-lg font-bold leading-6 text-white"
