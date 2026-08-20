@@ -22,7 +22,7 @@ import { AdminTournamentsPage } from "./features/admin/AdminTournamentsPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
 import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
 import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
-import { ADMIN, PUBLIC_MATCHES, PUBLIC_PLAYERS, PUBLIC_TEAMS, PUBLIC_TOURNAMENTS } from "./fixtures";
+import { ADMIN, PUBLIC_DASHBOARD, PUBLIC_MATCHES, PUBLIC_PLAYERS, PUBLIC_TEAMS, PUBLIC_TOURNAMENTS } from "./fixtures";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
@@ -57,15 +57,21 @@ describe("router", () => {
     const shellPaths = shellChildren?.map((route) => route.path) ?? [];
 
     expect(topLevelPaths).toContain("login");
-    expect(shellPaths).toContain("admin");
-    expect(shellPaths).toContain("planillero");
+    expect(shellPaths).not.toContain("admin");
+    expect(shellPaths).not.toContain("planillero");
     expect(shellPaths).not.toContain("matches");
     expect(shellPaths).toContain("results");
-    expect(shellPaths).toContain("stats");
+    expect(shellPaths).not.toContain("stats");
     expect(shellPaths).toContain("gallery");
     expect(shellPaths).toContain("fantasy");
-    expect(shellPaths).toContain("players");
-    expect(shellPaths).toContain("teams");
+    expect(shellPaths).not.toContain("players");
+    expect(shellPaths).not.toContain("teams");
+
+    const adminShellRoute = topLevelRoutes.find((route) => route.id === "/admin");
+    const adminShellPaths = (adminShellRoute?.children as Array<{ path: string }> | undefined)
+      ?.map((route) => route.path) ?? [];
+    expect(adminShellPaths).toContain("admin");
+    expect(adminShellPaths).toContain("planillero");
   });
 
   it("renders the public dashboard only at the root route", () => {
@@ -79,7 +85,10 @@ describe("router", () => {
 
     expect(publicPaths).toContain("/");
     expect(publicPaths).toContain("matches");
-    expect(publicPaths).toContain("matches/$id/live");
+    expect(publicPaths).toContain("stats");
+    expect(publicPaths).toContain("players");
+    expect(publicPaths).toContain("teams");
+    expect(publicPaths).not.toContain("matches/$id/live");
     expect(publicPaths).toContain("teams/$id");
     expect(publicPaths).toContain("teams/$id/roster");
     expect(publicPaths).toContain("teams/$id/stats");
@@ -89,7 +98,7 @@ describe("router", () => {
     const matchesRoute = publicChildren?.find(
       (route) => route.fullPath === "/teams/$id/matches",
     );
-    const liveMatchRoute = publicChildren?.find(
+    const liveMatchRoute = topLevelRoutes.find(
       (route) => route.fullPath === "/matches/$id/live",
     );
     const statsRoute = publicChildren?.find(
@@ -105,6 +114,61 @@ describe("router", () => {
     expect(playerDetailRoute?.options?.component).toBe(PlayerDetailPage);
     expect(publicPaths).not.toContain("dashboard");
     expect(allPaths).not.toContain("/dashboard");
+  });
+
+  it("renders the live-detail route as a standalone shell without the public sidebar", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const match = PUBLIC_DASHBOARD.live.featured.match;
+
+    await act(async () => {
+      await router.navigate({
+        to: "/matches/$id/live",
+        params: { id: match.id },
+      });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe(`/matches/${match.id}/live`);
+    expect(container.querySelector('[data-testid="live-match-shell"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="live-match-header"]')).not.toBeNull();
+    expect(container.querySelector("aside")).toBeNull();
+    expect(container.querySelector('[aria-label="Navegación Público"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Buscar en VoleyTrack"]')).toBeNull();
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders every canonical dashboard live ID through the public live-detail route", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const dashboardLive = [
+      PUBLIC_DASHBOARD.live.featured,
+      ...PUBLIC_DASHBOARD.live.compact,
+    ];
+
+    for (const { match, tournamentName } of dashboardLive) {
+      await act(async () => {
+        await router.navigate({
+          to: "/matches/$id/live",
+          params: { id: match.id },
+        });
+        root.render(<RouterProvider router={router} />);
+      });
+
+      expect(window.location.pathname).toBe(`/matches/${match.id}/live`);
+      expect(container.querySelector('[data-testid="live-match-scoreboard"]')).not.toBeNull();
+      expect(container.querySelector(`[data-match-id="${match.id}"]`)).not.toBeNull();
+      expect(container.textContent).toContain(match.homeTeamName);
+      expect(container.textContent).toContain(match.awayTeamName);
+      expect(container.textContent).toContain(tournamentName);
+    }
+
+    await act(async () => root.unmount());
+    container.remove();
   });
 
   it("exposes scorer routes and their modal search contracts", () => {
@@ -169,7 +233,7 @@ describe("router", () => {
       modal: "player",
     });
     expect(createTeamRoute?.options?.validateSearch?.({ modal: "assign-player" })).toEqual({
-      modal: "player",
+      modal: "assign-player",
     });
     expect(createTeamRoute?.options?.validateSearch?.({ modal: "unexpected" })).toEqual({});
 
@@ -367,7 +431,7 @@ describe("router", () => {
 
     expect(window.location.pathname).toBe("/admin/teams/create");
     expect(window.location.search).toBe("?modal=player");
-    expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador");
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador al Equipo");
 
     await act(async () => root.unmount());
     container.remove();
@@ -616,16 +680,17 @@ describe("router", () => {
 
   it.each([
     { route: "/", content: "Dashboard público", activeHref: "/", activeLabel: "Dashboard" },
-    { route: "/matches", content: "Todos", activeHref: "/matches", activeLabel: "Matches" },
-    { route: "/matches?status=live", content: "En vivo", activeHref: "/matches", activeLabel: "Matches" },
-    { route: "/matches?status=today", content: "Hoy", activeHref: "/matches", activeLabel: "Matches" },
-    { route: "/matches?status=upcoming", content: "Próximos", activeHref: "/matches", activeLabel: "Matches" },
-    { route: "/matches?status=finished", content: "Finalizados", activeHref: "/matches", activeLabel: "Matches" },
-    { route: "/tournaments", content: "Todos", activeHref: "/tournaments", activeLabel: "Tournaments" },
-    { route: "/tournaments?status=todos", content: "Todos", activeHref: "/tournaments", activeLabel: "Tournaments" },
-    { route: "/tournaments?status=en-curso", content: "En curso", activeHref: "/tournaments", activeLabel: "Tournaments" },
-    { route: "/tournaments?status=proximos", content: "Próximos", activeHref: "/tournaments", activeLabel: "Tournaments" },
-    { route: "/tournaments?status=finalizados", content: "Finalizados", activeHref: "/tournaments", activeLabel: "Tournaments" },
+    { route: "/matches", content: "Todos", activeHref: "/matches", activeLabel: "Partidos" },
+    { route: "/matches?status=live", content: "En vivo", activeHref: "/matches", activeLabel: "Partidos" },
+    { route: "/matches?status=today", content: "Hoy", activeHref: "/matches", activeLabel: "Partidos" },
+    { route: "/matches?status=upcoming", content: "Próximos", activeHref: "/matches", activeLabel: "Partidos" },
+    { route: "/matches?status=finished", content: "Finalizados", activeHref: "/matches", activeLabel: "Partidos" },
+    { route: "/tournaments", content: "Todos", activeHref: "/tournaments", activeLabel: "Torneos" },
+    { route: "/tournaments?status=todos", content: "Todos", activeHref: "/tournaments", activeLabel: "Torneos" },
+    { route: "/tournaments?status=en-curso", content: "En curso", activeHref: "/tournaments", activeLabel: "Torneos" },
+    { route: "/tournaments?status=proximos", content: "Próximos", activeHref: "/tournaments", activeLabel: "Torneos" },
+    { route: "/tournaments?status=finalizados", content: "Finalizados", activeHref: "/tournaments", activeLabel: "Torneos" },
+        { route: "/stats", content: "Estadísticas", activeHref: "/stats", activeLabel: "Estadísticas" },
   ])("renders public artboard route $route with its active sidebar navigation", async ({ route, content, activeHref, activeLabel }) => {
     const container = document.createElement("div");
     document.body.append(container);
