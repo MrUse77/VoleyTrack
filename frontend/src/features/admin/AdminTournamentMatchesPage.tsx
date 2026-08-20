@@ -71,7 +71,7 @@ export function AdminTournamentMatchesPage() {
         </div>
       </nav>
 
-      <Card className="border-vt-border bg-vt-raised p-5">
+      <Card className="border-vt-border p-5" variant="raised">
         <h2 className="text-xl font-bold text-vt-accent">Partidos del torneo</h2>
         <div className="mt-5 space-y-3">
           {matches.length === 0 ? (

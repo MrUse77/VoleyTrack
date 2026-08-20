@@ -100,7 +100,7 @@ export function AdminTournamentStatsPage() {
       </nav>
 
       <section aria-label="Estadísticas del torneo" className="space-y-4">
-        <Card className="border-vt-border bg-vt-raised p-4">
+        <Card className="border-vt-border p-4" variant="raised">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="mr-6 text-sm font-black text-vt-text">Filtrar estadística</h2>
             {(Object.keys(rankings) as Statistic[]).map((option) => (
@@ -117,7 +117,7 @@ export function AdminTournamentStatsPage() {
           </div>
         </Card>
 
-        <Card className="border-vt-border bg-vt-raised p-5">
+        <Card className="border-vt-border p-5" variant="raised">
           <h2 className="text-lg font-black text-vt-text">Ranking de Jugadores · {ranking.title}</h2>
           <div className="mt-5 space-y-2">
             {ranking.leaders.map((leader, index) => (

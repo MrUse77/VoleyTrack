@@ -86,11 +86,11 @@ export function AdminTournamentStandingsPage() {
       </nav>
 
       <section aria-label="Tabla de posiciones">
-        <Card className="border-vt-border bg-vt-raised p-6">
+        <Card className="border-vt-border p-6" variant="raised">
           <h2 className="text-xl font-bold text-vt-accent">Tabla de posiciones</h2>
           <p className="mt-2 text-sm text-vt-muted">Posiciones actuales del torneo</p>
         </Card>
-        <Card className="mt-4 overflow-hidden border-vt-border bg-vt-raised p-0">
+        <Card className="mt-4 overflow-hidden border-vt-border p-0" variant="raised">
           <DataTable columns={columns} getRowKey={(row) => row.team} rows={[...standings]} />
         </Card>
       </section>
