@@ -16,7 +16,9 @@ describe("auth feature pages", () => {
 		expect(html).toContain('name="password"');
 		expect(html).toContain('placeholder="••••••••"');
 		expect(html).toContain("Iniciar Sesión");
-		expect(html).toContain("grid-cols-[640px_800px]");
+		expect(html).toContain("lg:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]");
+		expect(html).toContain("min-h-svh");
+		expect(html).not.toContain("min-w-[1440px]");
 	});
 
 	it("renders the canonical change-password fields and actions", () => {
