@@ -49,7 +49,7 @@ export function TournamentStatsPage() {
         }
       />
 
-      <Card className="border-vt-border bg-vt-raised p-6">
+      <Card className="border-vt-border p-6" variant="raised">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <Badge variant={statusVariants[tournament.status]}>{tournament.statusLabel}</Badge>
@@ -94,7 +94,7 @@ export function TournamentStatsPage() {
 
 function StatLeaderCard({ leader }: { leader: TournamentStatLeaderFixture }) {
   return (
-    <Card className="border-vt-border bg-vt-raised p-5">
+    <Card className="border-vt-border p-5" variant="raised">
       <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-vt-muted">{leader.category}</p>
       {leader.playerId ? <Link className="mt-3 block text-lg font-black text-vt-text hover:underline" to={`/players/${leader.playerId}` as string}>{leader.playerName}</Link> : <p className="mt-3 text-lg font-black text-vt-text">{leader.playerName}</p>}
       {leader.teamId ? <Link className="mt-1 inline-block text-xs text-vt-muted hover:text-vt-text" to={`/teams/${leader.teamId}` as string}>{leader.teamName}</Link> : <p className="mt-1 text-xs text-vt-muted">{leader.teamName}</p>}

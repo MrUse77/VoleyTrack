@@ -60,7 +60,7 @@ export function TournamentStandingsPage() {
         }
       />
 
-      <Card className="border-vt-border bg-vt-raised p-6">
+      <Card className="border-vt-border p-6" variant="raised">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <Badge variant={statusVariants[tournament.status]}>{tournament.statusLabel}</Badge>
@@ -93,7 +93,7 @@ export function TournamentStandingsPage() {
 
       <section aria-label="Tabla de posiciones">
         <h2 className="mb-4 text-xl font-bold text-vt-accent">Tabla de posiciones</h2>
-        <Card className="overflow-hidden border-vt-border bg-vt-raised p-0">
+        <Card className="overflow-hidden border-vt-border p-0" variant="raised">
           <DataTable columns={columns} getRowKey={(row) => row.teamName} rows={[...tournament.standings]} />
         </Card>
       </section>

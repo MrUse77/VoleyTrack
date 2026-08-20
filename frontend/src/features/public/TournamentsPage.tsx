@@ -102,7 +102,7 @@ export function TournamentsPage() {
         <h2 className="mb-4 text-lg font-bold text-vt-text">{status === "todos" ? "Torneos destacados" : "Torneos"}</h2>
         <div className="grid gap-4 xl:grid-cols-3">
           {tournaments.map((tournament) => (
-            <Card data-testid="public-tournament-card" key={tournament.id} className="border-vt-border bg-vt-surface p-5">
+            <Card data-testid="public-tournament-card" key={tournament.id} className="border-vt-border p-5">
               <div className="flex items-start justify-between gap-3">
                 <p className="font-bold text-vt-text">{tournament.name}</p>
                 <Badge variant={badgeVariants[tournament.status]}>{tournament.statusLabel}</Badge>

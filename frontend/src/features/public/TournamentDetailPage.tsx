@@ -51,7 +51,7 @@ export function TournamentDetailPage() {
         </div>
       </header>
 
-      <Card className="border-vt-border bg-vt-raised p-6">
+      <Card className="border-vt-border p-6" variant="raised">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <Badge variant={statusVariants[tournament.status]}>{tournament.statusLabel}</Badge>
