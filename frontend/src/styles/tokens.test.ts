@@ -19,6 +19,8 @@ const playerDetailPath = fileURLToPath(new URL("../features/public/PlayerDetailP
 const playerSelectionModalPath = fileURLToPath(new URL("../features/scoring/PlayerSelectionModal.tsx", import.meta.url));
 const matchSetupPath = fileURLToPath(new URL("../features/scoring/MatchSetupPage.tsx", import.meta.url));
 const pointEntryPath = fileURLToPath(new URL("../features/scoring/PointEntryPage.tsx", import.meta.url));
+const postMatchSummaryPath = fileURLToPath(new URL("../features/scoring/PostMatchSummaryPage.tsx", import.meta.url));
+const scoringFixturePath = fileURLToPath(new URL("../fixtures/scoring.ts", import.meta.url));
 const dashboardHeroPath = fileURLToPath(new URL("../features/dashboard/components/DashboardHero.tsx", import.meta.url));
 
 describe("design tokens", () => {
@@ -151,5 +153,35 @@ describe("design tokens", () => {
     expect(hero).toMatch(/to-vt-(background|panel)/);
     expect(hero).not.toContain("from-slate-900");
     expect(hero).not.toContain("to-slate-950");
+  });
+
+  it("normalizes PostMatchSummaryPage scoring tokens without white/black/slate leaks", () => {
+    const source = readFileSync(postMatchSummaryPath, "utf8");
+    expect(source).toContain("border-vt-border");
+    expect(source).toMatch(/bg-vt-(panel|surface|raised)/);
+    expect(source).toContain("bg-vt-panel");
+    expect(source).toContain("text-vt-muted");
+    expect(source).toContain("text-vt-background");
+    expect(source).not.toContain("bg-white");
+    expect(source).not.toContain("text-white");
+    expect(source).not.toContain("bg-black");
+    expect(source).not.toContain("border-white/");
+    expect(source).not.toContain("bg-slate-");
+    expect(source).not.toContain("text-slate-");
+    expect(source).not.toContain("border-slate-");
+    expect(source).not.toContain("slate-");
+    expect(source).not.toContain("vt-canvas");
+  });
+
+  it("keeps scoring fixtures as pure immutable data without color leaks", () => {
+    const source = readFileSync(scoringFixturePath, "utf8");
+    expect(source).not.toContain("bg-white");
+    expect(source).not.toContain("bg-black");
+    expect(source).not.toContain("bg-slate-");
+    expect(source).not.toContain("text-slate-");
+    expect(source).not.toContain("border-slate-");
+    expect(source).not.toContain("slate-");
+    expect(source).not.toContain("white");
+    expect(source).toContain("Object.freeze");
   });
 });
