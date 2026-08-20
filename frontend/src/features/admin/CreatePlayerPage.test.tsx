@@ -42,12 +42,76 @@ describe("CreatePlayerPage", () => {
   it("SSR renders the canonical create-player form", () => {
     const html = renderToStaticMarkup(<CreatePlayerPage />);
 
-    expect(html).toContain("Crear jugador");
+    expect(html).toContain("Crear Nuevo Jugador");
     expect(html).toContain("Cancelar");
     expect(html).toContain('href="/admin/players"');
-    expect(html).toContain("Nombre completo");
-    expect(html).toContain("Número");
+    expect(html).toContain("Nombre");
+    expect(html).toContain("Apellido");
+    expect(html).toContain("Fecha de nacimiento");
+    expect(html).toContain("Dorsal");
     expect(html).toContain("Posición");
+    expect(html).toContain("Datos personales");
+    expect(html).toContain("Datos deportivos");
+  });
+
+  it("marks every player field as required and shows feedback when submitted empty", () => {
+    const rendered = renderPage();
+
+    try {
+      const form = rendered.container.querySelector("form")!;
+      const controls = [
+        getControlByLabel<HTMLInputElement>(rendered.container, "Nombre"),
+        getControlByLabel<HTMLInputElement>(rendered.container, "Apellido"),
+        getControlByLabel<HTMLInputElement>(rendered.container, "Fecha de nacimiento"),
+        getControlByLabel<HTMLInputElement>(rendered.container, "Dorsal"),
+        getControlByLabel<HTMLSelectElement>(rendered.container, "Posición"),
+      ];
+
+      expect(controls.every((control) => control.required)).toBe(true);
+
+      act(() => form.requestSubmit());
+
+      expect(rendered.container.querySelector('[role="alert"]')?.textContent).toContain("Revisá");
+      expect(controls.every((control) => control.getAttribute("aria-invalid") === "true")).toBe(true);
+      expect(rendered.container.textContent).not.toContain("Jugador preparado localmente");
+    } finally {
+      act(() => rendered.root.unmount());
+      rendered.container.remove();
+    }
+  });
+
+  it("rejects a dorsal above 99 with visible accessible feedback", () => {
+    const rendered = renderPage();
+
+    try {
+      const form = rendered.container.querySelector("form")!;
+      const firstName = getControlByLabel<HTMLInputElement>(rendered.container, "Nombre");
+      const lastName = getControlByLabel<HTMLInputElement>(rendered.container, "Apellido");
+      const birthDate = getControlByLabel<HTMLInputElement>(rendered.container, "Fecha de nacimiento");
+      const number = getControlByLabel<HTMLInputElement>(rendered.container, "Dorsal");
+      const position = getControlByLabel<HTMLSelectElement>(rendered.container, "Posición");
+
+      act(() => {
+        setInputValue(firstName, "Lucía");
+        setInputValue(lastName, "Gómez");
+        setInputValue(birthDate, "2001-04-12");
+        setInputValue(number, "100");
+        position.value = "opposite";
+        position.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+
+      act(() => form.requestSubmit());
+
+      expect(number.max).toBe("99");
+      expect(number.getAttribute("aria-invalid")).toBe("true");
+      const helper = rendered.container.querySelector(`#${number.getAttribute("aria-describedby")}`);
+      expect(helper?.textContent).toBe("Ingresá un dorsal entre 0 y 99.");
+      expect(helper?.querySelector('[role="alert"]')?.textContent).toBe("Ingresá un dorsal entre 0 y 99.");
+      expect(rendered.container.textContent).not.toContain("Jugador preparado localmente");
+    } finally {
+      act(() => rendered.root.unmount());
+      rendered.container.remove();
+    }
   });
 
   it("keeps typed player values locally, submits without a network request, and resets on remount", () => {
@@ -58,18 +122,24 @@ describe("CreatePlayerPage", () => {
 
       try {
         const form = first.container.querySelector("form")!;
-        const name = getControlByLabel<HTMLInputElement>(first.container, "Nombre completo");
-        const number = getControlByLabel<HTMLInputElement>(first.container, "Número");
+        const firstName = getControlByLabel<HTMLInputElement>(first.container, "Nombre");
+        const lastName = getControlByLabel<HTMLInputElement>(first.container, "Apellido");
+        const birthDate = getControlByLabel<HTMLInputElement>(first.container, "Fecha de nacimiento");
+        const number = getControlByLabel<HTMLInputElement>(first.container, "Dorsal");
         const position = getControlByLabel<HTMLSelectElement>(first.container, "Posición");
 
         act(() => {
-          setInputValue(name, "Lucía Gómez");
+          setInputValue(firstName, "Lucía");
+          setInputValue(lastName, "Gómez");
+          setInputValue(birthDate, "2001-04-12");
           setInputValue(number, "7");
           position.value = "opposite";
           position.dispatchEvent(new Event("change", { bubbles: true }));
         });
 
-        expect(name.value).toBe("Lucía Gómez");
+        expect(firstName.value).toBe("Lucía");
+        expect(lastName.value).toBe("Gómez");
+        expect(birthDate.value).toBe("2001-04-12");
         expect(number.value).toBe("7");
         expect(position.value).toBe("opposite");
 
@@ -87,9 +157,11 @@ describe("CreatePlayerPage", () => {
 
     const second = renderPage();
     try {
-      expect(getControlByLabel<HTMLInputElement>(second.container, "Nombre completo").value).toBe("");
-      expect(getControlByLabel<HTMLInputElement>(second.container, "Número").value).toBe("");
-      expect(getControlByLabel<HTMLSelectElement>(second.container, "Posición").value).toBe("setter");
+      expect(getControlByLabel<HTMLInputElement>(second.container, "Nombre").value).toBe("");
+      expect(getControlByLabel<HTMLInputElement>(second.container, "Apellido").value).toBe("");
+      expect(getControlByLabel<HTMLInputElement>(second.container, "Fecha de nacimiento").value).toBe("");
+      expect(getControlByLabel<HTMLInputElement>(second.container, "Dorsal").value).toBe("");
+      expect(getControlByLabel<HTMLSelectElement>(second.container, "Posición").value).toBe("");
       expect(second.container.textContent).not.toContain("Jugador preparado localmente");
     } finally {
       act(() => second.root.unmount());
