@@ -1,14 +1,20 @@
 package com.mrusedev.voleytrack.adapter.out.persistence.impl;
+import com.mrusedev.voleytrack.adapter.out.persistence.repository.AlineacionJugadorSpringDataRepository;
+import com.mrusedev.voleytrack.adapter.out.persistence.repository.AlineacionSpringDataRepository;
 import com.mrusedev.voleytrack.adapter.out.persistence.repository.SetSpringDataRepository;
 import com.mrusedev.voleytrack.adapter.out.persistence.repository.PartidoSpringDataRepository;
+import com.mrusedev.voleytrack.adapter.out.persistence.entity.AlineacionEntity;
 import com.mrusedev.voleytrack.adapter.out.persistence.entity.PartidoEntity;
 import com.mrusedev.voleytrack.adapter.out.persistence.entity.SetEntity;
+import com.mrusedev.voleytrack.adapter.out.persistence.mapper.AlineacionMapper;
 import com.mrusedev.voleytrack.adapter.out.persistence.mapper.SetMapper;
 
 import com.mrusedev.voleytrack.application.port.out.EquipoRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.EventoRepositoryPort;
+import com.mrusedev.voleytrack.application.port.out.JugadorRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.SetRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.SustitucionRepositoryPort;
+import com.mrusedev.voleytrack.domain.Alineacion;
 import com.mrusedev.voleytrack.domain.Equipo;
 import com.mrusedev.voleytrack.domain.Evento;
 import com.mrusedev.voleytrack.domain.SetPartido;
@@ -27,17 +33,26 @@ public class SetRepositoryPortImpl implements SetRepositoryPort {
     private final EquipoRepositoryPort equipoRepo;
     private final EventoRepositoryPort eventoRepo;
     private final SustitucionRepositoryPort sustitucionRepo;
+    private final JugadorRepositoryPort jugadorRepo;
+    private final AlineacionSpringDataRepository alineacionRepo;
+    private final AlineacionJugadorSpringDataRepository alineacionJugadorRepo;
 
     public SetRepositoryPortImpl(SetSpringDataRepository repo,
                                  PartidoSpringDataRepository partidoRepo,
                                  EquipoRepositoryPort equipoRepo,
                                  EventoRepositoryPort eventoRepo,
-                                 SustitucionRepositoryPort sustitucionRepo) {
+                                 SustitucionRepositoryPort sustitucionRepo,
+                                 JugadorRepositoryPort jugadorRepo,
+                                 AlineacionSpringDataRepository alineacionRepo,
+                                 AlineacionJugadorSpringDataRepository alineacionJugadorRepo) {
         this.repo = repo;
         this.partidoRepo = partidoRepo;
         this.equipoRepo = equipoRepo;
         this.eventoRepo = eventoRepo;
         this.sustitucionRepo = sustitucionRepo;
+        this.jugadorRepo = jugadorRepo;
+        this.alineacionRepo = alineacionRepo;
+        this.alineacionJugadorRepo = alineacionJugadorRepo;
     }
 
     @Override
@@ -47,7 +62,31 @@ public class SetRepositoryPortImpl implements SetRepositoryPort {
             entity.markPersisted();
         }
         repo.save(entity);
+        reemplazarAlineaciones(set);
         return set;
+    }
+
+    /** Wipes and rewrites this set's alignments so re-saves never duplicate rows. */
+    private void reemplazarAlineaciones(SetPartido set) {
+        List<AlineacionEntity> existentes = alineacionRepo.findBySetId(set.getId());
+        for (AlineacionEntity header : existentes) {
+            alineacionJugadorRepo.deleteAll(
+                    alineacionJugadorRepo.findByAlineacionId(header.getId()));
+        }
+        alineacionRepo.deleteAll(existentes);
+
+        guardarAlineacion(set.getAlineacionLocal(), set.getId());
+        guardarAlineacion(set.getAlineacionVisitante(), set.getId());
+    }
+
+    private void guardarAlineacion(Alineacion alineacion, UUID setId) {
+        if (alineacion == null) {
+            return;
+        }
+        AlineacionEntity header = AlineacionMapper.toEntity(alineacion, setId);
+        alineacionRepo.save(header);
+        alineacionJugadorRepo.saveAll(
+                AlineacionMapper.toJugadorEntities(alineacion, header.getId()));
     }
 
     @Override
@@ -89,6 +128,32 @@ public class SetRepositoryPortImpl implements SetRepositoryPort {
         // Restore persisted sustituciones
         List<Sustitucion> sustituciones = sustitucionRepo.buscarPorSet(entity.getId());
         set.restaurarSustituciones(sustituciones);
+        // Restore persisted alignments — must reuse the exact marcador equipo instances
+        restaurarAlineaciones(set, entity.getId(), equipoLocal, equipoVisitante);
         return set;
+    }
+
+    private void restaurarAlineaciones(SetPartido set, UUID setId,
+                                       Equipo equipoLocal, Equipo equipoVisitante) {
+        for (AlineacionEntity header : alineacionRepo.findBySetId(setId)) {
+            Equipo equipo = matchEquipo(header.getEquipoId(), equipoLocal, equipoVisitante);
+            if (equipo == null) {
+                continue;
+            }
+            Alineacion alineacion = set.crearAlineacion(equipo);
+            AlineacionMapper.restaurar(alineacion,
+                    alineacionJugadorRepo.findByAlineacionId(header.getId()),
+                    jugadorId -> jugadorRepo.buscarPorId(jugadorId).orElse(null));
+        }
+    }
+
+    private Equipo matchEquipo(UUID equipoId, Equipo equipoLocal, Equipo equipoVisitante) {
+        if (equipoLocal != null && equipoLocal.getId().equals(equipoId)) {
+            return equipoLocal;
+        }
+        if (equipoVisitante != null && equipoVisitante.getId().equals(equipoId)) {
+            return equipoVisitante;
+        }
+        return null;
     }
 }

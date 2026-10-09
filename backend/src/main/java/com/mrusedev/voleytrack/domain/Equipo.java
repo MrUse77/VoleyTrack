@@ -51,4 +51,20 @@ public class Equipo {
     public void desactivar() {
         this.activo = false;
     }
+
+    /**
+     * Identity by persisted id only. Domain entities survive rehydration as
+     * fresh instances, so set/alignment lookups must not rely on object identity.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Equipo otro)) return false;
+        return id != null && id.equals(otro.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 }

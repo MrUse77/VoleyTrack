@@ -1,6 +1,7 @@
 -- H2 schema para tests (Flyway deshabilitado en perfil test)
 -- Compatible con H2 en modo PostgreSQL
 -- Parity target: db/migration/V1__esquema_inicial.sql (PostgreSQL 16)
+-- Parity target (V2): db/migration/V2__alineacion.sql (alineaciones + alineacion_jugadores)
 -- Known H2 gaps documented at end of file
 
 CREATE TABLE IF NOT EXISTS jugadores (
@@ -67,6 +68,23 @@ CREATE TABLE IF NOT EXISTS sustituciones (
     jugador_entra_id  uuid NOT NULL REFERENCES jugadores(id),
     tipo              varchar NOT NULL,
     creado_en         timestamp NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS alineaciones (
+    id         uuid PRIMARY KEY,
+    set_id     uuid NOT NULL REFERENCES sets(id),
+    equipo_id  uuid NOT NULL REFERENCES equipos(id),
+    UNIQUE (set_id, equipo_id)
+);
+
+CREATE TABLE IF NOT EXISTS alineacion_jugadores (
+    id                  uuid PRIMARY KEY,
+    alineacion_id       uuid NOT NULL REFERENCES alineaciones(id),
+    jugador_id          uuid NOT NULL REFERENCES jugadores(id),
+    posicion            integer NOT NULL,
+    es_titular          boolean NOT NULL DEFAULT true,
+    es_sacador_inicial  boolean NOT NULL DEFAULT false,
+    UNIQUE (alineacion_id, jugador_id)
 );
 
 /*
