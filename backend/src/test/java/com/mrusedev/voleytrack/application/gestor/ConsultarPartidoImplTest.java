@@ -1,4 +1,4 @@
-package com.mrusedev.voleytrack.application.service;
+package com.mrusedev.voleytrack.application.gestor;
 
 import com.mrusedev.voleytrack.application.dto.DatosInicioPartidoDTO;
 import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarPartidoServiceTest {
+class ConsultarPartidoImplTest {
 
 	@Mock
 	private PartidoRepositoryPort partidoRepo;
@@ -48,7 +48,7 @@ class ConsultarPartidoServiceTest {
 	private GestorPartidoPort gestorPartidoPort;
 
 	@InjectMocks
-	private ConsultarPartidoService service;
+	private ConsultarPartidoImpl service;
 
 	private Equipo equipoLocal;
 	private Equipo equipoVisitante;

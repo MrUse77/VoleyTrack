@@ -1,4 +1,4 @@
-package com.mrusedev.voleytrack.application.service;
+package com.mrusedev.voleytrack.application.gestor;
 
 import com.mrusedev.voleytrack.application.dto.AlineacionPreviewDTO;
 import com.mrusedev.voleytrack.application.dto.ConfirmacionDTO;
@@ -45,7 +45,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PrepararPartidoServiceTest {
+class PrepararPartidoImplTest {
 
 	@Mock private PartidoRepositoryPort partidoRepo;
 	@Mock private SetRepositoryPort setRepo;
@@ -53,7 +53,7 @@ class PrepararPartidoServiceTest {
 	@Mock private JugadorRepositoryPort jugadorRepo;
 	@Mock private GestorPartidoPort gestorPartidoPort;
 
-	@InjectMocks private PrepararPartidoService service;
+	@InjectMocks private PrepararPartidoImpl service;
 
 	private Equipo equipoLocal;
 	private Equipo equipoVisitante;
