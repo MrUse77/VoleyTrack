@@ -15,7 +15,7 @@ class ApplicationPropertiesTests {
 		Properties properties = loadProperties("src/main/resources/application.properties");
 
 		assertThat(properties.getProperty("spring.datasource.url"))
-				.isEqualTo("${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/voleytrack}");
+				.isEqualTo("${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/voleytrack?stringtype=unspecified}");
 		assertThat(properties.getProperty("spring.datasource.username"))
 				.isEqualTo("${SPRING_DATASOURCE_USERNAME:voleytrack}");
 		assertThat(properties.getProperty("spring.datasource.password"))

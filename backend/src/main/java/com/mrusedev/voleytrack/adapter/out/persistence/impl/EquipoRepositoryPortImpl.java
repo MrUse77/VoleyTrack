@@ -1,10 +1,14 @@
 package com.mrusedev.voleytrack.adapter.out.persistence.impl;
 import com.mrusedev.voleytrack.adapter.out.persistence.repository.EquipoSpringDataRepository;
+import com.mrusedev.voleytrack.adapter.out.persistence.repository.JugadorSpringDataRepository;
 import com.mrusedev.voleytrack.adapter.out.persistence.entity.EquipoEntity;
+import com.mrusedev.voleytrack.adapter.out.persistence.entity.JugadorEntity;
 import com.mrusedev.voleytrack.adapter.out.persistence.mapper.EquipoMapper;
+import com.mrusedev.voleytrack.adapter.out.persistence.mapper.JugadorMapper;
 
 import com.mrusedev.voleytrack.application.port.out.EquipoRepositoryPort;
 import com.mrusedev.voleytrack.domain.Equipo;
+import com.mrusedev.voleytrack.domain.Jugador;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,9 +20,12 @@ import java.util.stream.StreamSupport;
 public class EquipoRepositoryPortImpl implements EquipoRepositoryPort {
 
     private final EquipoSpringDataRepository repo;
+    private final JugadorSpringDataRepository jugadorRepo;
 
-    public EquipoRepositoryPortImpl(EquipoSpringDataRepository repo) {
+    public EquipoRepositoryPortImpl(EquipoSpringDataRepository repo,
+                                    JugadorSpringDataRepository jugadorRepo) {
         this.repo = repo;
+        this.jugadorRepo = jugadorRepo;
     }
 
     @Override
@@ -33,13 +40,30 @@ public class EquipoRepositoryPortImpl implements EquipoRepositoryPort {
 
     @Override
     public Optional<Equipo> buscarPorId(UUID id) {
-        return repo.findById(id).map(EquipoMapper::toDomain);
+        return repo.findById(id).map(this::toDomain);
     }
 
     @Override
     public List<Equipo> buscarTodos() {
         return StreamSupport.stream(repo.findAll().spliterator(), false)
-                .map(EquipoMapper::toDomain)
+                .map(this::toDomain)
                 .toList();
+    }
+
+    private Equipo toDomain(EquipoEntity entity) {
+        Equipo equipo = EquipoMapper.toDomain(entity);
+        restaurarPlantel(equipo);
+        return equipo;
+    }
+
+    /** Rehydrates the persisted roster — sin plantel el equipo vuelve sin jugadores. */
+    private void restaurarPlantel(Equipo equipo) {
+        List<JugadorEntity> filas = jugadorRepo.findByEquipoId(equipo.getId());
+        for (JugadorEntity fila : filas) {
+            Jugador jugador = JugadorMapper.toDomain(fila);
+            if (jugador.isActivo()) {
+                equipo.agregarJugador(jugador);
+            }
+        }
     }
 }
