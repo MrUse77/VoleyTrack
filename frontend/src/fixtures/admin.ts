@@ -2,6 +2,11 @@ import { PUBLIC_MATCHES, PUBLIC_PLAYERS, PUBLIC_TEAMS, PUBLIC_TOURNAMENTS } from
 import type { AdminFixtures } from "./types";
 
 const tournament = PUBLIC_TOURNAMENTS.inProgress[0];
+// The design's admin list shows exactly two tournaments, one Liga "En curso" and one Copa
+// "Programado" (frontend/design/html/voleytrack-admin-torneos.html, the `tournaments-grid`
+// cards). The admin fixture carried one row, so a "Tipo" filter could not exist; the design's
+// second card is the app's own upcoming Copa.
+const upcomingCup = PUBLIC_TOURNAMENTS.upcoming[0];
 const match = PUBLIC_MATCHES.live[0];
 const sanJorge = PUBLIC_TEAMS[0];
 const rosarioCentral = PUBLIC_TEAMS[1];
@@ -21,10 +26,21 @@ const matchTournament = PUBLIC_TOURNAMENTS.all.find((item) => item.id === match.
 // It must be replaced by a real staff-to-tournament assignment.
 export const ADMIN = Object.freeze({
   staff: Object.freeze([Object.freeze({ id: "staff-planillero-mariana-lopez", fullName: "Mariana López", email: "mariana.lopez@voleytrack.test", role: "scorer", roleLabel: "Planillero", status: "active", statusLabel: "Activo", tournamentLabel: tournament.name })]),
-  tournaments: Object.freeze([Object.freeze({
-    id: tournament.id, name: tournament.name, status: tournament.status, statusLabel: tournament.statusLabel, category: tournament.category,
-    dateLabel: tournament.dateLabel, location: tournament.location, matchesLabel: "12 partidos", teamsLabel: "8 equipos",
-  })]),
+  // PROTOTYPE DATA — NOT REAL: `matchesLabel` and `teamsLabel` are the design's own card
+  // figures ("18 equipos · 132 partidos") written as fixed labels, because no fixture counts
+  // matches or team registrations yet. They must be replaced by real counts.
+  tournaments: Object.freeze([
+    Object.freeze({
+      id: tournament.id, name: tournament.name, status: tournament.status, statusLabel: tournament.statusLabel, category: tournament.category,
+      dateLabel: tournament.dateLabel, location: tournament.location, matchesLabel: "12 partidos", teamsLabel: "8 equipos",
+      detail: tournament,
+    }),
+    Object.freeze({
+      id: upcomingCup.id, name: upcomingCup.name, status: upcomingCup.status, statusLabel: upcomingCup.statusLabel, category: upcomingCup.category,
+      dateLabel: upcomingCup.dateLabel, location: upcomingCup.location, matchesLabel: "15 partidos", teamsLabel: "16 equipos",
+      detail: upcomingCup,
+    }),
+  ]),
   matches: Object.freeze([Object.freeze({
     id: match.id, tournamentId: match.tournamentId, status: match.status, statusLabel: match.badgeLabel, scheduledLabel: match.scheduledLabel,
     // `MatchFixture` carries only the tournament id, so the name the design's card prints is

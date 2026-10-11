@@ -20,6 +20,9 @@ import { AdminMatchesPage } from "./features/admin/AdminMatchesPage";
 import { AdminPlayersPage } from "./features/admin/AdminPlayersPage";
 import { AdminTeamsPage } from "./features/admin/AdminTeamsPage";
 import { AdminTournamentsPage } from "./features/admin/AdminTournamentsPage";
+import { AdminTournamentOverviewPage } from "./features/admin/AdminTournamentOverviewPage";
+import { AdminTournamentBracketPage } from "./features/admin/AdminTournamentBracketPage";
+import { AdminTournamentEditPage } from "./features/admin/AdminTournamentEditPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
 import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
 import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
@@ -341,6 +344,25 @@ describe("router", () => {
     );
     expect(tournamentStandingsRoute?.options?.component).toBe(AdminTournamentStandingsPage);
 
+    // The three admin tournament routes this slice added: the overview the design's own detail
+    // page opens on, the bracket panel, and the edit form (frontend/design/html/
+    // voleytrack-admin-ver-torneo.html, voleytrack-admin-ver-copa.html and
+    // voleytrack-admin-editar-torneo.html).
+    const tournamentOverviewRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/tournaments/$id",
+    );
+    expect(tournamentOverviewRoute?.options?.component).toBe(AdminTournamentOverviewPage);
+
+    const tournamentBracketRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/tournaments/$id/bracket",
+    );
+    expect(tournamentBracketRoute?.options?.component).toBe(AdminTournamentBracketPage);
+
+    const tournamentEditRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/tournaments/$id/edit",
+    );
+    expect(tournamentEditRoute?.options?.component).toBe(AdminTournamentEditPage);
+
     const tournamentStatsRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/tournaments/$id/stats",
     );
@@ -468,7 +490,7 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/tournaments/create");
-    expect(container.textContent).toContain("Crear Torneo");
+    expect(container.textContent).toContain("Nuevo torneo");
 
     await act(async () => root.unmount());
     container.remove();
@@ -658,7 +680,7 @@ describe("router", () => {
 
     expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/matches`);
     expect(container.textContent).toContain(tournament.name);
-    expect(container.textContent).toContain("Partidos del torneo");
+    expect(container.textContent).toContain("Partidos programados");
 
     await act(async () => root.unmount());
     container.remove();
@@ -680,7 +702,7 @@ describe("router", () => {
 
     expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/standings`);
     expect(container.textContent).toContain(tournament.name);
-    expect(container.textContent).toContain("Tabla de posiciones");
+    expect(container.textContent).toContain("Clasificación");
 
     await act(async () => root.unmount());
     container.remove();
@@ -703,6 +725,40 @@ describe("router", () => {
     expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/stats`);
     expect(container.textContent).toContain(tournament.name);
     expect(container.textContent).toContain("Ranking de Jugadores · Puntos Totales");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the admin tournament overview, bracket and edit routes through the real router", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const tournament = ADMIN.tournaments[0];
+
+    await act(async () => {
+      await router.navigate({ params: { id: tournament.id }, to: "/admin/tournaments/$id" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}`);
+    expect(container.textContent).toContain(tournament.name);
+    expect(container.textContent).toContain("Clasificación");
+
+    await act(async () => {
+      await router.navigate({ params: { id: tournament.id }, to: "/admin/tournaments/$id/bracket" });
+    });
+
+    expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/bracket`);
+    expect(container.textContent).toContain("Llaves de playoffs");
+
+    await act(async () => {
+      await router.navigate({ params: { id: tournament.id }, to: "/admin/tournaments/$id/edit" });
+    });
+
+    expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/edit`);
+    expect(container.textContent).toContain("Editar torneo");
+    expect(container.textContent).toContain(tournament.name);
 
     await act(async () => root.unmount());
     container.remove();

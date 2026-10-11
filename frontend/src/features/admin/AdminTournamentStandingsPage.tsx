@@ -1,7 +1,9 @@
-import { Link, useParams } from "@tanstack/react-router";
-import { Card } from "../../components/primitives/Card";
+import { useParams } from "@tanstack/react-router";
 import { DataTable, type DataTableColumn } from "../../components/primitives/DataTable";
-import { ADMIN, type AdminTournamentFixture } from "../../fixtures";
+import { TournamentPanelHeader } from "../public/TournamentDetailShell";
+import { AdminTournamentNotFound } from "./AdminTournamentNotFound";
+import { AdminTournamentShell } from "./AdminTournamentShell";
+import { findAdminTournament } from "./adminTournamentLookup";
 
 type StandingsRow = {
   position: number;
@@ -13,12 +15,20 @@ type StandingsRow = {
   points: number;
 };
 
-const tournamentTabs = [
-  { label: "Partidos", suffix: "/matches" },
-  { label: "Tabla", suffix: "/standings" },
-  { label: "Estadísticas", suffix: "/stats" },
-] as const;
-
+/**
+ * The admin tournament's `Clasificación` tab.
+ *
+ * Design: frontend/design/html/voleytrack-admin-ver-torneo.html — the league detail's
+ * `Clasificación <small>TOP 5</small>` panel, a `.table-wrap` inside the competition card whose
+ * columns are `# | Equipo | PJ | PG | Pts` with the measurement columns marked `.num`. The
+ * app's table carries two more columns (`PP`, `SETS`) that the design has no counterpart for
+ * and no `TOP 5` cut, because this screen is the full classification rather than the landing's
+ * preview, so the eyebrow reports the row count it actually renders.
+ *
+ * PROTOTYPE DATA — NOT REAL: these four rows were a literal in this screen before the alignment
+ * and are still a local constant; they must be replaced by the tournament's real classification
+ * (`ADMIN.tournaments[…].detail.standings` is the fixture projection that already exists).
+ */
 const standings = Object.freeze([
   { position: 1, team: "San Jorge Vóley", played: 6, won: 5, lost: 1, sets: "16-7", points: 15 },
   { position: 2, team: "Rosario Central", played: 6, won: 4, lost: 2, sets: "14-9", points: 12 },
@@ -32,68 +42,29 @@ const columns: DataTableColumn<StandingsRow>[] = [
   { header: "PJ", key: "played" },
   { header: "PG", key: "won" },
   { header: "PP", key: "lost" },
-  { header: "SETS", key: "sets" },
+  { header: "SETS", key: "sets", numeric: true },
   { header: "PTS", key: "points", sortIndicator: "descending" },
 ];
 
-function findTournament(id: string): AdminTournamentFixture | undefined {
-  return ADMIN.tournaments.find((tournament) => tournament.id === id);
-}
-
 export function AdminTournamentStandingsPage() {
   const { id } = useParams({ strict: false }) as { id: string };
-  const tournament = findTournament(id);
+  const tournament = findAdminTournament(id);
 
-  if (!tournament) {
-    return (
-      <Card>
-        <h1 className="text-2xl font-bold text-vt-text">Torneo no encontrado</h1>
-        <Link className="mt-4 inline-block text-sm font-semibold text-vt-accent" to={"/admin/tournaments" as string}>
-          ← Volver a torneos
-        </Link>
-      </Card>
-    );
-  }
+  if (!tournament) return <AdminTournamentNotFound />;
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Link className="text-sm font-semibold text-vt-accent" to={"/admin/tournaments" as string}>
-            ← Torneos
-          </Link>
-          <p className="mt-5 text-sm text-vt-muted">Administración / Torneos / {tournament.name}</p>
-          <h1 className="mt-2 text-3xl font-black text-vt-text">{tournament.name}</h1>
-        </div>
-        <div className="rounded-xl border border-vt-border bg-vt-raised px-4 py-2 text-sm text-vt-muted">
-          {tournament.category} · {tournament.statusLabel}
-        </div>
-      </header>
-
-      <nav aria-label="Navegación del torneo" className="rounded-2xl border border-vt-border bg-vt-raised p-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {tournamentTabs.map((tab) => (
-            <Link
-              aria-current={tab.suffix === "/standings" ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab.suffix === "/standings" ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
-              key={tab.label}
-              to={`/admin/tournaments/${tournament.id}${tab.suffix}` as string}
-            >
-              {tab.label}
-            </Link>
-          ))}
-        </div>
-      </nav>
-
-      <section aria-label="Tabla de posiciones">
-        <Card className="border-vt-border p-6" variant="raised">
-          <h2 className="text-xl font-bold text-vt-accent">Tabla de posiciones</h2>
-          <p className="mt-2 text-sm text-vt-muted">Posiciones actuales del torneo</p>
-        </Card>
-        <Card className="mt-4 overflow-hidden border-vt-border p-0" variant="raised">
-          <DataTable columns={columns} getRowKey={(row) => row.team} rows={[...standings]} />
-        </Card>
-      </section>
-    </div>
+    <AdminTournamentShell activeTab="clasificacion" tournament={tournament}>
+      <TournamentPanelHeader eyebrow={`${standings.length} EQUIPOS`}>
+        Clasificación
+      </TournamentPanelHeader>
+      {/* Design: the panel's `.table-wrap` carries `border:0;border-radius:0;background:
+          transparent` because the card around it already paints the box. */}
+      <DataTable
+        columns={columns}
+        getRowKey={(row) => row.team}
+        rows={[...standings]}
+        wrapperClassName="rounded-none border-0 bg-transparent"
+      />
+    </AdminTournamentShell>
   );
 }

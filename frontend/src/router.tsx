@@ -43,6 +43,9 @@ import { AdminMatchesPage } from "./features/admin/AdminMatchesPage";
 import { AdminPlayersPage } from "./features/admin/AdminPlayersPage";
 import { AdminTeamsPage } from "./features/admin/AdminTeamsPage";
 import { AdminTournamentsPage } from "./features/admin/AdminTournamentsPage";
+import { AdminTournamentOverviewPage } from "./features/admin/AdminTournamentOverviewPage";
+import { AdminTournamentBracketPage } from "./features/admin/AdminTournamentBracketPage";
+import { AdminTournamentEditPage } from "./features/admin/AdminTournamentEditPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
 import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
 import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
@@ -303,6 +306,33 @@ const adminTournamentMatchesRoute = createRoute({
 	path: "/admin/tournaments/$id/matches",
 	component: AdminTournamentMatchesPage,
 });
+// The admin tournament's landing: the overview the design's own detail page opens on
+// (frontend/design/html/voleytrack-admin-ver-torneo.html). It is a sibling of the three content
+// tabs rather than a tab of its own, exactly as the public detail's `Resumen` route is
+// (`/tournaments/$id`), so the tab strip can point at a real route for every label it renders.
+const adminTournamentOverviewRoute = createRoute({
+	getParentRoute: () => adminShellRoute,
+	path: "/admin/tournaments/$id",
+	component: AdminTournamentOverviewPage,
+});
+// Design: the cup detail's `Llaves` panel (voleytrack-admin-ver-copa.html) and the league's
+// `Playoffs` panel (voleytrack-admin-ver-torneo.html) render the bracket widget, which the
+// public side already built. The admin route reuses that widget and adds only its frame.
+const adminTournamentBracketRoute = createRoute({
+	getParentRoute: () => adminShellRoute,
+	path: "/admin/tournaments/$id/bracket",
+	component: AdminTournamentBracketPage,
+});
+// Design: voleytrack-admin-editar-torneo.html. The design's own entry point for it is the
+// tournament detail's `Editar torneo` action, and its `Volver` returns to that detail, so the
+// screen is a sibling route under the tournament it edits (`/admin/tournaments/$id/edit`) rather
+// than a dialog or a second top-level destination. It mirrors the create screen's own path
+// convention (`/admin/tournaments/create`).
+const adminTournamentEditRoute = createRoute({
+	getParentRoute: () => adminShellRoute,
+	path: "/admin/tournaments/$id/edit",
+	component: AdminTournamentEditPage,
+});
 const adminTournamentStandingsRoute = createRoute({
 	getParentRoute: () => adminShellRoute,
 	path: "/admin/tournaments/$id/standings",
@@ -394,6 +424,9 @@ export const routeTree = rootRoute.addChildren([
 		adminPointEntryRoute,
 		adminSummaryRoute,
 		adminStaffRegisterRoute,
+		adminTournamentOverviewRoute,
+		adminTournamentBracketRoute,
+		adminTournamentEditRoute,
 		adminTournamentMatchesRoute,
 		adminTournamentStandingsRoute,
 		adminTournamentStatsRoute,

@@ -1056,10 +1056,60 @@ readable against the completed record above; the carried-over items it lists wer
     port released, the other session's process untouched.
   - **Known consequence:** `/admin/settings` now returns not-found. No manifest, test or route depended on
     it. The matches slot-availability rule remains unbuilt and recorded in code.
-- [ ] **T18 — Admin tournaments parity.** List plus create/nuevo-torneo forms.
-- [ ] **T19 — Admin tournament overview and bracket.** The `ver-copa` bracket view and the
-  overview (Información, Formato, Equipos, Llaves) the admin side is missing.
-- [ ] **T20 — Admin edit tournament.** New route and screen (`ver-editar`), no React counterpart.
+- [x] **T18 — Admin tournaments list and create.** Done. The list is the design's card grid with a filter
+  card, a live result count and an empty state, and the create form is a shared form card of eight
+  `Field`s.
+- [x] **T19 — Admin tournament overview and bracket.** Done, and both are **new surface** rather than a
+  restyle, since the admin area previously had only matches, standings and stats tabs.
+  - The overview reuses `TournamentDetailShell` with five additive props supplied by a new
+    `AdminTournamentShell`, and the bracket view reuses `TournamentBracket` and `TournamentBracketIntro`
+    from the public side with **only the frame and heading new**. Reuse was the instruction and it was
+    followed literally rather than nominally.
+  - The tab set went from `Partidos | Tabla | Estadísticas` with no bracket route at all to
+    **`Resumen | Partidos | Clasificación | Estadísticas | Llaves`**, one real route each. The design's
+    league word `Playoffs` and cup word `Participantes` are still not separate labels: `Llaves` serves
+    both formats and `Participantes`'s panel is the overview's opening table. Recorded rather than
+    silently merged.
+  - **Measured.** The list has no table any more: two cards linking to the two tournaments, an eyebrow
+    per card, two badges each and `CardBody` at 18px 20px, with a filter panel at
+    `aria-expanded="false"` holding two controls, a forced-empty state, and the rows restored
+    afterwards. Forms measure input and select at **46px with a 12px radius** and a textarea at 96px,
+    filled with `--bg`, with the focus rules declaring the accent border and the 3px accent-mix ring.
+    The overview carries **seven `InfoRow`s** (Nombre, Tipo, Categoría, Sede, Fechas, Equipos, Estado),
+    a five-column scoped league table and a four-column cup table plus three `Formato` rows. The bracket
+    measures `role=region`, `tabIndex=0`, `overflow-x auto`, an 18px padding, a three-column 230px grid
+    at a 28px gap, **3 rounds of 4/2/1 = 7 matches**, per-match labels such as
+    `QF-1: River Plate 3 — Once Unidos 0, Finalizado`, 82px match boxes with a 3px accent edge, and the
+    final in accent-soft. All six routes resolved. The public detail and bracket were re-measured
+    **unchanged** after the shell was generalised, which is the check that the refactor did not leak.
+  - **The before-state was deliberately not fabricated.** The worker reported that it could not capture a
+    before because the working tree already held the change and a second checkout was not permitted, so
+    it declined to invent prior numbers and instead stated that the previous structure was read from the
+    committed source rather than measured. That is the correct handling and worth recording.
+  - **Ten places where the design overrode this document's brief.** The two most consequential: the brief
+    claimed the overview has Información, **Formato and Equipos**, but `voleytrack-admin-ver-torneo.html:53`
+    is a single-column detail grid with **only** `Información` — `Formato` appears solely in
+    `voleytrack-admin-ver-copa.html:66` and there is no Equipos card at all, so `Formato` renders for cups
+    only. And the brief asked for "row actions" where `voleytrack-admin-torneos.html:59` renders plain
+    clickable card links with no actions, so Ver/Editar/Borrar and the local delete were removed and
+    editing is reached from the detail. Also: the design's `#tournaments-future-card` is explicitly
+    marked `FUTURO · Diseño exploratorio, no en V1` and was therefore not implemented; the design's
+    Cancelar and Volver are links while ours returns to the list and the submit is a real button, which
+    is better semantics; the design's `.card-h` is `16px 18px` with a bottom rule where our `CardHeader`
+    is `18px 20px 0`, and the **landed admin precedent was followed rather than forking the primitive**;
+    and the design's `role="tablist"` buttons became route links with `aria-current="page"`, following
+    the public precedent.
+  - Ratchets lowered: `vt-panel` 39/20 → **34/16**, `vt-raised` 21/12 → **14/8**, legacy `Card` 32/11 →
+    **24/8**, all-`Card` floor 72/27 → 70/28, `vt-raised-border` unchanged at 6/4.
+  - Suite `47 files / 323 passed`, lint exit 0, build exit 0. Dev server stopped with a single-PID kill
+    and the port released.
+  - **Two follow-ups this task could not do:** the three new routes have no entries in
+    `src/artboardManifest.ts`, which is outside its surfaces, and the standings tab still renders the
+    screen's own prototype table rather than the fixture's `detail.standings`. Both are recorded here and
+    the standings inconsistency is carried into the next round.
+- [ ] **T20 — Admin edit tournament.** See the completed record above: the route is
+  `/admin/tournaments/$id/edit`, a sibling under the tournament it edits, mirroring the create path, with
+  the overview's own "Editar torneo" link as the entry point and "Volver" returning to the overview.
 - [ ] **T21 — Admin teams parity.** List plus create with the design's inline roster builder
   (replacing the two-modal flow).
 - [ ] **T22 — Admin team detail.** New route and screen, no React counterpart.

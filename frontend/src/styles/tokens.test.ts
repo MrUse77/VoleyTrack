@@ -462,9 +462,16 @@ describe("design tokens", () => {
     // panel with a --border edge (dropping its raised fill and raised border). Measured with
     // this guard's own patterns and exclusions: vt-panel 39/20, vt-raised 21/12,
     // vt-raised-border 6/4, so every ceiling drops to its measured value again.
+    // T18 then aligned the admin tournament screens: the list, the create form, the new
+    // overview, the new bracket route and the new edit route, plus the three content tabs,
+    // which moved onto the shared tournament frame. The three tabs' hand-rolled headers,
+    // their raised nav strips and the stats screen's app-only pill row and `bg-vt-panel`
+    // leaderboard rows all left with them. Measured with this guard's own patterns and
+    // exclusions: vt-panel 34/16, vt-raised 14/8, and vt-raised-border unchanged at 6/4 (so
+    // its ceiling stays).
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 39, baselineFiles: 20 },
-      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 21, baselineFiles: 12 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 34, baselineFiles: 16 },
+      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 14, baselineFiles: 8 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 6, baselineFiles: 4 },
     ];
 

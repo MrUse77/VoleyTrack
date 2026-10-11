@@ -8,7 +8,7 @@ import { InfoRow } from "../../components/primitives/InfoRow";
 import { Kpi, KpiGrid } from "../../components/primitives/Kpi";
 import { PageHeader } from "../../components/primitives/PageHeader";
 import type { TournamentFixture } from "../../fixtures";
-import { badgeVariantByStatus, tournamentTabs } from "./tournamentTabs";
+import { badgeVariantByStatus, tournamentTabs, type TournamentTab } from "./tournamentTabs";
 
 /**
  * The tournament detail's shared frame: everything the design renders outside its
@@ -25,29 +25,72 @@ import { badgeVariantByStatus, tournamentTabs } from "./tournamentTabs";
  * The design has no `Resumen` tab because this whole region is unconditional there. The app
  * keeps a route for it, so the region is rendered by this shell on every tab and the
  * `Resumen` route contributes no panel of its own.
+ *
+ * The same frame also renders the ADMIN tournament detail
+ * (frontend/design/html/voleytrack-admin-ver-torneo.html and voleytrack-admin-ver-copa.html),
+ * whose page head, KPI tiles, `Información` card and `.tournament-tabs` strip are the same
+ * regions over the same `TournamentFixture`. Everything the two sides differ on is an
+ * explicit prop below (`backTo`, `basePath`, `tabs`, `actions`, `sidePanel`) rather than a
+ * second copy of the frame; the public defaults reproduce the public markup exactly.
  */
 export function TournamentDetailShell({
   activeTab,
+  actions,
+  backTo = "/tournaments",
+  basePath = "/tournaments",
   children,
+  sidePanel,
+  tabs = tournamentTabs,
   tournament,
 }: {
   activeTab: string;
+  /** Extra page-head controls, rendered after the design's `Volver` ghost button. */
+  actions?: ReactNode;
+  backTo?: string;
+  basePath?: string;
   children: ReactNode;
+  /**
+   * A second card beside `Información`, for the design's `.detail-grid` (1fr 1fr, one column
+   * below 900px, voleytrack-admin.css:114-116). The cup detail pairs `Información` with
+   * `Formato`; the league detail is `.detail-grid--single` and passes nothing.
+   */
+  sidePanel?: ReactNode;
+  tabs?: readonly TournamentTab[];
   tournament: TournamentFixture;
 }) {
   const bracketMatches = tournament.bracketRounds.reduce((total, round) => total + round.matches.length, 0);
+  const infoCard = (className: string) => (
+    <Card className={className} padded={false}>
+      <CardHeader>
+        Información
+        <small>DATOS GENERALES</small>
+      </CardHeader>
+      <CardBody data-testid="tournament-info-card-body">
+        <InfoRow label="Nombre" value={tournament.name} />
+        <InfoRow label="Tipo" value={tournament.typeLabel} />
+        <InfoRow label="Categoría" value={tournament.category} />
+        <InfoRow label="Sede" value={tournament.location} />
+        <InfoRow label="Fechas" value={tournament.dateLabel} />
+        <InfoRow label="Equipos" value={String(tournament.standings.length)} />
+        <InfoRow label="Estado" value={tournament.statusLabel} />
+      </CardBody>
+    </Card>
+  );
 
   return (
     <div className="mx-auto w-full max-w-[1104px]" data-testid="tournament-detail-content">
       <PageHeader
         actions={
-          <Link className={buttonClasses("ghost")} to="/tournaments">
-            <svg aria-hidden="true" fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
-              <path d="M19 12H5" />
-              <path d="M12 19l-7-7 7-7" />
-            </svg>
-            Volver
-          </Link>
+          <>
+            <Link className={buttonClasses("ghost")} to={backTo as string}>
+              <svg aria-hidden="true" fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
+                <path d="M19 12H5" />
+                <path d="M12 19l-7-7 7-7" />
+              </svg>
+              Volver
+            </Link>
+            {actions}
+          </>
         }
         className="mb-[22px]"
         description={`Detalle del torneo · ${tournament.category} · ${tournament.dateLabel}`}
@@ -69,21 +112,14 @@ export function TournamentDetailShell({
         <Kpi label="Finaliza" sub={tournament.location} value={tournament.dateLabel} />
       </KpiGrid>
 
-      <Card className="mb-4" padded={false}>
-        <CardHeader>
-          Información
-          <small>DATOS GENERALES</small>
-        </CardHeader>
-        <CardBody data-testid="tournament-info-card-body">
-          <InfoRow label="Nombre" value={tournament.name} />
-          <InfoRow label="Tipo" value={tournament.typeLabel} />
-          <InfoRow label="Categoría" value={tournament.category} />
-          <InfoRow label="Sede" value={tournament.location} />
-          <InfoRow label="Fechas" value={tournament.dateLabel} />
-          <InfoRow label="Equipos" value={String(tournament.standings.length)} />
-          <InfoRow label="Estado" value={tournament.statusLabel} />
-        </CardBody>
-      </Card>
+      {sidePanel ? (
+        <div className="mb-4 grid gap-4 min-[901px]:grid-cols-2">
+          {infoCard("")}
+          {sidePanel}
+        </div>
+      ) : (
+        infoCard("mb-4")
+      )}
 
       <Card padded={false}>
         {/* Design: `.tor-tabs` is a `role="tablist"` in the prototype because its panels are
@@ -95,7 +131,7 @@ export function TournamentDetailShell({
           className="flex flex-wrap gap-2 border-b border-vt-border-2 bg-vt-surface-2 px-[18px] py-3"
           data-testid="tournament-tabs"
         >
-          {tournamentTabs.map((tab) => {
+          {tabs.map((tab) => {
             const isActive = tab.value === activeTab;
 
             return (
@@ -107,7 +143,7 @@ export function TournamentDetailShell({
                     : "border-vt-border bg-vt-surface text-vt-muted hover:border-vt-border-hover hover:text-vt-text"
                 }`}
                 key={tab.value}
-                to={`/tournaments/${tournament.id}${tab.suffix}` as string}
+                to={`${basePath}/${tournament.id}${tab.suffix}` as string}
               >
                 {tab.label}
               </Link>

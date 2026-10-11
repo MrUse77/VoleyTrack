@@ -125,44 +125,52 @@ export const PUBLIC_PLAYERS = Object.freeze([
 ] satisfies readonly PlayerFixture[]);
 
 const tournamentStandings = Object.freeze([
-  { position: 1, teamName: riverPlate.name, played: 6, won: 6, lost: 0, sets: "16-6", points: 16 },
-  { position: 2, teamName: ciudadVoley.name, played: 6, won: 4, lost: 2, sets: "14-8", points: 13 },
-  { position: 3, teamName: upcnSanJuan.name, played: 5, won: 4, lost: 1, sets: "13-7", points: 12 },
-  { position: 4, teamName: bocaJuniors.name, played: 6, won: 3, lost: 3, sets: "11-11", points: 10 },
-  { position: 5, teamName: bolivar.name, played: 5, won: 2, lost: 3, sets: "9-12", points: 7 },
-  { position: 6, teamName: monteros.name, played: 6, won: 1, lost: 5, sets: "7-15", points: 4 },
-  { position: 7, teamName: "Obras San Juan", played: 5, won: 1, lost: 4, sets: "6-14", points: 4 },
-  { position: 8, teamName: "Once Unidos", played: 5, won: 0, lost: 5, sets: "4-15", points: 1 },
+  Object.freeze({ position: 1, teamName: riverPlate.name, played: 6, won: 6, lost: 0, sets: "16-6", points: 16 }),
+  Object.freeze({ position: 2, teamName: ciudadVoley.name, played: 6, won: 4, lost: 2, sets: "14-8", points: 13 }),
+  Object.freeze({ position: 3, teamName: upcnSanJuan.name, played: 5, won: 4, lost: 1, sets: "13-7", points: 12 }),
+  Object.freeze({ position: 4, teamName: bocaJuniors.name, played: 6, won: 3, lost: 3, sets: "11-11", points: 10 }),
+  Object.freeze({ position: 5, teamName: bolivar.name, played: 5, won: 2, lost: 3, sets: "9-12", points: 7 }),
+  Object.freeze({ position: 6, teamName: monteros.name, played: 6, won: 1, lost: 5, sets: "7-15", points: 4 }),
+  Object.freeze({ position: 7, teamName: "Obras San Juan", played: 5, won: 1, lost: 4, sets: "6-14", points: 4 }),
+  Object.freeze({ position: 8, teamName: "Once Unidos", played: 5, won: 0, lost: 5, sets: "4-15", points: 1 }),
 ] satisfies readonly TournamentStandingFixture[]);
 
-const tournamentStatLeaders = Object.freeze([
-  { category: "Puntos", playerName: "Valentina Ruiz", playerId: "jugadora-valentina-ruiz", teamName: sanJorge.name, teamId: sanJorge.id, value: 142, unit: "pts" },
-  { category: "Remates", playerName: "Camila Sosa", playerId: "jugadora-camila-sosa", teamName: rosarioCentral.name, teamId: rosarioCentral.id, value: 87, unit: "remates" },
-  { category: "Bloqueos", playerName: "Valentina Ruiz", playerId: "jugadora-valentina-ruiz", teamName: sanJorge.name, teamId: sanJorge.id, value: 34, unit: "bloqueos" },
-  { category: "Saques", playerName: "Camila Sosa", playerId: "jugadora-camila-sosa", teamName: rosarioCentral.name, teamId: rosarioCentral.id, value: 19, unit: "aces" },
-  { category: "Recepciones", playerName: "Valentina Ruiz", playerId: "jugadora-valentina-ruiz", teamName: sanJorge.name, teamId: sanJorge.id, value: 156, unit: "recepciones" },
-  { category: "Tabla general", playerName: "Clasificación", teamName: riverPlate.name, teamId: riverPlate.id, value: 16, unit: "pts" },
-  { category: "Tabla general", playerName: "Clasificación", teamName: ciudadVoley.name, teamId: ciudadVoley.id, value: 13, unit: "pts" },
-  { category: "Tabla general", playerName: "Clasificación", teamName: upcnSanJuan.name, teamId: upcnSanJuan.id, value: 12, unit: "pts" },
-  { category: "Tabla general", playerName: "Clasificación", teamName: bocaJuniors.name, teamId: bocaJuniors.id, value: 10, unit: "pts" },
-  { category: "Tabla general", playerName: "Clasificación", teamName: bolivar.name, teamId: bolivar.id, value: 7, unit: "pts" },
-  { category: "Tabla general", playerName: "Clasificación", teamName: monteros.name, teamId: monteros.id, value: 4, unit: "pts" },
-] satisfies readonly TournamentStatLeaderFixture[]);
+// Annotated rather than `satisfies`-checked: freezing each record individually means the array
+// literal no longer receives the fixture type as a contextual type, so `playerId` (optional on a
+// stat leader) would disappear from the inferred union. The annotation keeps the optional field
+// and the immutable form.
+const tournamentStatLeaders: readonly TournamentStatLeaderFixture[] = Object.freeze([
+  Object.freeze({ category: "Puntos", playerName: "Valentina Ruiz", playerId: "jugadora-valentina-ruiz", teamName: sanJorge.name, teamId: sanJorge.id, value: 142, unit: "pts" }),
+  Object.freeze({ category: "Remates", playerName: "Camila Sosa", playerId: "jugadora-camila-sosa", teamName: rosarioCentral.name, teamId: rosarioCentral.id, value: 87, unit: "remates" }),
+  Object.freeze({ category: "Bloqueos", playerName: "Valentina Ruiz", playerId: "jugadora-valentina-ruiz", teamName: sanJorge.name, teamId: sanJorge.id, value: 34, unit: "bloqueos" }),
+  Object.freeze({ category: "Saques", playerName: "Camila Sosa", playerId: "jugadora-camila-sosa", teamName: rosarioCentral.name, teamId: rosarioCentral.id, value: 19, unit: "aces" }),
+  Object.freeze({ category: "Recepciones", playerName: "Valentina Ruiz", playerId: "jugadora-valentina-ruiz", teamName: sanJorge.name, teamId: sanJorge.id, value: 156, unit: "recepciones" }),
+  Object.freeze({ category: "Tabla general", playerName: "Clasificación", teamName: riverPlate.name, teamId: riverPlate.id, value: 16, unit: "pts" }),
+  Object.freeze({ category: "Tabla general", playerName: "Clasificación", teamName: ciudadVoley.name, teamId: ciudadVoley.id, value: 13, unit: "pts" }),
+  Object.freeze({ category: "Tabla general", playerName: "Clasificación", teamName: upcnSanJuan.name, teamId: upcnSanJuan.id, value: 12, unit: "pts" }),
+  Object.freeze({ category: "Tabla general", playerName: "Clasificación", teamName: bocaJuniors.name, teamId: bocaJuniors.id, value: 10, unit: "pts" }),
+  Object.freeze({ category: "Tabla general", playerName: "Clasificación", teamName: bolivar.name, teamId: bolivar.id, value: 7, unit: "pts" }),
+  Object.freeze({ category: "Tabla general", playerName: "Clasificación", teamName: monteros.name, teamId: monteros.id, value: 4, unit: "pts" }),
+]);
 
+// Every record below is frozen down to each round and each match: the admin detail screens
+// render this projection through `ADMIN.tournaments[…].detail`, and `scoring-admin.test.ts`
+// walks the whole admin tree, so an unfrozen nested record would be a fixture that only looks
+// immutable from the public side.
 const tournamentBracketRounds = Object.freeze([
-  { round: "Cuartos de final", matches: Object.freeze([
-    { displayId: "qf-1", homeTeamName: "River Plate", awayTeamName: "Once Unidos", homeScore: 3, awayScore: 0, status: "played" },
-    { displayId: "qf-2", homeTeamName: "Ciudad Voley", awayTeamName: "Obras San Juan", homeScore: 3, awayScore: 1, status: "played" },
-    { displayId: "qf-3", homeTeamName: "UPCN San Juan", awayTeamName: "Monteros Voley", homeScore: 3, awayScore: 2, status: "played" },
-    { displayId: "qf-4", matchId: "match-liga-rosarina-02", homeTeamName: rosarioCentral.name, homeTeamId: rosarioCentral.id, awayTeamName: sanJorge.name, awayTeamId: sanJorge.id, homeScore: 2, awayScore: 1, status: "live" },
-  ]) },
-  { round: "Semifinal", matches: Object.freeze([
-    { displayId: "sf-1", homeTeamName: "River Plate", awayTeamName: "Ciudad Voley", homeScore: null, awayScore: null, status: "upcoming" },
-    { displayId: "sf-2", homeTeamName: "UPCN San Juan", awayTeamName: "Boca Juniors", homeScore: null, awayScore: null, status: "upcoming" },
-  ]) },
-  { round: "Final", matches: Object.freeze([
-    { displayId: "f-1", homeTeamName: "Por definir", awayTeamName: "Por definir", homeScore: null, awayScore: null, status: "upcoming" },
-  ]) },
+  Object.freeze({ round: "Cuartos de final", matches: Object.freeze([
+    Object.freeze({ displayId: "qf-1", homeTeamName: "River Plate", awayTeamName: "Once Unidos", homeScore: 3, awayScore: 0, status: "played" }),
+    Object.freeze({ displayId: "qf-2", homeTeamName: "Ciudad Voley", awayTeamName: "Obras San Juan", homeScore: 3, awayScore: 1, status: "played" }),
+    Object.freeze({ displayId: "qf-3", homeTeamName: "UPCN San Juan", awayTeamName: "Monteros Voley", homeScore: 3, awayScore: 2, status: "played" }),
+    Object.freeze({ displayId: "qf-4", matchId: "match-liga-rosarina-02", homeTeamName: rosarioCentral.name, homeTeamId: rosarioCentral.id, awayTeamName: sanJorge.name, awayTeamId: sanJorge.id, homeScore: 2, awayScore: 1, status: "live" }),
+  ]) }),
+  Object.freeze({ round: "Semifinal", matches: Object.freeze([
+    Object.freeze({ displayId: "sf-1", homeTeamName: "River Plate", awayTeamName: "Ciudad Voley", homeScore: null, awayScore: null, status: "upcoming" }),
+    Object.freeze({ displayId: "sf-2", homeTeamName: "UPCN San Juan", awayTeamName: "Boca Juniors", homeScore: null, awayScore: null, status: "upcoming" }),
+  ]) }),
+  Object.freeze({ round: "Final", matches: Object.freeze([
+    Object.freeze({ displayId: "f-1", homeTeamName: "Por definir", awayTeamName: "Por definir", homeScore: null, awayScore: null, status: "upcoming" }),
+  ]) }),
 ] satisfies readonly TournamentBracketRoundFixture[]);
 
 const tournamentDetails = Object.freeze({

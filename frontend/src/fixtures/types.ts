@@ -329,6 +329,15 @@ export type AdminStaffFixture = Readonly<{
 export type AdminTournamentFixture = Readonly<{
   id: string; name: string; status: TournamentStatus; statusLabel: string; category: string; dateLabel: string;
   location: string; matchesLabel: string; teamsLabel: string;
+  /**
+   * The tournament this admin row administers, i.e. the same `TournamentFixture` the public
+   * detail routes read (`standings`, `bracketRounds`, `type`/`typeLabel`). The admin row used
+   * to carry only the list's own labels, so the admin detail screens had no competition data
+   * at all; the design's admin detail (`frontend/design/html/voleytrack-admin-ver-torneo.html`)
+   * renders the same standings/bracket content the public detail does, which is only possible
+   * if the admin row exposes the tournament itself instead of a second copy of it.
+   */
+  detail: TournamentFixture;
 }>;
 export type AdminMatchFixture = Readonly<{
   id: string; tournamentId: string; status: MatchStatus; statusLabel: string; scheduledLabel: string;

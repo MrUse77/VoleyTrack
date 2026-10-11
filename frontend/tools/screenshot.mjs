@@ -1175,6 +1175,120 @@ const PROBE_SOURCE = `(async () => {
     listStates.restoredRowCount = document.querySelectorAll("main tbody tr, main ul > li").length;
   }
 
+  // ---------------------------------------------------------------------------------------
+  // Additive: the admin tournament area's own probes. New keys only - every key above keeps its
+  // name, order and shape, and no existing strategy is reordered or redefined.
+  // ---------------------------------------------------------------------------------------
+
+  // The design's admin list card (a.card.clickable.tournament-card,
+  // frontend/design/html/voleytrack-admin-torneos.html): a link whose body prints a mono
+  // uppercase "TIPO . ESTADO" eyebrow, the name, the figures line and a badge row. Reporting the
+  // rendered box, the copy and the destination makes the card's padding, its link semantics and
+  // its data-driven content machine-readable instead of only visual.
+  const adminTournamentCards = Array.from(
+    document.querySelectorAll('[data-testid="admin-tournament-card"]'),
+  ).map((card) => {
+    const body = card.querySelector('[data-testid="admin-tournament-card-body"]');
+    const cs = body ? getComputedStyle(body) : null;
+
+    return {
+      tag: card.tagName.toLowerCase(),
+      href: card.getAttribute("href"),
+      ariaLabel: card.getAttribute("aria-label"),
+      eyebrow: (card.querySelector("small")?.textContent || "").trim(),
+      heading: (card.querySelector("h3")?.textContent || "").trim(),
+      figures: (card.querySelector("p")?.textContent || "").trim().replace(/\s+/g, " "),
+      badgeCount: card.querySelectorAll("span[class*='rounded-full']").length,
+      badges: Array.from(card.querySelectorAll("span[class*='rounded-full']")).map((badge) =>
+        (badge.textContent || "").trim(),
+      ),
+      bodyPaddingTop: cs ? cs.paddingTop : null,
+      bodyPaddingLeft: cs ? cs.paddingLeft : null,
+      bodyBorderRadius: cs ? cs.borderTopLeftRadius : null,
+      bodyBackgroundColor: cs ? cs.backgroundColor : null,
+    };
+  });
+
+  // The admin tournament frame's regions, found through the test ids the shared
+  // TournamentDetailShell and the admin panels already declare. This is what proves the
+  // design's page-head / KPI / Informacion / tabs / panel order actually rendered on a route,
+  // and it is the same set of selectors on every admin tournament route.
+  const adminTournamentRegionIds = [
+    "tournament-detail-content",
+    "tournament-info-card-body",
+    "tournament-format-card-body",
+    "tournament-tabs",
+    "tournament-tab-panel",
+    "tournament-form-card-body",
+    "tournaments-filter-card-body",
+    "tournament-bracket",
+  ];
+  const adminTournamentRegions = adminTournamentRegionIds
+    .map((testId) => {
+      const el = document.querySelector('[data-testid="' + testId + '"]');
+      if (!el) return null;
+      const cs = getComputedStyle(el);
+      return {
+        testId,
+        tag: el.tagName.toLowerCase(),
+        childCount: el.childElementCount,
+        padding: cs.padding,
+        backgroundColor: cs.backgroundColor,
+        borderRadius: cs.borderTopLeftRadius,
+      };
+    })
+    .filter(Boolean);
+
+  // The design's .info-row list (voleytrack-admin.css:119-122) inside the Informacion card and
+  // the cup's Formato card: one row per attribute, each with its label and value. Counting them
+  // proves the overview renders the design's own block and how many rows the derived Formato
+  // card carries.
+  const describeInfoRows = (testId) => {
+    const body = document.querySelector('[data-testid="' + testId + '"]');
+    if (!body) return null;
+
+    const rows = Array.from(body.children);
+
+    return {
+      testId,
+      count: rows.length,
+      rows: rows.map((row) => ({
+        label: (row.children[0]?.textContent || "").trim(),
+        value: (row.children[1]?.textContent || "").trim(),
+      })),
+      paddingTop: getComputedStyle(body).paddingTop,
+      paddingLeft: getComputedStyle(body).paddingLeft,
+    };
+  };
+  const infoRows = {
+    format: describeInfoRows("tournament-format-card-body"),
+    informacion: describeInfoRows("tournament-info-card-body"),
+  };
+
+  // The .tournament-tabs strip (frontend/design/html/voleytrack-admin-ver-torneo.html,
+  // role="tablist" there). Here every entry is a route link, so the key reports each label,
+  // its destination, whether it is the current page (aria-current), and the active entry's
+  // resolved treatment - which is how the tab set and its state are read without an image.
+  const adminTournamentTabsElement = document.querySelector('[data-testid="tournament-tabs"]');
+  const adminTournamentTabs = adminTournamentTabsElement
+    ? {
+        ariaLabel: adminTournamentTabsElement.getAttribute("aria-label"),
+        tabCount: adminTournamentTabsElement.querySelectorAll("a").length,
+        tabs: Array.from(adminTournamentTabsElement.querySelectorAll("a")).map((tab) => {
+          const cs = getComputedStyle(tab);
+          return {
+            label: (tab.textContent || "").trim().replace(/\s+/g, " "),
+            href: tab.getAttribute("href"),
+            isCurrent: tab.getAttribute("aria-current") === "page",
+            backgroundColor: cs.backgroundColor,
+            color: cs.color,
+            borderRadius: cs.borderRadius,
+            height: cs.height,
+          };
+        }),
+      }
+    : null;
+
   return {
     title: document.title,
     readyState: document.readyState,
@@ -1265,6 +1379,15 @@ const PROBE_SOURCE = `(async () => {
       modals,
       filterPanels,
       listStates,
+      // Additive keys: new names only, every key above is unchanged. adminTournamentCards reports
+      // the admin list's card treatment and its link destination, adminTournamentRegions which of
+      // the tournament frame's regions rendered on the route, infoRows the Informacion and
+      // Formato rows with their labels and values, and adminTournamentTabs the tab set with its
+      // current entry and resolved treatment.
+      adminTournamentCards,
+      adminTournamentRegions,
+      infoRows,
+      adminTournamentTabs,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

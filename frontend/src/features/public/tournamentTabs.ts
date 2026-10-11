@@ -48,3 +48,31 @@ export const tournamentTabs: readonly TournamentTab[] = [
   { label: "Estadísticas", suffix: "/stats", value: "estadisticas" },
   { label: "Llaves", suffix: "/bracket", value: "llaves" },
 ];
+
+/**
+ * The bracket panel's heading, status pill and intro sentence, per tournament type.
+ *
+ * It lives here rather than in a page module because two screens render it — the public
+ * `Llaves` route and the admin `Llaves` route — and because a route module may only export
+ * components (eslint react-refresh/only-export-components).
+ *
+ * PROTOTYPE COPY, NOT REAL DATA: both sentences, the eyebrow and the status word come from
+ * the design's own bracket intros (frontend/design/html/voleytrack-torneos.html, the
+ * `bracketIntro` calls for `liga-a1` and `copa-nacional`; the cup word "Programado" is also
+ * the admin cup detail's `bracket-status`, voleytrack-admin-ver-copa.html). They must be
+ * replaced by real values once the classification rules and the participant list exist.
+ */
+export const bracketIntroByType = {
+  Liga: {
+    eyebrow: "PENDIENTE DE CLASIFICACIÓN",
+    status: "Pendiente",
+    text: "Las llaves se completarán al cerrar la fase regular y confirmar los ocho equipos clasificados.",
+    title: "Llaves de playoffs",
+  },
+  Copa: {
+    eyebrow: "PROGRAMADO",
+    status: "Programado",
+    text: "Los cruces se completarán cuando se confirmen todos los participantes.",
+    title: "Llaves de eliminación directa",
+  },
+} as const;

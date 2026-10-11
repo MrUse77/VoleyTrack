@@ -46,7 +46,10 @@ describe("admin tournament matches", () => {
 
     expect(html).toContain(tournament.name);
     expect(html).toContain(tournament.category);
-    expect(html).toContain("Partidos del torneo");
+    // Design: the cup detail's panel is titled "Partidos programados"
+    // (voleytrack-admin-ver-copa.html); this screen's former "Partidos del torneo" title was
+    // the app's own wording and is gone.
+    expect(html).toContain("Partidos programados");
     for (const match of ADMIN.matches.filter((item) => item.tournamentId === tournament.id)) {
       expect(html).toContain(match.homeTeamName);
       expect(html).toContain(match.awayTeamName);
@@ -55,19 +58,24 @@ describe("admin tournament matches", () => {
     }
   });
 
-  it("renders local admin tournament tabs with Matches active", () => {
+  it("renders the shared admin tournament tabs with Partidos active", () => {
     const tournament = ADMIN.tournaments[0];
     const html = renderTournamentMatches(tournament.id);
 
+    expect(html).toContain(`href="/admin/tournaments/${tournament.id}"`);
     expect(html).toContain(`href="/admin/tournaments/${tournament.id}/matches"`);
     expect(html).toContain(`href="/admin/tournaments/${tournament.id}/standings"`);
     expect(html).toContain(`href="/admin/tournaments/${tournament.id}/stats"`);
+    expect(html).toContain(`href="/admin/tournaments/${tournament.id}/bracket"`);
+    expect(html).toContain(`href="/admin/tournaments/${tournament.id}/edit"`);
+    expect(html).toContain("Resumen");
     expect(html).toContain("Partidos");
-    expect(html).toContain("Tabla");
+    // The design's own label for the standings panel (voleytrack-admin-ver-torneo.html) —
+    // this tab used to read "Tabla".
+    expect(html).toContain("Clasificación");
     expect(html).toContain("Estadísticas");
+    expect(html).toContain("Llaves");
     expect(html).toContain('href="/admin/tournaments/' + tournament.id + '/matches" aria-current="page"');
-    expect(html).toContain('href="/admin/tournaments/' + tournament.id + '/standings"');
-    expect(html).toContain('href="/admin/tournaments/' + tournament.id + '/stats"');
     expect(html).not.toContain('href="/admin/tournaments/' + tournament.id + '/standings" aria-current="page"');
     expect(html).not.toContain('href="/admin/tournaments/' + tournament.id + '/stats" aria-current="page"');
   });
@@ -76,7 +84,8 @@ describe("admin tournament matches", () => {
     const html = renderTournamentMatches(emptyTournamentId);
 
     expect(html).toContain("Torneo sin partidos");
-    expect(html).toContain("Este torneo todavía no tiene partidos programados.");
+    // Design: the cup detail's `#cup-matches-empty` copy (voleytrack-admin-ver-copa.html).
+    expect(html).toContain("Aún no hay partidos programados");
     expect(html).not.toContain('data-testid="admin-tournament-match-row"');
   });
 

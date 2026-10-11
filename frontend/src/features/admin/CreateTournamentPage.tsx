@@ -1,98 +1,47 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Button } from "../../components/primitives/Button";
-import { Field, fieldControlClasses } from "../../components/primitives/Field";
-import { SectionShell } from "../../components/ui/SectionShell";
+import { buttonClasses } from "../../components/primitives/buttonClasses";
+import { PageHeader } from "../../components/primitives/PageHeader";
+import { TournamentFormCard } from "./TournamentFormCard";
+import { emptyTournamentForm } from "./tournamentFormValues";
 
-type TournamentForm = {
-  name: string;
-  format: string;
-  startDate: string;
-  endDate: string;
-};
-
-const initialForm: TournamentForm = {
-  name: "",
-  format: "",
-  startDate: "",
-  endDate: "",
-};
-
+/**
+ * Design: frontend/design/html/voleytrack-admin-nuevo-torneo.html — a `.page-head`
+ * ("Nuevo torneo" with "Crear un torneo nuevo y configurar su sistema de competencia." and a
+ * `Volver` ghost action) over the shared tournament form card, whose eyebrow reads `NUEVO`.
+ *
+ * Two deliberate differences from the prototype:
+ * 1. The prototype's "volver" and "cancelar" both leave for the management screen, and its
+ *    "crear torneo" link leaves for that same screen without submitting anything. Here
+ *    Cancelar returns to the tournaments list — the screen this form belongs to — and
+ *    "Crear torneo" is a real submit button.
+ * 2. The prototype's Cantidad de equipos starts at 16 and its Estado at Programado. The app's
+ *    form starts empty, which is the behaviour its test pins.
+ */
 export function CreateTournamentPage() {
-  const [form, setForm] = useState<TournamentForm>(initialForm);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const updateField = <Field extends keyof TournamentForm>(field: Field, value: TournamentForm[Field]) => {
-    setForm((current) => ({ ...current, [field]: value }));
-    setIsSubmitted(false);
-  };
-
   return (
-    <SectionShell
-      description="Configura los parámetros iniciales de la competencia."
-      eyebrow="Administración"
-      title="Crear Torneo"
-    >
-      <form
-        className="max-w-3xl rounded-2xl border border-vt-border bg-vt-raised p-6"
-        onSubmit={(event) => {
-          event.preventDefault();
-          setIsSubmitted(true);
-        }}
-      >
-        <div className="grid gap-5">
-          <Field id="tournament-name" label="Nombre del Torneo">
-            <input
-              className={fieldControlClasses}
-              onChange={(event) => updateField("name", event.target.value)}
-              placeholder="Ej: Liga Nacional 2026"
-              value={form.name}
-            />
-          </Field>
-          <Field id="tournament-start-date" label="Fecha de Inicio">
-            <input
-              className={fieldControlClasses}
-              onChange={(event) => updateField("startDate", event.target.value)}
-              placeholder="DD/MM/AAAA"
-              type="date"
-              value={form.startDate}
-            />
-          </Field>
-          <Field id="tournament-end-date" label="Fecha de Fin">
-            <input
-              className={fieldControlClasses}
-              onChange={(event) => updateField("endDate", event.target.value)}
-              placeholder="DD/MM/AAAA"
-              type="date"
-              value={form.endDate}
-            />
-          </Field>
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-vt-text" htmlFor="tournament-format">Tipo de Competición</label>
-            <select
-              className="h-10 rounded-lg border border-vt-border bg-vt-panel px-3 text-sm text-vt-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
-              id="tournament-format"
-              onChange={(event) => updateField("format", event.target.value)}
-              value={form.format}
-            >
-              <option value="">Seleccionar (Liga Regular, Playoffs...)</option>
-              <option value="regular-league">Liga Regular</option>
-              <option value="playoffs">Playoffs</option>
-              <option value="mixed">Liga Regular y Playoffs</option>
-            </select>
-          </div>
-        </div>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Button type="submit">Crear Torneo</Button>
-          <Link
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-vt-border px-4 text-sm font-semibold text-vt-text hover:bg-vt-surface"
-            to={"/admin/tournaments" as string}
-          >
-            Cancelar
+    <div>
+      <PageHeader
+        actions={
+          <Link className={buttonClasses("ghost")} to={"/admin/tournaments" as string}>
+            <svg aria-hidden="true" fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+            Volver
           </Link>
-          {isSubmitted ? <p className="text-sm text-vt-success sm:col-span-2" role="status">Torneo preparado localmente</p> : null}
-        </div>
-      </form>
-    </SectionShell>
+        }
+        className="mb-[22px]"
+        description="Crear un torneo nuevo y configurar su sistema de competencia."
+        title="Nuevo torneo"
+      />
+
+      <TournamentFormCard
+        cancelTo="/admin/tournaments"
+        eyebrow="NUEVO"
+        initialValues={emptyTournamentForm}
+        statusText="Torneo preparado localmente. No se enviaron datos al servidor."
+        submitLabel="Crear torneo"
+      />
+    </div>
   );
 }

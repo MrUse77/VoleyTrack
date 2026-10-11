@@ -33,7 +33,10 @@ describe("admin tournament standings", () => {
 
     expect(html).toContain(tournament.name);
     expect(html).toContain(tournament.category);
-    expect(html).toContain("Tabla de posiciones");
+    // The design's own label for this panel (voleytrack-admin-ver-torneo.html, the league
+    // detail's `Clasificación <small>TOP 5</small>`); the screen's former "Tabla de
+    // posiciones" heading was the app's own wording.
+    expect(html).toContain("Clasificación");
     expect(html).toContain("Equipo");
     expect(html).toContain("PJ");
     expect(html).toContain("PTS");
@@ -57,6 +60,7 @@ describe("admin tournament standings", () => {
     expect(html).toContain(`href="/admin/tournaments/${tournament.id}/matches"`);
     expect(html).toContain(`href="/admin/tournaments/${tournament.id}/standings" aria-current="page"`);
     expect(html).toContain(`href="/admin/tournaments/${tournament.id}/stats"`);
+    expect(html).toContain(`href="/admin/tournaments/${tournament.id}/bracket"`);
     expect(html).not.toContain(`href="/admin/tournaments/${tournament.id}/matches" aria-current="page"`);
     expect(html).not.toContain(`href="/admin/tournaments/${tournament.id}/stats" aria-current="page"`);
   });
@@ -66,6 +70,6 @@ describe("admin tournament standings", () => {
 
     expect(html).toContain("Torneo no encontrado");
     expect(html).toContain('href="/admin/tournaments"');
-    expect(html).not.toContain("Tabla de posiciones");
+    expect(html).not.toContain("Clasificación");
   });
 });

@@ -339,9 +339,14 @@ describe("core primitives", () => {
     // dialog, the players and matches lists, and the three create forms): every card it added
     // is structural and the three form boxes that carried the app-only raised fill became
     // structural, so the measured total moved to 72 across 27 production files and the floor
-    // moves with it.
-    expect(cards.length).toBeGreaterThanOrEqual(72);
-    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(27);
+    // moves with it. T18 then aligned the admin tournament screens: the shared
+    // `TournamentFormCard` replaced the create form's own uniform box, the six admin
+    // tournament routes render through the shared tournament frame, and the three content tabs
+    // lost their own uniform-padding header and panel cards (the same content is now the
+    // frame's card and each panel's table), so the measured total moved to 70 across 28
+    // production files and the floors move to those values.
+    expect(cards.length).toBeGreaterThanOrEqual(70);
+    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(28);
 
     // A JSX spread could inject `padded={false}` (or a shadowing prop) behind the
     // guard's back and the count would silently drift. Fail loudly instead of
@@ -376,9 +381,13 @@ describe("core primitives", () => {
     // form (its new cards already are structural), which took the legacy form to 32 call
     // sites in 11 files, so both ceilings were lowered to the measured values again. T17's
     // admin alignment added only structural cards and converted no legacy one, so the legacy
-    // form stays at its measured 32/11 and neither ceiling moves.
-    expect(legacyCount).toBeLessThanOrEqual(32);
-    expect(legacyFiles.length).toBeLessThanOrEqual(11);
+    // form stays at its measured 32/11 and neither ceiling moves. T18 aligned the admin
+    // tournament screens and converted every uniform-padding card it touched to the structural
+    // form (the three content tabs' header/panel/leaderboard cards and the list's own card are
+    // structural now), which took the legacy form to 24 call sites in 8 files, so both ceilings
+    // were lowered to the measured values.
+    expect(legacyCount).toBeLessThanOrEqual(24);
+    expect(legacyFiles.length).toBeLessThanOrEqual(8);
   });
 
   it("keeps a single form-field concept in the primitives layer", () => {
