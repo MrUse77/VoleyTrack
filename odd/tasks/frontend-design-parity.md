@@ -65,26 +65,65 @@ guards only one file against this token, so the migration was left half-applied.
 
 ### Slice 1 — Foundation
 
-- [ ] **T01 — Establish the verified pre-change baseline.** Run the suite, build, lint and
-  record pass/fail, counts and any pre-existing failure. Deliverable: this document's baseline
-  block. Evidence: exact commands and final summary lines.
-- [ ] **T02 — Vendor the HTML design pack as the canonical design reference.** Files:
-  `frontend/design/html/**` (21 HTML, 8 CSS, `brand-spec.md`, `README.md`, `imagen.png`) and an
-  update to `frontend/design/README.md` that names the HTML pack as the implementation reference
-  and records the `.op`/`.pen` retirement. Excluded: the `.pen`/`.op` canvases and the reference
-  screenshot crops. Test: structural readback of the file set.
-- [ ] **T03 — Align design tokens with the design pack.** Files: `frontend/src/styles/tokens.css`,
-  `frontend/src/index.css`, `frontend/src/styles/tokens.test.ts`. Add `surface-2`, `muted-2`,
-  `blue`/accent-2, `accent-soft`, radius tokens, mono family and shadow; set
-  `success: #22c55e` and `danger: #ef4444`; resolve `raised-border` which the design does not
-  define. Test-first: extend the token assertions and observe RED before editing `tokens.css`.
+- [x] **T01 — Establish the verified pre-change baseline.** Done. Commands, counts and the two
+  pre-existing reds are recorded in the Baseline section below.
+- [ ] **T01b — Make the pre-existing baseline green.** Two independent pre-existing reds,
+  both confirmed present before any change and both blocking clean verification:
+  1. `src/router.test.tsx`: 38 rendering tests hang inside `act()` and burn the 5s timeout
+     each, which is what makes the suite take ~193s. Diagnosis first, then the minimal fix.
+  2. `src/features/matches/hooks/use-match-center-filter.ts:19:5`: eslint
+     `react-hooks/set-state-in-effect`, the only lint error in the repo.
+  Deliverable: `bun run test` fully green and fast, `bun run lint` clean.
+  Files: whatever the diagnosis names (`src/router.test.tsx`, possibly `src/router.tsx` or a
+  shared test setup) plus `use-match-center-filter.ts`.
+  Evidence: suite result and duration before and after, plus a clean lint run.
+  This lands before T10, whose router guard depends on it, and before the per-screen slices,
+  so that every later verification is fast.
+- [x] **T02 — Vendor the HTML design pack as the canonical design reference.** Done, commit
+  `44dd0bf`. 34 files staged under `frontend/design/` only (32 in `html/`, the rewritten
+  `README.md`, the audit), verified by listing the staged paths.
+- [x] **T03 — Align design tokens with the design pack.** Done. Test-first with observed RED then
+  GREEN: `timeout 120 bunx vitest run src/styles/tokens.test.ts` went `2 failed | 8 passed (10)`
+  to `10 passed (10)` in 130ms. Added `surface-2`, `muted-2`, `blue`, `accent-soft`,
+  `radius-vt`/`radius-vt-sm`, `shadow-vt`, `--font-mono`; set `success: #22c55e` and
+  `danger: #ef4444`. Additive only — `vt-panel` and `vt-raised-border` untouched. `index.css`
+  needed no change.
+  - Verified separately: no regression. Excluding the pre-existing broken file,
+    `bunx vitest run --exclude '**/router.test.tsx'` gives `46 passed (46)` / `229 passed` in
+    3.16s, exit 0. That reconciles exactly with the baseline (271 - 229 = 42 tests in
+    `router.test.tsx` = 38 failed + 4 passed).
+  - Verified separately: every new token is emitted into `:root` of the built stylesheet, so
+    none of them reproduces the `vt-canvas` silent-failure mode. Their utility classes are
+    absent only because no source file consumes them yet.
+  - Naming is an interpretation: `--radius-vt`, `--radius-vt-sm` and `--shadow-vt` follow the
+    repo's `-vt-` convention because Tailwind v4 namespaces `--radius-*` and `--shadow-*`. The
+    design's CSS gives no variable name for the shadow; it appears only in the derived
+    `brand-spec.md`.
+- [ ] **T03b — Actually load the design fonts.** Discovered while doing T03: the app declares
+  `--font-sans: "Inter", system-ui, sans-serif` but **never loads Inter**. There is no
+  `@font-face`, no Google Fonts link, no `@fontsource` package and no font reference in
+  `index.html`, so the app has been rendering the system font. The design's typography (Inter
+  400-900 plus JetBrains Mono) is one of its five stated visual rules, so this is a real parity
+  gap and it is **pre-existing**.
+  Decision taken by the product owner: **self-host with Fontsource**.  Add
+  `@fontsource/inter` and `@fontsource/jetbrains-mono` and import the weights the design uses
+  (Inter 400/500/600/700/800/900, JetBrains Mono 500/700). No third-party runtime fetch, works
+  offline.
+  Files: `frontend/package.json`, `frontend/src/index.css`, plus a test asserting the families
+  resolve. Evidence: the emitted build must contain real font files and an `@font-face` block,
+  not just the family name.
+  Blocked-on nothing; lands in Slice 1 because every screen depends on it.
 - [ ] **T04 — Repair the broken accent-contrast utility.** Replace the 20 `text-vt-canvas`
   occurrences across 17 files with `text-vt-background`, and widen the guard in
   `styles/tokens.test.ts` so no source file can introduce the undefined token again. Test-first:
   a whole-`src` guard fails RED while any occurrence remains.
-- [ ] **T05 — Replace hardcoded hex colours with tokens.** Files: `features/auth/LoginPage.tsx`,
+- [ ] **T05 — Replace hardcoded colours with tokens.** Files: `features/auth/LoginPage.tsx`,
   `features/auth/BrandingPanel.tsx`, `features/auth/ChangePasswordPage.tsx`,
-  `layouts/PublicShell.tsx`. Test-first: assert absence of raw hex in these files.
+  `layouts/PublicShell.tsx`, and `features/public/DashboardPage.tsx:39` which hardcodes
+  `shadow-[0_0_0_12px_rgba(76,175,80,0.18)]` — the *old* `#4caf50` green as a literal rgba, which
+  is why the retired value still appears in the built stylesheet. `ChangePasswordPage.tsx:80`
+  also hardcodes `border-[#334155]`, `hover:bg-[#111a2b]`, `text-white` and `outline-[#ff8c42]`.
+  Test-first: assert absence of raw hex and raw colour literals in these files.
 - [ ] **T06 — Add the primitives the design defines but the app lacks.** New:
   `Chip`, `StatePill` (programado / en vivo / finalizado), `LivePill` with the pulse dot,
   a filter group, and a toast surface. Test-first: one test per primitive covering its variants
@@ -140,7 +179,68 @@ guards only one file against this token, so the migration was left half-applied.
 
 ## Baseline (T01)
 
-_Pending — recorded below when the baseline verification completes._
+Captured before any source change, from `frontend/`.
+
+```
+$ bunx vitest run          # package script is `bun run test`
+exit 1
+Test Files  1 failed | 46 passed (47)
+Tests       38 failed | 233 passed (271)
+Duration    193.11s (tests 193.97s)
+
+$ bun run build            # tsc -b && vite build
+exit 0
+1955 modules transformed, built in 416ms
+dist/assets/index-C0Zq0ukY.css   84.03 kB | gzip: 15.28 kB
+dist/assets/index-B4cp_5hM.js   496.78 kB | gzip: 130.32 kB
+
+$ bun run lint             # eslint .
+exit 1
+1 problem (1 error, 0 warnings)
+  src/features/matches/hooks/use-match-center-filter.ts:19:5
+  react-hooks/set-state-in-effect
+```
+
+All three results are **PRE-EXISTING**: `git status -- frontend/src` is clean and
+`git diff HEAD -- frontend/src` is empty, so nothing here was caused by this work.
+
+No Tailwind warning was emitted for `text-vt-canvas` in any of the three logs. The
+undefined utility fails **silently**, which is what let the half-applied migration survive.
+
+### The 38 router failures
+
+Every failure is in `src/router.test.tsx` and every one is
+`Error: Test timed out in 5000ms.` attributed to its `it(` line (one of the sites is a
+12-case `test.each`, which is why 38 tests are spread over 27 error blocks). The suite is
+slow precisely because each of the 38 burns the full 5s timeout (38 x 5s ~= 190s).
+
+Failing sites, all in `src/router.test.tsx`: `144:3, 291:3, 310:3, 332:3, 354:3, 371:3,
+388:3, 405:3, 422:3, 440:3, 464:3, 482:3, 501:3, 519:3, 537:3, 555:3, 573:3, 595:3, 617:3,
+639:3, 660:3, 694:5, 714:3, 739:3, 769:3, 799:3, 835:3`.
+
+What has been ruled out for those hangs, by grep over `src`:
+
+- **No network.** There is no `fetch(`, `axios` or react-query
+  (`useQuery` / `QueryClient`) usage anywhere in `src` outside tests.
+- **No suspension mechanism.** No `React.lazy`, no `Suspense`, and no router
+  `loader` / `pendingComponent` in `src/router.tsx` or `src/layouts/`.
+
+The failing tests are exactly the ones that render `<RouterProvider router={router} />`
+with the module-level router singleton, inside `act()`. Tests that only inspect the
+route tree pass.
+
+### Why this blocks the feature
+
+Two ways: it makes every verification run cost ~193s, and `src/router.test.tsx` is the
+guard T10 relies on to prove the dead routes are gone. It is therefore repaired as
+**T01b** during the foundation slice, before any screen work.
+
+### Environment
+
+- Node `v24.11.1` (repo `engines: ~24`).
+- Branch `feature/frontend-init`, upstream `origin/feature/frontend-init`, default `origin/main`.
+- `frontend/dist/`, `node_modules/` and `frontend/pnpm-lock.yaml` are **not** covered by
+  `.gitignore`, so commits must stage explicit paths and must never use `git add -A`.
 
 ## Risks
 

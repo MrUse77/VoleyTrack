@@ -1,14 +1,22 @@
 @theme {
   --color-vt-background: #0b1220;
   --color-vt-surface: #111a2b;
+  --color-vt-surface-2: #162032;
   --color-vt-panel: #0f1726;
   --color-vt-raised: #1e293b;
   --color-vt-border: #243249;
   --color-vt-raised-border: #334155;
   --color-vt-text: #f8fafc;
   --color-vt-muted: #94a3b8;
+  --color-vt-muted-2: #64748b;
   --color-vt-accent: #ff8c42;
-  --color-vt-success: #4caf50;
-  --color-vt-danger: #f44336;
+  --color-vt-accent-soft: color-mix(in oklch, var(--color-vt-accent) 14%, transparent);
+  --color-vt-blue: #3b82f6;
+  --color-vt-success: #22c55e;
+  --color-vt-danger: #ef4444;
+  --radius-vt: 16px;
+  --radius-vt-sm: 10px;
+  --shadow-vt: 0 8px 24px rgba(0,0,0,.35);
   --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }

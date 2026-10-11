@@ -34,15 +34,21 @@ describe("design tokens", () => {
       "#0b1220",
       "#111a2b",
       "#0f1726",
+      "#162032",
       "#f8fafc",
       "#94a3b8",
+      "#64748b",
       "#ff8c42",
-      "#4caf50",
-      "#f44336",
+      "#3b82f6",
+      "#22c55e",
+      "#ef4444",
       "#243249",
     ]) {
       expect(tokens).toContain(value);
     }
+
+    expect(tokens).not.toContain("#4caf50");
+    expect(tokens).not.toContain("#f44336");
 
 		expect(index).toContain('@import "./styles/tokens.css";');
 		expect(index).not.toContain("min-width: 1440px");
@@ -67,6 +73,22 @@ describe("design tokens", () => {
     expect(index).toMatch(/:root\s*{[^}]*font-family: var\(--font-sans\);/s);
     expect(index).toMatch(/body\s*{[^}]*font-family: var\(--font-sans\);/s);
     expect(index).not.toContain('font-family: "Roboto"');
+  });
+
+  it("adds the surface, accent-soft, radius, mono font and shadow tokens of the vendored design", () => {
+    const tokens = readFileSync(tokensPath, "utf8");
+
+    expect(tokens).toContain("--color-vt-surface-2: #162032");
+    expect(tokens).toContain("--color-vt-muted-2: #64748b");
+    expect(tokens).toContain("--color-vt-blue: #3b82f6");
+    expect(tokens).toContain(
+      "--color-vt-accent-soft: color-mix(in oklch, var(--color-vt-accent) 14%, transparent)",
+    );
+    expect(tokens).toContain("--radius-vt: 16px");
+    expect(tokens).toContain("--radius-vt-sm: 10px");
+    expect(tokens).toContain('--font-mono: "JetBrains Mono", ui-monospace, monospace');
+    expect(tokens).toContain("--shadow-vt: 0 8px 24px rgba(0,0,0,.35)");
+    expect(tokens).toContain("--color-vt-raised-border: #334155");
   });
 
   it("uses the canonical canvas without a non-semantic global gradient", () => {
