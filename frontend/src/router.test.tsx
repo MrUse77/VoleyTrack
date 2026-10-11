@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { RouterProvider } from "@tanstack/react-router";
-import { describe, expect, it, vi } from "vitest";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ARTBOARD_MANIFEST } from "./artboardManifest";
 import { LiveMatchPage } from "./features/public/LiveMatchPage";
 import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
@@ -27,18 +27,28 @@ import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
 import { TeamStatsPage } from "./features/public/TeamStatsPage";
-import { router } from "./router";
+import { routeTree } from "./router";
 
-function routePaths(routeTree: typeof router.routeTree) {
+// Each test owns a fresh router. A mounted RouterProvider overwrites the
+// router's startTransition with an acknowledgement-based closure and never
+// restores it on unmount, so a shared module-level singleton is poisoned for
+// every test that runs after the first mount.
+function createTestRouter() {
+  return createRouter({ routeTree });
+}
+
+type RouteTreeLike = { fullPath?: string; children?: readonly unknown[] };
+
+function routePaths(tree: RouteTreeLike) {
   const paths: string[] = [];
-  const visit = (route: { fullPath?: string; children?: readonly unknown[] }) => {
+  const visit = (route: RouteTreeLike) => {
     if (route.fullPath) paths.push(route.fullPath);
     for (const child of route.children ?? []) {
-      visit(child as { fullPath?: string; children?: readonly unknown[] });
+      visit(child as RouteTreeLike);
     }
   };
 
-  visit(routeTree);
+  visit(tree);
   return paths;
 }
 
@@ -47,6 +57,12 @@ function manifestPath(route: string) {
 }
 
 describe("router", () => {
+  let router: ReturnType<typeof createTestRouter>;
+
+  beforeEach(() => {
+    router = createTestRouter();
+  });
+
   it("exposes the auth route and shell subtree", () => {
     const topLevelRoutes = router.routeTree.children ?? [];
     const topLevelPaths = topLevelRoutes.map((route) => route.path);

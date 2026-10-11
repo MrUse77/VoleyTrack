@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { MatchCategory, MatchSectionVm, MatchesBrowserVm } from "../matches.models";
 
 type MatchFilter = "ALL" | MatchCategory;
@@ -14,10 +14,15 @@ export function useMatchCenterFilter(matchCenter: MatchesBrowserVm) {
   }, [matchCenter.filters]);
 
   const [activeFilter, setActiveFilter] = useState<MatchFilter>(initialFilter);
+  const [syncedInitialFilter, setSyncedInitialFilter] = useState<MatchFilter>(initialFilter);
 
-  useEffect(() => {
+  // Reset the selection while rendering (the pattern React documents for
+  // "adjusting state when a prop changes"). Doing it in an effect would commit
+  // an extra render with the stale filter visible and would cascade renders.
+  if (syncedInitialFilter !== initialFilter) {
+    setSyncedInitialFilter(initialFilter);
     setActiveFilter(initialFilter);
-  }, [initialFilter]);
+  }
 
   const normalizeFilter = (filter: string): MatchFilter => {
     const normalized = filter.toUpperCase();

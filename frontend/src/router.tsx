@@ -337,7 +337,7 @@ const adminPlayersRoute = createRoute({
   component: AdminPlayersPage,
 });
 
-const routeTree = rootRoute.addChildren([
+export const routeTree = rootRoute.addChildren([
 	loginRoute,
 	changePasswordRoute,
 	liveMatchRoute,

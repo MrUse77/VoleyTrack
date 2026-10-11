@@ -67,18 +67,48 @@ guards only one file against this token, so the migration was left half-applied.
 
 - [x] **T01 — Establish the verified pre-change baseline.** Done. Commands, counts and the two
   pre-existing reds are recorded in the Baseline section below.
-- [ ] **T01b — Make the pre-existing baseline green.** Two independent pre-existing reds,
-  both confirmed present before any change and both blocking clean verification:
-  1. `src/router.test.tsx`: 38 rendering tests hang inside `act()` and burn the 5s timeout
-     each, which is what makes the suite take ~193s. Diagnosis first, then the minimal fix.
-  2. `src/features/matches/hooks/use-match-center-filter.ts:19:5`: eslint
-     `react-hooks/set-state-in-effect`, the only lint error in the repo.
-  Deliverable: `bun run test` fully green and fast, `bun run lint` clean.
-  Files: whatever the diagnosis names (`src/router.test.tsx`, possibly `src/router.tsx` or a
-  shared test setup) plus `use-match-center-filter.ts`.
-  Evidence: suite result and duration before and after, plus a clean lint run.
-  This lands before T10, whose router guard depends on it, and before the per-screen slices,
-  so that every later verification is fast.
+- [x] **T01b — Make the pre-existing baseline green.** Done. Both pre-existing reds fixed,
+  inside three source files plus one new test file.
+  - Root cause of the 38 timeouts: **singleton router contamination**, not network, Suspense or a
+    render loop. `Transitioner` (`@tanstack/react-router/dist/esm/Transitioner.js:16-23`)
+    overwrites `router.startTransition` on mount with a promise that resolves only when a mounted
+    `MatchesInner` calls `settleOwner`, and registers **no cleanup** restoring it on unmount. The
+    library default is synchronous (`router-core/.../router.js:73`), and `commitLocation`
+    (`:400`) calls `load()` before any `RouterProvider` subscribes, so the first rendering test
+    navigates with the synchronous default and passes. From the second one on, navigation uses
+    the stale acknowledgement closure of a destroyed root: `acknowledgement[0]` is `undefined`,
+    `MatchesInner` is gone, `settleOwner` never runs, the promise never resolves, and the
+    `await act(...)` block cannot settle.
+  - Fix: `router.tsx` exports `routeTree` (inert at runtime) and `router.test.tsx` builds a fresh
+    router in `beforeEach` instead of sharing the singleton. No assertion, selector or test name
+    was changed.
+  - The lint error in `use-match-center-filter.ts` was **not** the cause of the hangs; it was an
+    independent defect. Fixed with React's documented adjust-state-during-render pattern and a
+    `syncedInitialFilter` guard. The fix also removes an intermediate committed render in which
+    the stale filter was briefly visible. Behaviour is otherwise identical across the initial,
+    A-B, A-B-A and user-choice cases.
+  - The hook had **no real coverage**: the neighbouring suites use `renderToStaticMarkup`, so its
+    effect never ran. A new jsdom test file pins it; RED was demonstrated by removing the effect
+    (`2 failed | 1 passed`) before applying the fix.
+  - Evidence, full suite before/after: `193.11s` with `38 failed | 233 passed` → `3.69s` with
+    `275 passed`, exit 0. `router.test.tsx` alone went from ~190s to `1.61s` (`43 passed`).
+    `bun run lint` is clean (exit 0, zero diagnostics) and `bun run build` exits 0.
+  - Independently verified, including an order-safety attempt to falsify the fix:
+    `--sequence.shuffle` with seeds 1, 42, 999, 1234567 and random all give `48/48 files,
+    275/275 tests`, and forcing `router.test.tsx` to run last in a full-suite run passes. The fix
+    is not order-dependent.
+  - Test-count reconciliation, all observed: the recorded 271 predates `d72d9d8`, which added one
+    token assertion, so the pre-existing total became 272 (229 non-router + 43 router); the new
+    hook test adds 3 more, for 275.
+  - Known tooling quirk, not a failure: `--sequence.shuffle` together with
+    `--sequence.shuffle.files` crashes the vitest 4.1.11 CLI parser
+    (`Cannot create property 'files' on boolean 'true'`). Use one or the other.
+  - Two honest caveats carried forward into T10: (a) the new per-test routers never call the
+    public `router.history.destroy()` API that `@tanstack/history` exposes, so the file
+    accumulates chained `pushState` patches and popstate listeners across its 30 mounts — latent
+    today because that file never navigates back or forward, and jsdom isolation confines it to
+    the file; (b) of the three new hook tests, the first is a smoke test that would also pass
+    without the render-phase sync, so only the other two discriminate.
 - [x] **T02 — Vendor the HTML design pack as the canonical design reference.** Done, commit
   `44dd0bf`. 34 files staged under `frontend/design/` only (32 in `html/`, the rewritten
   `README.md`, the audit), verified by listing the staged paths.
@@ -144,6 +174,13 @@ guards only one file against this token, so the migration was left half-applied.
   every live consumer (`layouts/AppShell.tsx`, `pages/AdminPage.tsx`, `pages/PlanilleroPage.tsx`
   and the live routes). Test: the router test must cover the surviving route set and prove the
   dead ones are gone.
+  Carried over from T01b, since this task already rewrites `router.test.tsx`:
+  - dispose each per-test router with the public `router.history.destroy()` API in an `afterEach`,
+    so the file stops accumulating chained `pushState` patches and popstate listeners;
+  - strengthen the smoke test in `use-match-center-filter.test.tsx` that would pass even without
+    the render-phase sync, or relabel it so its weaker guarantee is not mistaken for a pin.
+  Note: `src/styles/tokens.test.ts` also references the legacy modules (`shellUtilityBarPath`,
+  `navItemPath`, `shellTopbarPath`, `loginPagePath`), so it must be updated in the same commit.
 
 ### Slice 2 — Public (spectator) screens
 
