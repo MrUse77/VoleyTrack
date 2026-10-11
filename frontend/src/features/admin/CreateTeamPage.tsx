@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { Field, fieldControlClasses } from "../../components/primitives/FormField";
+import { Field, fieldControlClasses } from "../../components/primitives/Field";
 import { Modal } from "../../components/primitives/Modal";
 import { PUBLIC_PLAYERS } from "../../fixtures";
 

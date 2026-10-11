@@ -1,6 +1,6 @@
 import { LayoutDashboard, Shield, Users, Volleyball } from "lucide-react";
-import { Surface } from "../components/ui/Surface";
-import { Badge } from "../components/ui/Badge";
+import { Badge } from "../components/primitives/Badge";
+import { Card } from "../components/primitives/Card";
 
 const adminCards = [
 	{
@@ -37,7 +37,7 @@ export function AdminPage() {
 	return (
 		<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 			{adminCards.map((card) => (
-				<Surface key={card.title} className="p-4 sm:p-5">
+				<Card key={card.title} className="p-4 sm:p-5" padded={false}>
 					<div className="flex items-start justify-between gap-4">
 						<div className="space-y-3">
 							<div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-vt-border bg-vt-panel text-vt-accent">
@@ -53,7 +53,7 @@ export function AdminPage() {
 					<div className="mt-4 rounded-2xl border border-vt-border bg-vt-panel px-4 py-3 text-sm text-vt-text/80">
 						{card.action}
 					</div>
-				</Surface>
+				</Card>
 			))}
 		</div>
 	);

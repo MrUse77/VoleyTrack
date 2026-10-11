@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "@tanstack/react-router";
 import { Button } from "../../components/primitives/Button";
 import { Card } from "../../components/primitives/Card";
-import { Badge } from "../../components/ui/Badge";
+import { Badge } from "../../components/primitives/Badge";
 import { SectionShell } from "../../components/ui/SectionShell";
 import { PUBLIC_PLAYERS, POINT_TYPES, SCORING } from "../../fixtures";
 

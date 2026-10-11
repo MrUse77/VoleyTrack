@@ -1,5 +1,5 @@
 import type { DashboardHeroVm } from "../dashboard.models";
-import { Badge } from "../../../components/ui/Badge";
+import { Badge } from "../../../components/primitives/Badge";
 import { Surface } from "../../../components/ui/Surface";
 
 interface DashboardHeroProps {

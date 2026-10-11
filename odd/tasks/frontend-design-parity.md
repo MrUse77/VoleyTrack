@@ -600,6 +600,80 @@ not 20.)
   kind of leftover that makes a shell feel almost-right. Also note the legacy
   `src/shared/app-shell.content.ts` still links a "Stats" entry to the now-removed `/stats`, so that
   link is dead until T10 deletes the file.
+- [~] **T10 — Remove the legacy duplicate component system.** **Partial, and correctly reported as
+  such rather than forced to completion.** The removable half is gone; the half with live consumers
+  needs per-screen work and is tracked as T10b and T10c below.
+  - The map was built before anything was deleted, as required. Numbers: `ui/Badge` had 10 importers
+    (6 live), `ui/SectionShell` 10 (9 live), `ui/Surface` 7 (2 live at the time), `ui/NavItem` 0 live,
+    the three `Shell*` components and `layouts/AppShell` only each other, and
+    `shared/app-shell.content.ts` plus `shared/navigation.models.ts` only the dead shell.
+  - **Deleted:** 11 files — `ShellTopbar`, `ShellUtilityBar`, `ShellFooter`, `ui/Badge`,
+    `ui/NavItem`, `layouts/AppShell`, `shared/app-shell.content.ts`, `shared/navigation.models.ts`,
+    `pages/LoginPage.tsx`, `pages/MatchesPage.tsx` and the latter's test. Also 4 dead routes: the
+    pathless `/shell` layout, `/results`, `/gallery` and `/fantasy`. 12 importers re-pointed and 4
+    test references retired. Net diff **+231 / −713** across 33 paths.
+  - **Live consumers migrated behaviour-preservingly:** `pages/PlanilleroPage.tsx`
+    (`SectionShell`→`PageHeader`, `Surface`→`Card padded={false}`, `ui/Badge`→`primitives/Badge`)
+    and `pages/AdminPage.tsx`. Plus 8 feature files with one-line import swaps whose output is
+    byte-identical, because `primitives/Badge` already accepts the legacy `tone` prop. Incidental
+    geometry changes on `/planillero` and `/admin`, disclosed rather than hidden: h2→h1, radius
+    20px→16px, and `Surface`'s shadow dropped.
+  - **All four carried-over items done.** `primitives/FormField.tsx` renamed to `Field.tsx` with its
+    6 importers, and the single-field guard no longer strips import specifiers, so a stale
+    `from "./FormField"` now fails too. `router.test.tsx` gained
+    `afterEach(() => router.history.destroy())` using the public `@tanstack/history` API that an
+    earlier worker had believed did not exist. The non-discriminating hook test was **relabelled**
+    rather than padded: it is now "seeds the selected filter … on the first render", and the worker
+    proved the weaker guarantee by disabling the sync and observing that it still passed while the
+    other two tests failed (`2 failed | 1 passed`), then restored the hook byte-identically. The
+    `vt-canvas` guard now uses `/[A-Za-z][\w-]*-vt-canvas\b/` across the whole tree with **no
+    self-exclusion**, with liveness proven by injecting a class and seeing it named
+    `PlanilleroPage.tsx:36`.
+  - **Ratchet tightened:** `vt-panel` 93 → **85** in 43 files, ceiling lowered to match.
+    `vt-raised` 46/26 and `vt-raised-border` 9/7 unchanged.
+  - Suite `48 files / 297 passed`, exit 0 — one file fewer and one test fewer than the previous
+    299, because `pages/MatchesPage.test.tsx` and a retired guard test are gone. Lint exit 0, build
+    exit 0. Four harness captures on a self-started port: `/`, `/login`, `/admin/tournaments` and
+    `/planillero` all exit 0 with `problems: []`, no Vite overlay and expected content present.
+  - Server hygiene done right this time: one PID started, killed by that same PID, port released,
+    other sessions' processes untouched.
+- [x] **T10b — Delete the dead component cluster and the last dead legacy module.** Confirmed by the
+  parent after T10 reported the cluster: `DashboardHero`, `DashboardLive`, `DashboardRail` (all in
+  `features/dashboard/`) and `MatchesBrowser` (`features/matches/components/`) are imported **only**
+  by each other and by the barrels `features/dashboard/index.ts` and `features/matches/index.ts`, and
+  **nothing imports those barrels**. The live `/` route is `features/public/DashboardPage`, which
+  imports only `Link`, the new primitives, `StateBoundary` and fixtures — it does not use any of
+  them. `components/ui/Surface.tsx` is therefore dead too, since its only remaining importers are
+  those four dead components.
+  This corrects an earlier note in this document: the raw-colour debt counted in `DashboardHero` (7
+  occurrences) and `DashboardRail` (3) was recorded as "genuine screen work for slices 2 to 4", but
+  that was wrong — it is debt inside dead code, and it disappears with the deletion rather than
+  needing migration.
+  Deliverable: delete the four components, their tests, the two barrels if genuinely unused, and
+  `ui/Surface.tsx`; update `styles/tokens.test.ts`, which references `DashboardHero` by path; and
+  **determine whether `useMatchCenterFilter` itself is live**. If a live screen uses it, move that
+  hook's test harness off the dead `MatchesBrowser`. If only dead code used it, then the hook and
+  its test are dead too and should go with the cluster — a test for dead code is not a safety net,
+  and the honest move is to say so rather than rewire a harness to keep it alive. Lower the ratchet
+  ceilings for the debt this removes.
+- [ ] **T10c — Retire `ui/SectionShell`.** The one legacy module still carrying live consumers: **9
+  live screens** — the four scoring screens (`MatchSetupPage`, `PointEntryPage`, `ScoringConsolePage`,
+  `PostMatchSummaryPage`), four admin create/staff screens (`CreateMatch`, `CreatePlayer`,
+  `CreateTournament`, `StaffRegister`) and `pages/PlaceholderPage`.
+  It was correctly **not** migrated in T10, because swapping it is not behaviour-preserving: its
+  `eyebrow` slot has no counterpart in the design's `PageHeader`, and `DashboardLive.test.tsx` pinned
+  that text. Restructuring nine screens' headers is per-screen design work, so it belongs with the
+  tasks that already redesign those screens — the scoring screens in slice 4 (T25) and the admin
+  forms in slice 3 (T17 to T24). Until then the module stays as explicitly tracked debt.
+  Deliverable: migrate each screen as its own task touches it, and delete `ui/SectionShell` once the
+  last importer is gone. The 85/9 counts in the ratchet do not cover it, so consider whether its
+  importer count needs pinning in the same style as the other two ratchets.
+
+### Superseded plan text for T10 (kept for traceability)
+
+The line below was the original T10 plan. It is retained only so the numbering and the intent remain
+readable against the completed record above; the carried-over items it lists were all done.
+
 - [ ] **T10 — Remove the legacy duplicate component system.** Delete `components/ui/*`,
   `ShellTopbar`/`ShellUtilityBar`/`ShellFooter`, the dead routes `/results`, `/gallery` and
   `/fantasy`, and the orphaned `pages/LoginPage.tsx` / `pages/MatchesPage.tsx`, after migrating

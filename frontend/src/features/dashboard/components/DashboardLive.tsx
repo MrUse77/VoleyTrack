@@ -1,5 +1,5 @@
 import type { DashboardHomeVm } from "../dashboard.models";
-import { Badge } from "../../../components/ui/Badge";
+import { Badge } from "../../../components/primitives/Badge";
 import { SectionShell } from "../../../components/ui/SectionShell";
 import { Surface } from "../../../components/ui/Surface";
 import { DashboardHero } from "./DashboardHero";

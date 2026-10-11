@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "../../components/primitives/Button";
-import { Field, fieldControlClasses } from "../../components/primitives/FormField";
+import { Field, fieldControlClasses } from "../../components/primitives/Field";
 import { SectionShell } from "../../components/ui/SectionShell";
 
 type PlayerPosition = "setter" | "outside-hitter" | "opposite" | "middle-blocker" | "libero";

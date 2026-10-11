@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Card } from "../../components/primitives/Card";
 import { Modal } from "../../components/primitives/Modal";
-import { Badge } from "../../components/ui/Badge";
+import { Badge } from "../../components/primitives/Badge";
 import { SectionShell } from "../../components/ui/SectionShell";
 import { SCORING, SCORING_ROSTER } from "../../fixtures";
 import { PlayerSelectionModal } from "./PlayerSelectionModal";

@@ -5,7 +5,6 @@ import {
 	createRouter,
 	useLocation,
 } from "@tanstack/react-router";
-import { AppShell } from "./layouts/AppShell";
 import { AdminShell, isScorerPath } from "./layouts/AdminShell";
 import { PublicShell } from "./layouts/PublicShell";
 import type { SidebarNavigationGroup } from "./components/navigation/Sidebar";
@@ -50,12 +49,6 @@ const rootRoute = createRootRoute({
 	component: () => <Outlet />,
 });
 
-const shellRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	id: "shell",
-	component: AppShell,
-});
-
 // The design's public sidebar (frontend/design/html/voleytrack.html) is Dashboard / Partidos /
 // Torneos / Equipos / Jugadores / En vivo. Equipos, Jugadores and En vivo are deliberately
 // absent until the tasks that build their real screens land (T14/T15/T16 in
@@ -63,7 +56,9 @@ const shellRoute = createRoute({
 // The app-only "Estadísticas" entry was removed because it was the only entry point of
 // `placeholderRoute(publicShellRoute, "/stats")`, which rendered no screen — the real
 // statistics views live at /tournaments/$id/stats and /teams/$id/stats and stay reachable
-// from their own pages. `/stats` joins the dead-route list that T10 removes.
+// from their own pages.
+// T10 then removed the app-only shell subtree (`/shell` and its `/results`, `/gallery` and
+// `/fantasy` PlaceholderPage children) together with the legacy shell it existed to feed.
 const publicNavigation: SidebarNavigationGroup[] = [
 	{
 		items: [
@@ -136,7 +131,7 @@ const adminShellRoute = createRoute({
 const placeholder = (title: string) => () => <PlaceholderPage title={title} />;
 
 function placeholderRoute(
-	parent: typeof shellRoute | typeof publicShellRoute | typeof adminShellRoute,
+	parent: typeof publicShellRoute | typeof adminShellRoute,
 	path: string,
 	title: string,
 ) {
@@ -171,9 +166,6 @@ const changePasswordRoute = createRoute({
 	component: ChangePasswordPage,
 });
 
-const resultsRoute = placeholderRoute(shellRoute, "/results", "Results");
-const galleryRoute = placeholderRoute(shellRoute, "/gallery", "Gallery");
-const fantasyRoute = placeholderRoute(shellRoute, "/fantasy", "Fantasy");
 const playersRoute = placeholderRoute(publicShellRoute, "/players", "Jugadores");
 const teamsRoute = placeholderRoute(publicShellRoute, "/teams", "Equipos");
 const adminSettingsRoute = placeholderRoute(adminShellRoute, "/admin/settings", "Configuración");
@@ -347,11 +339,6 @@ export const routeTree = rootRoute.addChildren([
 	loginRoute,
 	changePasswordRoute,
 	liveMatchRoute,
-	shellRoute.addChildren([
-		resultsRoute,
-		galleryRoute,
-		fantasyRoute,
-	]),
 	publicShellRoute.addChildren([
 		publicDashboardRoute,
 		// These two are PlaceholderPage routes on purpose: the design defines `/teams` and

@@ -1,6 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "../../components/primitives/Button";
-import { Field, fieldControlClasses } from "../../components/primitives/FormField";
+import { Field, fieldControlClasses } from "../../components/primitives/Field";
 import { SectionShell } from "../../components/ui/SectionShell";
 
 type StaffRole = "scorer" | "assistant" | "coordinator";

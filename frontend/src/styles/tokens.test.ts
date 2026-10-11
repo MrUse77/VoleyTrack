@@ -84,13 +84,9 @@ const tokensPath = fileURLToPath(new URL("./tokens.css", import.meta.url));
 const indexPath = fileURLToPath(new URL("../index.css", import.meta.url));
 const publicShellPath = fileURLToPath(new URL("../layouts/PublicShell.tsx", import.meta.url));
 const adminShellPath = fileURLToPath(new URL("../layouts/AdminShell.tsx", import.meta.url));
-const shellUtilityBarPath = fileURLToPath(new URL("../components/ShellUtilityBar.tsx", import.meta.url));
-const navItemPath = fileURLToPath(new URL("../components/ui/NavItem.tsx", import.meta.url));
-const shellTopbarPath = fileURLToPath(new URL("../components/ShellTopbar.tsx", import.meta.url));
 const scoringConsolePath = fileURLToPath(new URL("../features/scoring/ScoringConsolePage.tsx", import.meta.url));
 const placeholderPagePath = fileURLToPath(new URL("../pages/PlaceholderPage.tsx", import.meta.url));
 const adminPagePath = fileURLToPath(new URL("../pages/AdminPage.tsx", import.meta.url));
-const loginPagePath = fileURLToPath(new URL("../pages/LoginPage.tsx", import.meta.url));
 const planilleroPagePath = fileURLToPath(new URL("../pages/PlanilleroPage.tsx", import.meta.url));
 const createTeamPagePath = fileURLToPath(new URL("../features/admin/CreateTeamPage.tsx", import.meta.url));
 const playerDetailPath = fileURLToPath(new URL("../features/public/PlayerDetailPage.tsx", import.meta.url));
@@ -177,24 +173,10 @@ describe("design tokens", () => {
     expect(index).not.toContain("#09101a");
   });
 
-  it("normalizes ShellUtilityBar, NavItem and ShellTopbar to canonical surface tokens without white/black leaks", () => {
-    for (const filePath of [shellUtilityBarPath, navItemPath, shellTopbarPath]) {
-      const source = readFileSync(filePath, "utf8");
-
-      expect(source).toMatch(/bg-vt-(panel|surface)/);
-      expect(source).not.toContain("border-white/");
-      expect(source).not.toContain("bg-white/");
-      expect(source).not.toContain("bg-black/");
-    }
-
-    expect(readFileSync(shellUtilityBarPath, "utf8")).toContain("border-vt-border");
-    expect(readFileSync(shellTopbarPath, "utf8")).toContain("border-vt-border");
-    expect(readFileSync(shellTopbarPath, "utf8")).toContain("bg-vt-surface");
-    expect(readFileSync(shellUtilityBarPath, "utf8")).toContain("bg-vt-panel");
-  });
-
   it("normalizes generic page surfaces to canonical tokens without white/black leaks", () => {
-    for (const filePath of [scoringConsolePath, placeholderPagePath, adminPagePath, loginPagePath, planilleroPagePath]) {
+    // `pages/LoginPage.tsx` left this list with T10: it was an orphan (the live `/login`
+    // route renders `features/auth/LoginPage.tsx`), so the file is gone.
+    for (const filePath of [scoringConsolePath, placeholderPagePath, adminPagePath, planilleroPagePath]) {
       const source = readFileSync(filePath, "utf8");
 
       expect(source).toMatch(/bg-vt-(panel|surface|raised)/);
@@ -207,7 +189,6 @@ describe("design tokens", () => {
     expect(readFileSync(scoringConsolePath, "utf8")).toMatch(/bg-vt-(panel|surface)/);
     expect(readFileSync(placeholderPagePath, "utf8")).toContain("bg-vt-panel");
     expect(readFileSync(adminPagePath, "utf8")).toContain("bg-vt-panel");
-    expect(readFileSync(loginPagePath, "utf8")).toContain("bg-vt-panel");
     expect(readFileSync(planilleroPagePath, "utf8")).toContain("bg-vt-panel");
   });
 
@@ -274,8 +255,23 @@ describe("design tokens", () => {
   });
 
   it("keeps the whole source tree free of the undefined vt-canvas colour utility", () => {
-    const guardPath = resolve(fileURLToPath(import.meta.url));
-    const sourceFiles = collectSourceFiles(srcRootPath).filter((filePath) => resolve(filePath) !== guardPath);
+    // Class-like occurrence, not the bare substring: the token is only ever a hazard as a
+    // Tailwind colour utility, i.e. with a utility prefix (a letter followed by word/hyphen
+    // characters) immediately before `vt-canvas`. That shape is what the bare quoted literal
+    // does NOT satisfy, which is why this guard no longer has to skip itself to avoid
+    // matching its own assertion text, and therefore covers the whole tree.
+    const classLikeVtCanvas = /[A-Za-z][\w-]*-vt-canvas\b/;
+    const bareToken = "vt-canvas";
+
+    // A pattern that cannot discriminate is a broken guard, not a strict one: the class-like
+    // shape must match a real utility and must NOT match the bare quoted literal. The samples
+    // are assembled rather than written out so this file does not contain the very shape it
+    // bans.
+    expect(classLikeVtCanvas.test(`<span className="text-${bareToken}" />`)).toBe(true);
+    expect(classLikeVtCanvas.test(`hover:bg-${bareToken}/50`)).toBe(true);
+    expect(classLikeVtCanvas.test(`"${bareToken}"`)).toBe(false);
+
+    const sourceFiles = collectSourceFiles(srcRootPath);
 
     expect(sourceFiles.length).toBeGreaterThan(0);
 
@@ -285,8 +281,8 @@ describe("design tokens", () => {
       readFileSync(filePath, "utf8")
         .split("\n")
         .forEach((line, index) => {
-          if (line.includes("vt-canvas")) {
-            offenders.push(`${filePath.slice(srcRootPath.length)}:${index + 1}`);
+          if (classLikeVtCanvas.test(line)) {
+            offenders.push(`${filePath.slice(srcRootPath.length)}:${index + 1} ${line.trim()}`);
           }
         });
     }
@@ -410,10 +406,14 @@ describe("design tokens", () => {
     // (T09) took vt-panel to 93 in 48 files and vt-raised to 46 in 26 files: the sidebar
     // nav's hover moved to the design's --surface-2, its admin active fill moved to
     // --accent, and the admin-active assertion in layouts/shells.test.tsx moved off
-    // bg-vt-raised. Both ceilings are lowered here in the same change (a slack ceiling is
-    // a broken ratchet). vt-raised-border is unchanged at its measured 9 in 7 files.
+    // bg-vt-raised. T10 removed the legacy shell, the orphaned pages and the dead-route
+    // PlaceholderPage imports, which took vt-panel to 85 usages in 43 files, so it is the
+    // only ceiling that moves here (measured with this guard's own patterns and exclusions).
+    // vt-raised (46/26) and vt-raised-border (9/7) are unchanged, so their ceilings stay at
+    // their measured values. Lowering every ceiling in the same change as the drop is what
+    // keeps a slack ceiling from re-spending the freed budget.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 93, baselineFiles: 48 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 85, baselineFiles: 43 },
       { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 46, baselineFiles: 26 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 9, baselineFiles: 7 },
     ];

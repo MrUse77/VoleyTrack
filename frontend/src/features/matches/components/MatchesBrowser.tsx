@@ -1,6 +1,6 @@
 import type { MatchesBrowserVm } from "../matches.models";
 import { useMatchCenterFilter } from "../hooks/use-match-center-filter";
-import { Badge } from "../../../components/ui/Badge";
+import { Badge } from "../../../components/primitives/Badge";
 import { Surface } from "../../../components/ui/Surface";
 
 interface MatchesBrowserProps {

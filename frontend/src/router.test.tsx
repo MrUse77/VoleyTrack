@@ -2,7 +2,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ARTBOARD_MANIFEST } from "./artboardManifest";
 import { LiveMatchPage } from "./features/public/LiveMatchPage";
 import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
@@ -63,25 +63,30 @@ describe("router", () => {
     router = createTestRouter();
   });
 
-  it("exposes the auth route and shell subtree", () => {
+  // Each test mounts a RouterProvider over its own router, and a mounted provider patches
+  // window.history.pushState/replaceState and registers its own popstate listener without
+  // undoing either on unmount. Without this, the file accumulated one chained pushState
+  // patch and one listener per mount across its ~30 mounts. `destroy()` is the public
+  // @tanstack/history API that restores the originals and removes the listener.
+  afterEach(() => {
+    router.history.destroy();
+  });
+
+  it("exposes the auth route and admin shell subtree", () => {
     const topLevelRoutes = router.routeTree.children ?? [];
     const topLevelPaths = topLevelRoutes.map((route) => route.path);
-    const shellRoute = topLevelRoutes.find((route) => route.id === "/shell");
-    const shellChildren = shellRoute?.children as
-      | Array<{ path: string }>
-      | undefined;
-    const shellPaths = shellChildren?.map((route) => route.path) ?? [];
 
     expect(topLevelPaths).toContain("login");
-    expect(shellPaths).not.toContain("admin");
-    expect(shellPaths).not.toContain("planillero");
-    expect(shellPaths).not.toContain("matches");
-    expect(shellPaths).toContain("results");
-    expect(shellPaths).not.toContain("stats");
-    expect(shellPaths).toContain("gallery");
-    expect(shellPaths).toContain("fantasy");
-    expect(shellPaths).not.toContain("players");
-    expect(shellPaths).not.toContain("teams");
+    // The app-only `/shell` route and its /results, /gallery and /fantasy PlaceholderPage
+    // children were deleted with the legacy AppShell they existed to feed: nothing linked to
+    // them, and /results and /fantasy duplicated the real /matches and /tournaments screens.
+    // `/shell` was a pathless layout route, so the proof is its id and the children's
+    // full paths, not a top-level path segment.
+    expect(topLevelRoutes.map((route) => route.id as string)).not.toContain("/shell");
+    const allPaths = routePaths(router.routeTree);
+    expect(allPaths).not.toContain("/results");
+    expect(allPaths).not.toContain("/gallery");
+    expect(allPaths).not.toContain("/fantasy");
 
     const adminShellRoute = topLevelRoutes.find((route) => route.id === "/admin");
     const adminShellPaths = (adminShellRoute?.children as Array<{ path: string }> | undefined)

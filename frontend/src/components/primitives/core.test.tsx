@@ -9,7 +9,7 @@ import {
   Field,
   fieldControlClasses,
   fieldTextareaClasses,
-} from "./FormField";
+} from "./Field";
 import { IconButton } from "./IconButton";
 import { Avatar } from "./Avatar";
 import { Badge } from "./Badge";
@@ -326,12 +326,11 @@ describe("core primitives", () => {
 
   it("keeps a single form-field concept in the primitives layer", () => {
     // The old `FormField` wrapper was retired in favour of `Field`; any surviving
-    // reference means two competing field concepts are back. The primitive module keeps
-    // its historical filename, so module specifiers are stripped before matching.
+    // reference means two competing field concepts are back. The primitive now lives in
+    // `Field.tsx`, so the module specifier carries no `FormField` either: this guard
+    // matches the identifier alone rather than stripping import paths.
     const offenders = productionTsxFiles(sourceRoot)
-      .filter((file) =>
-        /\bFormField\b/.test(readFileSync(file, "utf8").replace(/from\s*"[^"]*"/g, "from \"\"")),
-      )
+      .filter((file) => /\bFormField\b/.test(readFileSync(file, "utf8")))
       .map((file) => relative(sourceRoot, file));
 
     expect(offenders).toEqual([]);

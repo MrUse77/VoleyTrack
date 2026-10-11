@@ -52,7 +52,15 @@ describe("useMatchCenterFilter through MatchesBrowser", () => {
     });
   }
 
-  it("starts on the active filter declared by the view model", () => {
+  // This pins the INITIALIZER only: the view model's declared active filter seeds the first
+  // `useState`, so the very first commit is already filtered and no `ALL` frame is painted.
+  // It deliberately does NOT prove the render-phase sync in `useMatchCenterFilter` — on a
+  // first mount there is nothing to sync, so this test would also pass if that block were
+  // deleted. The two tests below are the ones that pin the sync, because they re-render a
+  // mounted tree with a different declared filter and assert the corrected output is
+  // committed without an intervening effects pass (assertions run synchronously after
+  // `act`, with no `await`).
+  it("seeds the selected filter from the view model's declared active filter on the first render", () => {
     renderMatchCenter(matchCenterWithActiveFilter("LIVE"));
 
     expect(container.textContent).toContain("Brazil");
