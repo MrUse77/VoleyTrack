@@ -1,6 +1,7 @@
 package com.mrusedev.voleytrack.adapter.in.web;
 
 import com.mrusedev.voleytrack.application.dto.AlineacionPreviewDTO;
+import com.mrusedev.voleytrack.application.dto.ConfirmacionDTO;
 import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
 import com.mrusedev.voleytrack.application.dto.JugadorEnPosicion;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
@@ -111,14 +112,17 @@ class PreparacionPartidoControllerTest {
 	}
 
 	@Test
-	void confirmarInicioDevuelve204() throws Exception {
+	void confirmarInicioDevuelve200ConLaConfirmacion() throws Exception {
 		UUID partidoId = UUID.randomUUID();
 		UUID setId = UUID.randomUUID();
+		when(gestorPartidoPort.confirmarInicioPartido(partidoId, setId))
+				.thenReturn(ConfirmacionDTO.ok("Partido iniciado correctamente"));
 
 		mockMvc.perform(post("/api/partidos/{partidoId}/inicio", partidoId)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{\"setId\":\"" + setId + "\"}"))
-				.andExpect(status().isNoContent());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.mensaje").value("Partido iniciado correctamente"));
 
 		verify(gestorPartidoPort).confirmarInicioPartido(partidoId, setId);
 	}

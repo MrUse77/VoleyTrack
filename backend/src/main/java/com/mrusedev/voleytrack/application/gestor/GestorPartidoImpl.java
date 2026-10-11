@@ -187,9 +187,6 @@ public class GestorPartidoImpl implements GestorPartidoPort {
     SetPartido set = buscarSet(setId);
 
     Equipo equipo = buscarEquipoDelSet(set, equipoId);
-    if (!equipo.getId().equals(equipoId)) {
-      throw new RecursoNoEncontradoException("Equipo no pertenece al set");
-    }
     Alineacion alineacion = set.crearAlineacion(equipo);
     setRepo.guardar(set, buscarPartidoIdDeSet(setId));
     return toPreview(alineacion);
@@ -364,8 +361,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
     try {
       fundamento = TipoFundamento.valueOf(tipoFundamento);
     } catch (RuntimeException e) {
-      // TODO: fundamento inválido es un error de entrada; aquí correspondería un 400.
-      throw new ReglaDeNegocioException("Fundamento inválido: " + tipoFundamento);
+      throw new IllegalArgumentException("Fundamento inválido: " + tipoFundamento);
     }
 
     Evento evento;
@@ -426,7 +422,8 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   }
 
   private Equipo buscarEquipoDelSet(SetPartido set, UUID equipoId) {
-    Equipo equipo = buscarEquipo(equipoId);
+    // Distingue "no existe" (404 del repositorio) de "existe pero no juega este set"
+    buscarEquipo(equipoId);
     return Stream.of(set.getMarcador().getLadoLocal(), set.getMarcador().getLadoVisitante())
         .filter(lado -> lado.getEquipo().getId().equals(equipoId))
         .map(Lado::getEquipo)
