@@ -239,19 +239,36 @@ not 20.)
     `MatchesBrowser.tsx` 3, `DashboardRail.tsx` 3, `MatchSetupPage.tsx` 2, `DashboardLive.tsx` 2,
     and one each in `TeamStatsPage.tsx`, `TeamDetailPage.tsx`, `features/public/MatchesPage.tsx`,
     `Modal.tsx`.
-- [ ] **T05c — Stop Tailwind from scanning build output.** A real build-correctness defect found
-  while doing T05, not a cosmetic one. `frontend/src/index.css:1` is a bare
-  `@import "tailwindcss";` with **no `@source` directive**, so Tailwind v4 uses automatic source
-  detection over the project, and `frontend/dist/` is **not in `.gitignore`**.
-  Consequence, observed: the first build after T05 re-emitted the retired `#4caf50` — not from any
-  source file, but because Tailwind scanned the **stale pre-change bundle inside `dist/`**, which
-  still contains the old class strings as text. A clean rebuild cleared it. The stylesheet a
-  developer gets therefore depends on whether an old `dist/` happens to be lying around.
-  This also taints verification: any built-CSS assertion can be satisfied or broken by stale
-  artifacts rather than by source.
-  Deliverable: gitignore build output, and exclude it explicitly in CSS so the build is correct
-  regardless of what is on disk. Evidence: a build performed **without** cleaning `dist/` first
-  must still contain zero `vt-canvas` and zero `#4caf50`, and the test suite must stay green.
+- [x] **T05c — Stop Tailwind from scanning build output.** Done. A build-correctness defect, not
+  cosmetics, and the build is now deterministic regardless of what is on disk.
+  - Root cause pinned to a line: Vite runs `prepareOutDir` in the **`renderStart`** hook
+    (`node_modules/vite/dist/node/chunks/node.js:33531`), which is *after* Tailwind's
+    transform-time source scan. So a stale `dist/` is still on disk when Tailwind reads it, and any
+    old bundle's class strings — including retired utilities — are regenerated into the new CSS.
+  - The parent's prescribed probe was **unfaithful and the worker proved it**: a `.css` file
+    containing `#4caf50` and `text-vt-canvas` yields 0, because `#4caf50` is not a utility and
+    `text-vt-canvas` is undefined so emits no rule. The functioning probe is a `.js` file carrying
+    `text-[#4caf50]`, which Tailwind *can* extract. With that probe and no cleaning, the count was
+    **2**, emitting `.text-\[\#4caf50\]{color:#4caf50}` and changing the CSS hash.
+    Important lesson: a non-reproduction is not evidence of absence when the probe cannot express
+    the mechanism.
+  - Fix: `dist/` added to `frontend/.gitignore` (matching that file's sparse style; the root
+    `.gitignore` holds backend and Pi paths, not frontend build output), plus
+    `@source not "../dist";` in `frontend/src/index.css`. The directive syntax was verified
+    against the installed `tailwindcss@4.3.3` compiler source, not guessed: `@source` accepts a
+    `not ` prefix with a quoted path, and the path resolves relative to the CSS file's directory,
+    so `../dist` is `frontend/dist`. Isolated empirically — the directive alone dropped the count
+    from 2 to 0 before the gitignore change was made.
+  - Evidence with the probe still in place and no cleaning: `zz-probe-sentinel`, `#4caf50` and
+    `vt-canvas` all **0**, while real utilities survived (`bg-vt-accent` 13, `text-vt-background` 3)
+    and the stylesheet stayed at 87,004 B against an 87,024 B baseline. `git check-ignore -v
+    frontend/dist/` now resolves to `frontend/.gitignore:3:dist/` and `dist/` no longer appears in
+    `git status`.
+  - Suite `49 files / 280 passed`, lint exit 0, build exit 0.
+  - Residual uncertainty, reported rather than hidden: the 20-byte reduction against the pre-fix
+    baseline was not byte-attributed to one specific removed rule, because the reproduction builds
+    overwrote the stale bundle before it could be diffed. That is structurally safe, since the
+    exclusion targets only `frontend/dist`, which contains no source of truth.
 - [ ] **T05b — Reconcile the surface and border token model with the design.** Raised while
   planning T05, and it must land before slice 2 so screens are not touched twice.
   The problem: the app's token model does not match the design's, and two tokens carry heavy usage

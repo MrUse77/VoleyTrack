@@ -8,6 +8,9 @@
 @import "@fontsource/inter/latin-900.css";
 @import "@fontsource/jetbrains-mono/latin-500.css";
 @import "@fontsource/jetbrains-mono/latin-700.css";
+/* Keep build output out of Tailwind's automatic source detection. This follows
+   every @import deliberately: CSS requires @import rules to precede other rules. */
+@source not "../dist";
 
 :root {
   color-scheme: dark;
