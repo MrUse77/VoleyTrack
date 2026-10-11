@@ -983,11 +983,16 @@ readable against the completed record above; the carried-over items it lists wer
     9/7 → **7/5**, legacy `Card` 35/12 → **32/11**, with the all-`Card` floor rising 59/21 → 66/23.
   - Suite `46 files / 313 passed`, lint exit 0, build exit 0. Both dev servers stopped with single-PID
     kills, both ports free, the other session's process untouched.
+  - **Settled by the project owner after reviewing the captures:** the `/live` split stays as built.
+    The nav's `En vivo` destination leads to `/live` inside the public shell, so the navigation never
+    disappears under the user's own click, while `/matches/$id/live` remains the focused presentation
+    for a specific match. Sending the nav straight to the standalone full-screen view was considered
+    and declined. This is no longer an open item.
   - **Carried into the polish pass:** the screen renders **three `role="status"` regions** (two static
     pills plus the score), which is design-faithful but arguably noisy for a screen reader and worth a
-    decision; the roster's points, attack, block and ace values are prototype data; and the `/live` versus
-    `/matches/$id/live` split remains an owner decision. The court's visual quality rests on measured
-    geometry (a 583.6×291.8 box, ~58×56 markers, zero overflow) rather than on anyone's eyes, because
+    decision, and the roster's points, attack, block and ace values are prototype data that must be
+    replaced when real values exist. The court's visual quality rests on measured geometry (a
+    583.6×291.8 box, ~58×56 markers, zero overflowing positions) rather than on anyone's eyes, because
     image reading is disabled for the orchestrator.
 
 ### Slice 3 — Admin screens
