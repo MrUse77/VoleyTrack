@@ -426,9 +426,10 @@ not 20.)
     **94 in 48**, with the ceiling reduced to match, so the freed budget cannot be re-spent.
     `vt-raised` (48/28) and `vt-raised-border` (9/7) are unchanged and still at their ceilings.
   - Suite `49 files / 294 passed`, lint exit 0, build exit 0.
-- [ ] **T07b — Fix the unlayered base rule that silently defeats every typography utility on
-  buttons and links.** Found by T07, outside that task's surfaces, and it is the most consequential
-  defect discovered in this feature so far.
+- [x] **T07b — Fix the unlayered base rules that silently defeated utilities on buttons and
+  links.** Done, and the defect was **six** rules rather than the one originally spotted. Found by
+  T07, outside that task's surfaces, and it is the most consequential defect discovered in this
+  feature so far.
   `frontend/src/index.css:58-60` contains, at top level and **outside any `@layer`**:
 
   ```css
@@ -459,6 +460,53 @@ not 20.)
   Evidence: after the fix, the primitive `Button` must compute 13px/700 (not 16px/400) and a sidebar
   nav link must compute 13px/600, measured through the harness. This must land before slice 2, since
   every screen's typography depends on it.
+  - **Full inventory of the unlayered rules, and what each was defeating.** The suspicion that
+    `font: inherit` was not alone was correct:
+
+    | unlayered rule | utilities it defeated |
+    |---|---|
+    | `a, button { font: inherit }` | `font-size`, `font-weight`, `font-family` (`font-sans`/`font-mono`), `font-style`, `line-height`, `tracking-*`, `font-variant` |
+    | `button { cursor: pointer }` | `cursor-*`, i.e. **every `disabled:cursor-not-allowed`**, present on `Button`, `IconButton`, `MatchSetupPage`, `ScoringConsolePage` |
+    | `button:focus-visible, a:focus-visible { outline }` | `outline-*`, including the 8 `focus-visible:outline-none` sites |
+    | `* { box-sizing: border-box }` | `box-border` / `box-content` (no current usage, latent) |
+    | `:root`, `html`, `html, body, #root`, `#root`, `body` | utilities on those elements (latent) |
+    | `::selection` (twice) | `selection:*` (no current usage, latent) |
+
+    Two of those were causing real visible defects, not just latent ones: disabled buttons showed a
+    **pointer cursor**, and the `DashboardPage` link cards drew the base focus outline **in addition
+    to** their own ring.
+  - **Fix:** every application base rule is now inside `@layer base`, the same layer as Tailwind's
+    preflight, so `@layer utilities` wins by design given the declared order
+    (`theme, base, components, utilities`). The worker argued explicitly for layering over deleting
+    the offending rule: deleting would fix one of six, leave the intent implicit, and make behaviour
+    depend on preflight internals. Verified structurally by the parent: the only top-level lines in
+    `index.css` are the ten `@import`s, the `@source` directive, and the `@layer base {` block with
+    its closing brace, so no `a` or `button` selector sits outside a layer any more.
+  - **Measured before and after**, which is the first time this feature has quantified a visible
+    change. On `/admin/tournaments/create` the accent control (`probes.accentControls[0]`, the
+    "Crear Torneo" button) went from **16px/400 to 13px/700** — exactly the design's `.btn`. The
+    active nav link went from **16px to 14px** on both routes. The captured PNG checksums changed,
+    confirming a real visual delta rather than a theoretical one.
+  - **No regressions:** height stayed 40px with the pill radius, the nav link stayed 10px radius and
+    44px tall, and the body font stayed Inter with the font set loaded. Built CSS confirms the
+    cascade: `a,button{font:inherit}` and `button{cursor:pointer}` now sit inside `@layer base`,
+    while `cursor-not-allowed` and `.focus-visible\:outline-none` sit later in `@layer utilities`,
+    with the base focus outline still present for elements that declare none.
+  - **Guard:** a brace-aware walker in `tokens.test.ts` records every style rule and whether an
+    enclosing block is `@layer` — deliberately not counting `@media` — and fails listing any
+    unlayered `a`/`button` type selector. RED proven by appending an unlayered
+    `button { cursor: pointer }`, which failed with `expected [ 'button' ] to deeply equal []`, then
+    GREEN after removal with no scratch file left behind.
+  - Suite `49 files / 295 passed` (294 plus the new guard) with **no existing test expectation
+    shifting**; lint exit 0; build exit 0. Ratchet unchanged at 94 / 48 / 9 and no token touched.
+  - **Honest gap in the verification:** cursor and focus-visible were established from cascade
+    position and the built stylesheet, not from a rendered probe, because the harness has no cursor
+    or focus step and `frontend/tools/` was outside the task's surfaces. The cascade fact is
+    deterministic, so the conclusion holds, but it is one step short of the rendered evidence used
+    for font-size.
+  - **New parity finding for T09:** both routes' nav renders `text-sm font-semibold`, i.e. 14px/600,
+    whereas the design's `.nav-item` is **13px/600**. That is a markup-to-design divergence, not a
+    cascade problem, and it is now visible precisely because this fix let the utilities take effect.
 - [ ] **T08 — Add the mono tabular numeric treatment.** Introduce the design's `.num`
   equivalent (mono family, `tabular-nums`, right alignment) and apply it to the numeric columns
   of the shared table primitive.

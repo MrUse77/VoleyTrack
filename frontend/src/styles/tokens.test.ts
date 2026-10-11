@@ -31,6 +31,55 @@ function countOccurrences(filePaths: string[], source: string): number {
   return total;
 }
 
+function stripCssComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, " ");
+}
+
+/**
+ * Cascade-position scanner. A plain regex cannot answer "is this rule inside
+ * `@layer`?", because `@layer base { ... }` legitimately wraps `a` and `button`
+ * rules. This walks the stylesheet character by character and records, for every
+ * style rule, whether any enclosing block in its source position is an `@layer`
+ * block. `@media` and other at-rules deliberately do NOT count: they are not
+ * layers, so a rule nested in one is still unlayered and still beats every layer.
+ */
+function collectRuleSelectors(source: string): { selector: string; insideLayer: boolean }[] {
+  const rules: { selector: string; insideLayer: boolean }[] = [];
+  const openBlocks: Array<"layer" | "other"> = [];
+  let preludeStart = 0;
+
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index];
+
+    if (character === "{") {
+      const prelude = source.slice(preludeStart, index).trim();
+      const insideLayer = openBlocks.includes("layer");
+
+      if (prelude.startsWith("@layer")) {
+        openBlocks.push("layer");
+      } else {
+        openBlocks.push("other");
+        // At-rule preludes (`@media ...`) are not style rules, so they carry no selector.
+        if (!prelude.startsWith("@")) rules.push({ selector: prelude, insideLayer });
+      }
+
+      preludeStart = index + 1;
+      continue;
+    }
+
+    if (character === "}") {
+      openBlocks.pop();
+      preludeStart = index + 1;
+      continue;
+    }
+
+    // Also skips `@import ...;`, `@source ...;` and the statement form `@layer a, b;`.
+    if (character === ";") preludeStart = index + 1;
+  }
+
+  return rules;
+}
+
 const tokensPath = fileURLToPath(new URL("./tokens.css", import.meta.url));
 const indexPath = fileURLToPath(new URL("../index.css", import.meta.url));
 const publicShellPath = fileURLToPath(new URL("../layouts/PublicShell.tsx", import.meta.url));
@@ -297,6 +346,45 @@ describe("design tokens", () => {
   // time, so this guard only forbids the debt from growing: counts must stay at or
   // below their measured ceiling and may legitimately drop as screens are aligned
   // (lower the ceiling in the same change whenever a count drops).
+  // Cascade-position guard. Tailwind orders its layers as theme, base, components,
+  // utilities, and an UNLAYERED declaration beats every layer regardless of source
+  // order and specificity. `a, button { font: inherit }` used to sit at the top level
+  // of src/index.css, which forced every link and button in the app to 16px/400: the
+  // primitive Button computes 13px/700 from its own utilities and a sidebar <a>
+  // 14px/600, and the same position also defeated `cursor-not-allowed` and the
+  // `focus-visible:outline-*` utilities. Application rules therefore belong in
+  // `@layer base`, where Tailwind's later `utilities` layer beats them.
+  it("keeps every a and button selector inside a cascade layer", () => {
+    const index = stripCssComments(readFileSync(indexPath, "utf8"));
+    const rules = collectRuleSelectors(index);
+
+    // A scanner that parses zero rules is a broken guard, not a passing one.
+    expect(rules.length).toBeGreaterThan(0);
+    expect(rules.some((rule) => rule.insideLayer)).toBe(true);
+
+    const isElementSelector = (element: string, selector: string) =>
+      new RegExp(`(^|[\\s>+~,(])${element}(?![\\w-])`).test(selector);
+
+    const unlayered = rules.filter(
+      (rule) =>
+        !rule.insideLayer &&
+        rule.selector
+          .split(",")
+          .some(
+            (selector) =>
+              isElementSelector("a", selector) || isElementSelector("button", selector),
+          ),
+    );
+
+    expect(
+      unlayered.map((rule) => rule.selector),
+      "An a/button selector outside `@layer base` is unlayered, so it beats Tailwind's " +
+        "@layer utilities regardless of source order and specificity, and silently defeats " +
+        "font-*, cursor-* and outline-* utilities on EVERY link and button in the app. " +
+        "Move it inside `@layer base { ... }`.",
+    ).toEqual([]);
+  });
+
   it("ratchets app-only surface and border token usage down without allowing new usages", () => {
     const guardPath = resolve(fileURLToPath(import.meta.url));
     // The declaration file necessarily names every token once (and documents them),
