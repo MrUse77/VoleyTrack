@@ -801,7 +801,10 @@ readable against the completed record above; the carried-over items it lists wer
 
 ## Slice 1 close
 
-**20 commits, 19 of 22 tasks.** The three that do not close here do so for deliberate reasons:
+**19 of 22 tasks closed across 17 feature commits**, excluding the record-keeping commits for this
+document itself. (An earlier version of this line tried to state a total commit count, which is
+self-referential: every commit that corrects the number changes it. Stating the task and feature-commit
+counts avoids the chase.) The three that do not close here do so for deliberate reasons:
 `T10c` (retire `ui/SectionShell`) belongs to slices 3 and 4 because its nine live consumers are the
 very screens those slices redesign, and `T03c` (trim the font payload) is an optimisation that blocks
 nothing. That leaves T03c as the only genuinely open Slice 1 item.
