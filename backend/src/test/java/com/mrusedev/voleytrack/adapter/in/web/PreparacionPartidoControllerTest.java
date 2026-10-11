@@ -90,7 +90,24 @@ class PreparacionPartidoControllerTest {
 						.content("{\"equipoId\":\"" + equipoId + "\"}"))
 				.andExpect(status().isNoContent());
 
-		verify(gestorPartidoPort).seleccionarEquipoSaqueInicial(setId, equipoId);
+		verify(gestorPartidoPort).seleccionarEquipoSaqueInicial(partidoId, setId, equipoId);
+	}
+
+	@Test
+	void seleccionarSaqueInicialConSetDeOtroPartidoDevuelve404ConMensaje() throws Exception {
+		UUID partidoId = UUID.randomUUID();
+		UUID setId = UUID.randomUUID();
+		UUID equipoId = UUID.randomUUID();
+		doThrow(new RecursoNoEncontradoException("Set no encontrado: " + setId))
+				.when(gestorPartidoPort).seleccionarEquipoSaqueInicial(partidoId, setId, equipoId);
+
+		mockMvc.perform(post("/api/partidos/{partidoId}/sets/{setId}/saque-inicial", partidoId, setId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"equipoId\":\"" + equipoId + "\"}"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.status").value(404))
+				.andExpect(jsonPath("$.error").value("Not Found"))
+				.andExpect(jsonPath("$.mensaje").value("Set no encontrado: " + setId));
 	}
 
 	@Test

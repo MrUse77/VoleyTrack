@@ -180,6 +180,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   @Transactional
   public AlineacionPreviewDTO crearAlineacion(UUID setId, UUID equipoId) {
     SetPartido set = buscarSet(setId);
+
     Equipo equipo = buscarEquipoDelSet(set, equipoId);
     Alineacion alineacion = set.crearAlineacion(equipo);
     setRepo.guardar(set, buscarPartidoIdDeSet(setId));
@@ -216,8 +217,11 @@ public class GestorPartidoImpl implements GestorPartidoPort {
 
   @Override
   @Transactional
-  public void seleccionarEquipoSaqueInicial(UUID setId, UUID equipoId) {
+  public void seleccionarEquipoSaqueInicial(UUID partidoId, UUID setId, UUID equipoId) {
     SetPartido set = buscarSet(setId);
+    if (!partidoId.equals(buscarPartidoIdDeSet(setId))) {
+      throw new RecursoNoEncontradoException("Set no encontrado: " + setId);
+    }
     Equipo equipo = buscarEquipoDelSet(set, equipoId);
     set.asignarSaqueInicial(equipo);
     setRepo.guardar(set, buscarPartidoIdDeSet(setId));
@@ -379,8 +383,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   private Partido buscarPartido(UUID partidoId) {
     return partidoRepo
         .buscarPorId(partidoId)
-        .orElseThrow(
-            () -> new RecursoNoEncontradoException("Partido no encontrado: " + partidoId));
+        .orElseThrow(() -> new RecursoNoEncontradoException("Partido no encontrado: " + partidoId));
   }
 
   private SetPartido buscarSet(UUID setId) {
@@ -404,8 +407,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   private Jugador buscarJugador(UUID jugadorId) {
     return jugadorRepo
         .buscarPorId(jugadorId)
-        .orElseThrow(
-            () -> new RecursoNoEncontradoException("Jugador no encontrado: " + jugadorId));
+        .orElseThrow(() -> new RecursoNoEncontradoException("Jugador no encontrado: " + jugadorId));
   }
 
   private Equipo buscarEquipoDelSet(SetPartido set, UUID equipoId) {
