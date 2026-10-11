@@ -831,9 +831,67 @@ readable against the completed record above; the carried-over items it lists wer
     tournament link that only the deleted metrics card rendered — the assertion was wrong, not the
     screen, and it was updated with an explicit existence assertion before clicking so it cannot
     silently become a no-op.
-- [ ] **T12 — Matches parity.** Filter panel, 6-card grid, state pills.
-- [ ] **T13 — Tournaments parity.** Card grid with type filters; detail with Clasificación TOP 5,
-  Llaves de playoffs, Equipos participantes and the bracket.
+- [x] **T12 — Matches parity.** Done. `/matches` is now a page head, a labelled `FilterGroup` of five status
+  pills, a result-count line announced through `aria-live`, and a responsive grid of match cards built
+  as a real list of links, each carrying a mono eyebrow, a state pill, team names, a `Num` score and a
+  venue/time/detail line, with `EmptyState` in a structural `Card` when the result set is empty.
+- [x] **T13 — Tournaments parity.** Done, list and detail, including the bracket.
+  - List: two labelled pill groups (type and stage), a count line, and a grid of structural `Card`s with
+    a chevron, a mono `LIGA · EN CURSO` eyebrow, the name, a detail line and badges.
+  - Detail: a shared shell with `PageHeader`, a `KpiGrid`, an `Información` card built from `InfoRow`s,
+    and a tab strip inside a structural `Card` wrapping each panel.
+  - **Tab reconciliation, deliberately reasoned.** `Resumen`, `Partidos` and `Estadísticas` were kept;
+    `Tabla` was renamed to the design's `Clasificación` and `Cuadro` to `Llaves`. The design's
+    `Participantes` tab was **not** added: it would need a sixth route in `src/router.tsx`, outside the
+    task's surfaces, and its `Torneo` column has no counterpart in our fixtures — so both of the
+    design's panels (`Clasificación TOP 5` and `Equipos participantes`) live on the standings route
+    instead. Recorded as an open item rather than quietly dropped.
+  - **The bracket is a real widget now**, and it was measured: `role="region"` with `tabindex=0` and a
+    labelled scroll container, an ordered list of rounds at 230px columns with a 28px gap, an `h3` per
+    round, ordered lists of matches inside each round at 82px minimum height with 9/10/8 padding and a
+    3px accent left edge on `--surface-2`, the final round in accent-soft, a 1px rule between team
+    lines, and a per-match `aria-label` of the form "QF-1: River Plate 3 — Once Unidos 0, Finalizado",
+    so it reads as content rather than as a decorative diagram. Measured: 3 rounds at 4/2/1, 7 matches,
+    grid `230px 230px 230px` with a 28px gap.
+  - **Measured before and after.** `/matches` went from no heading, zero state pills, zero filter groups
+    and no grid, to a 28px/900 heading, a labelled group of five pills with one pressed, the design's
+    inverted light active pill (`rgb(248,250,252)` fill with `rgb(11,18,32)` ink, 36px, fully rounded),
+    a three-column grid of 357.33px tracks with a 16px gap over ten cards, ten state pills, card padding
+    of 16px on `rgb(17,26,43)` with a 16px radius, and scores in JetBrains Mono 18px/900 tabular-nums.
+    Responsive behaviour confirmed at 1100px (two columns) and 700px (one). `/tournaments` went from
+    zero groups and no grid to two labelled groups of three and four pills and a three-column grid of
+    five cards. The standings route gained `Clasificación TOP 5` and `Equipos participantes`.
+  - **Seven places where the design overrode this document's brief**, each with the design line, and
+    the worker was right every time:
+    1. The brief described the matches design as having pill-shaped status filters. Its pills are
+       actually the *time window*, and its status filter is a `<select>` inside a collapsed panel. The
+       app's five statuses were placed in the pill treatment, which is a synthesis rather than a copy.
+    2. The tournaments type and stage filters are also `<select>`s in a collapsed panel, so they became
+       pill groups, following the standing rule that a filter is a real button with `aria-pressed`.
+       An `Equipos mínimos` filter was dropped because no fixture can drive it.
+    3. The brief said the design's tab set was the target. It is not one set: the tabs **differ per
+       tournament format** (`Clasificación` + `Playoffs` versus `Participantes` + `Llaves`), so a single
+       generic route set cannot mirror it. This is a real design characteristic, not an oversight.
+    4. The "roughly two dozen `.bracket-match` uses" in this document is the design's generated markup
+       across two data sets (7 + 15); our fixture renders 7.
+    5. The brief's `vt-panel` figure of 71/38 was wrong; the real starting measurement was **70/37**, one
+       occurrence of slack left in the previous ceiling. Corrected here.
+    6. `.bracket-status` uses an ink colour with no token (`#ffd0ad`), so the bracket status renders as an
+       accent `Badge`.
+    7. The design's `InfoRow` gives the **label** the emphasis while our primitive emphasises the value.
+       The primitive was kept rather than inverted for one screen, and the divergence is recorded.
+  - Also unmodelled and recorded, all fixture-blocked or polish: the design's stats fundamental
+    sub-tabs and `Equipos mínimos` filter need fixtures the app does not have; the design's collapsible
+    `Filtros` panel was not built on either screen; the venue pin emoji was dropped; the design's
+    "Jornada" KPI became "Rondas" and its "JORNADA 15" eyebrow became a match count, because no such
+    fixture exists; and the matches `EmptyState` branch is only reachable through `state=empty` with the
+    current fixtures.
+  - Ratchets lowered as required, substantially: `vt-panel` 71/38 → **61/31**, `vt-raised` 46/26 →
+    **36/21**, the legacy-`Card` ceiling 62/20 → **41/13** with the all-`Card` floor moving 70/21 →
+    55/19, and `vt-raised-border` unchanged at 9/7. Moving cards onto the structural form is exactly
+    what those ratchets were for, and the counts are falling for the right reason.
+  - Suite `44 files / 297 passed`, lint exit 0, build exit 0. Dev servers were stopped with single-PID
+    kills, both ports released, and another session's process left untouched.
 - [ ] **T14 — Teams parity.** New `/teams` list (currently a placeholder) and a team detail with
   the design's four tabs plus the "Rendimiento Últimos 5" badges.
 - [ ] **T15 — Players parity.** New `/players` list (currently a placeholder) and a player detail

@@ -1,5 +1,12 @@
 export type MatchStatus = "upcoming" | "live" | "today" | "finished";
 export type TournamentStatus = "in-progress" | "upcoming" | "finished";
+/**
+ * The design's tournament type dimension: the "Tipo" filter offers Liga and Copa
+ * (frontend/design/html/voleytrack-torneos.html, the `tournaments-type-filter` select).
+ * The third option there, "Bracket", is not a competition type: its own card reads
+ * "Diseño exploratorio, no en V1" (same file, the `tournament-card-bracket` card).
+ */
+export type TournamentType = "Liga" | "Copa";
 
 export type MatchScore = Readonly<{
   home: number;
@@ -92,6 +99,8 @@ export type TournamentFixture = Readonly<{
   name: string;
   status: TournamentStatus;
   statusLabel: string;
+  type: TournamentType;
+  typeLabel: string;
   dateLabel: string;
   location: string;
   category: string;

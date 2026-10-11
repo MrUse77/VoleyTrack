@@ -34,6 +34,19 @@ describe("public fixtures", () => {
     });
   });
 
+  it("carries the design's tournament type dimension on every tournament", () => {
+    // The design's tournaments filter offers a "Tipo" dimension (Liga / Copa) and its
+    // detail pages branch on it (frontend/design/html/voleytrack-torneos.html), so every
+    // tournament publishes it and the fixture stays immutable.
+    for (const tournament of PUBLIC_TOURNAMENTS.all) {
+      expect(["Liga", "Copa"]).toContain(tournament.type);
+      expect(tournament.typeLabel).toBe(tournament.type);
+      expect(Object.isFrozen(tournament)).toBe(true);
+    }
+    expect(PUBLIC_TOURNAMENTS.all.some((tournament) => tournament.type === "Liga")).toBe(true);
+    expect(PUBLIC_TOURNAMENTS.all.some((tournament) => tournament.type === "Copa")).toBe(true);
+  });
+
   it("provides the canonical dashboard match composition with stable route IDs", () => {
     expect(PUBLIC_MATCHES.live.map((match) => match.id)).toEqual(expect.arrayContaining([
       "match-liga-a1-river-boca",

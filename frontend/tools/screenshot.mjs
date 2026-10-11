@@ -531,6 +531,9 @@ const PROBE_SOURCE = `(() => {
   };
   const liveGrid = describeGrid("dashboard-live-grid");
   const upcomingRowGrid = describeGrid("dashboard-upcoming-row");
+  // Additive only, alongside (never replacing) the two dashboard grids above.
+  const matchesGrid = describeGrid("matches-grid");
+  const tournamentsGrid = describeGrid("tournaments-grid");
 
   // Additive only. The structural card form puts its spacing in CardBody's .card-b padding
   // (18px 20px, voleytrack.css:78) while the legacy transitional form is a uniform p-6 (24px),
@@ -594,6 +597,122 @@ const PROBE_SOURCE = `(() => {
           ? getComputedStyle(highlightsElement).borderRadius
           : null,
       }
+    : null;
+
+  // Additive only: no existing key, strategy, order or shape above is renamed, reordered or
+  // redefined. The design's filter row is .filters with .filter / .filter.active
+  // (voleytrack.css:88-89, primitives FilterGroup/Filter), whose ACTIVE treatment is the
+  // inverted light pill: a --fg fill with --bg ink and a --fg border. Reading the pressed
+  // button's computed colours proves that inversion rendered, which no class assertion can.
+  const describeFilterGroup = (el) => {
+    if (!el) return null;
+
+    const active = el.querySelector('button[aria-pressed="true"]');
+    const activeStyle = active ? getComputedStyle(active) : null;
+
+    return {
+      label: el.getAttribute("aria-label"),
+      role: el.getAttribute("role"),
+      pillCount: el.querySelectorAll("button").length,
+      pressedCount: el.querySelectorAll('button[aria-pressed="true"]').length,
+      active: active && activeStyle
+        ? {
+            text: (active.innerText || active.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40),
+            backgroundColor: activeStyle.backgroundColor,
+            color: activeStyle.color,
+            borderColor: activeStyle.borderTopColor,
+            borderRadius: activeStyle.borderRadius,
+            height: activeStyle.height,
+            fontSize: activeStyle.fontSize,
+            fontWeight: activeStyle.fontWeight,
+          }
+        : null,
+    };
+  };
+  const filterGroups = Array.from(document.querySelectorAll('[role="group"][aria-label]'))
+    .map(describeFilterGroup);
+
+  // Additive only. The design's .mcard is 16px padding on a --surface fill with a 1px
+  // --border edge and a 16px radius (voleytrack-partidos.css:3), and the tournament card is
+  // the design's own padding:16px with a 52px right edge (voleytrack-torneos.html). Reporting it
+  // card's resolved box makes the card padding actually applied machine-readable.
+  const firstMatchCard = document.querySelector('[data-testid="public-match-card"]');
+  const matchCard = firstMatchCard
+    ? (() => {
+        const cs = getComputedStyle(firstMatchCard);
+        return {
+          backgroundColor: cs.backgroundColor,
+          borderColor: cs.borderTopColor,
+          borderRadius: cs.borderTopLeftRadius,
+          paddingTop: cs.paddingTop,
+          paddingRight: cs.paddingRight,
+          paddingBottom: cs.paddingBottom,
+          paddingLeft: cs.paddingLeft,
+        };
+      })()
+    : null;
+
+  // Additive only. The design's bracket (voleytrack-torneos.css:62-86) is a scrollable
+  // region holding a grid of 230px round columns at a 28px gap, each round a column of
+  // .bracket-match cards whose own box is 82px min-height, 9px 10px 8px padding, a 1px
+  // edge and a 3px --accent left edge. These keys report the rounds, their headings, the
+  // matches and the resolved box of the first match, so the widget's presence and layout are
+  // machine-readable instead of only visual.
+  const bracketElement = document.querySelector('[data-testid="tournament-bracket"]');
+  const bracketGrid = bracketElement ? bracketElement.querySelector("ol") : null;
+  const bracket = bracketElement
+    ? (() => {
+        const gridStyle = bracketGrid ? getComputedStyle(bracketGrid) : null;
+        const rounds = Array.from(bracketElement.querySelectorAll(":scope > ol > li"));
+        const firstMatch = bracketElement.querySelector("[data-bracket-match]");
+        const matchStyle = firstMatch ? getComputedStyle(firstMatch) : null;
+        // Additive: the design paints its LAST round's match with .bracket-match--final
+        // (accent edge and accent-soft fill), so the final's own box is reported next to the
+        // first round's plain --surface-2 box instead of leaving the two indistinguishable.
+        const lastMatch = Array.from(bracketElement.querySelectorAll("[data-bracket-match]")).at(-1);
+        const lastMatchStyle = lastMatch ? getComputedStyle(lastMatch) : null;
+        return {
+          present: true,
+          role: bracketElement.getAttribute("role"),
+          ariaLabel: bracketElement.getAttribute("aria-label"),
+          tabIndex: bracketElement.tabIndex,
+          overflowX: getComputedStyle(bracketElement).overflowX,
+          padding: getComputedStyle(bracketElement).padding,
+          gridTemplateColumns: gridStyle ? gridStyle.gridTemplateColumns : null,
+          columnGap: gridStyle ? gridStyle.columnGap : null,
+          roundCount: rounds.length,
+          rounds: rounds.map((round) => ({
+            heading: (round.querySelector("h3")?.textContent || "").trim(),
+            matches: round.querySelectorAll("[data-bracket-match]").length,
+          })),
+          matchCount: bracketElement.querySelectorAll("[data-bracket-match]").length,
+          matchAriaLabels: Array.from(bracketElement.querySelectorAll("[data-bracket-match]"))
+            .slice(0, 3)
+            .map((match) => match.getAttribute("aria-label")),
+          firstMatch: matchStyle
+            ? {
+                minHeight: matchStyle.minHeight,
+                paddingTop: matchStyle.paddingTop,
+                paddingRight: matchStyle.paddingRight,
+                paddingBottom: matchStyle.paddingBottom,
+                paddingLeft: matchStyle.paddingLeft,
+                borderLeftWidth: matchStyle.borderLeftWidth,
+                borderLeftColor: matchStyle.borderLeftColor,
+                borderRadius: matchStyle.borderTopLeftRadius,
+                backgroundColor: matchStyle.backgroundColor,
+              }
+            : null,
+          lastMatch: lastMatchStyle
+            ? {
+                minHeight: lastMatchStyle.minHeight,
+                borderLeftWidth: lastMatchStyle.borderLeftWidth,
+                borderLeftColor: lastMatchStyle.borderLeftColor,
+                borderTopColor: lastMatchStyle.borderTopColor,
+                backgroundColor: lastMatchStyle.backgroundColor,
+              }
+            : null,
+        };
+      })()
     : null;
 
   const expected = __EXPECTED__;
@@ -674,6 +793,12 @@ const PROBE_SOURCE = `(() => {
       tabularSample,
       tabularSamples,
       liveSurface,
+      // Additive keys: new names only, every key above is unchanged.
+      filterGroups,
+      matchesGrid,
+      tournamentsGrid,
+      matchCard,
+      bracket,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

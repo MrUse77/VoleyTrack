@@ -29,7 +29,9 @@ describe("public tournament bracket", () => {
 
     expect(html).toContain(tournament.name);
     expect(html).toContain(tournament.statusLabel);
-    expect(html).toContain("Cuadro");
+    // The design's own label for the knockout panel is `Llaves` (a league calls the same
+    // widget `Playoffs`), and the app's former label was `Cuadro`.
+    expect(html).toContain("Llaves");
     for (const round of ["Cuartos de final", "Semifinal", "Final"]) {
       expect(html).toContain(round);
     }
@@ -62,6 +64,26 @@ describe("public tournament bracket", () => {
         expect(html.includes(`href="/matches/${match.id}/live"`)).toBe(linked);
       }
     }
+  });
+
+  it("renders the bracket as nested lists with one accessible label per match", () => {
+    const tournament = PUBLIC_TOURNAMENTS.inProgress[0];
+    const html = renderTournamentBracket(tournament.id);
+    const matchCount = tournament.bracketRounds.reduce((total, round) => total + round.matches.length, 0);
+
+    // The design's bracket is a visual diagram; here it is a real list structure a screen
+    // reader can walk: a labelled scroll region, one `<ol>` of rounds, an `<h3>` naming each
+    // round, an `<ol>` of matches inside it, and an `aria-label` per match carrying both
+    // teams, both scores and the state word.
+    expect(html).toContain('role="region"');
+    expect(html).toContain('aria-label="Llaves del torneo. Desplazá horizontalmente para ver todas las rondas."');
+    expect(html).toContain("tabindex=\"0\"");
+    expect(html.match(/<h3/g)).toHaveLength(tournament.bracketRounds.length);
+    expect(html.match(/data-bracket-match=/g)).toHaveLength(matchCount);
+    const first = tournament.bracketRounds[0].matches[0];
+    expect(html).toContain(
+      `aria-label="${first.displayId.toUpperCase()}: ${first.homeTeamName} ${first.homeScore} — ${first.awayTeamName} ${first.awayScore}, Finalizado"`,
+    );
   });
 
   it("renders the active bracket tab and local tournament navigation", () => {
