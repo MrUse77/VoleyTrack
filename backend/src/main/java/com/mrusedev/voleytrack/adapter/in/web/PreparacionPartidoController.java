@@ -3,7 +3,7 @@ package com.mrusedev.voleytrack.adapter.in.web;
 import com.mrusedev.voleytrack.application.dto.AlineacionPreviewDTO;
 import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
 import com.mrusedev.voleytrack.application.dto.JugadorEnPosicion;
-import com.mrusedev.voleytrack.application.port.in.PrepararPartidoPort;
+import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,10 +21,10 @@ import java.util.UUID;
 @RequestMapping("/api/partidos")
 public class PreparacionPartidoController {
 
-    private final PrepararPartidoPort prepararPartidoPort;
+    private final GestorPartidoPort gestorPartidoPort;
 
-    public PreparacionPartidoController(PrepararPartidoPort prepararPartidoPort) {
-        this.prepararPartidoPort = prepararPartidoPort;
+    public PreparacionPartidoController(GestorPartidoPort gestorPartidoPort) {
+        this.gestorPartidoPort = gestorPartidoPort;
     }
 
     public record SaqueInicialRequest(UUID equipoId) {}
@@ -33,7 +33,7 @@ public class PreparacionPartidoController {
 
     @PostMapping("/{partidoId}/sets")
     public ResponseEntity<InicioSetDTO> crearSet(@PathVariable UUID partidoId) {
-        InicioSetDTO inicioSet = prepararPartidoPort.crearSet(partidoId);
+        InicioSetDTO inicioSet = gestorPartidoPort.crearSet(partidoId);
         return ResponseEntity.status(HttpStatus.CREATED).body(inicioSet);
     }
 
@@ -42,7 +42,7 @@ public class PreparacionPartidoController {
                                                                   @PathVariable UUID setId,
                                                                   @RequestParam UUID equipoId,
                                                                   @RequestBody List<JugadorEnPosicion> titulares) {
-        AlineacionPreviewDTO preview = prepararPartidoPort.guardarAlineacion(partidoId, setId, equipoId, titulares);
+        AlineacionPreviewDTO preview = gestorPartidoPort.guardarAlineacion(partidoId, setId, equipoId, titulares);
         return ResponseEntity.ok(preview);
     }
 
@@ -50,14 +50,14 @@ public class PreparacionPartidoController {
     public ResponseEntity<Void> seleccionarSaqueInicial(@PathVariable UUID partidoId,
                                                         @PathVariable UUID setId,
                                                         @RequestBody SaqueInicialRequest request) {
-        prepararPartidoPort.seleccionarSaqueInicial(partidoId, setId, request.equipoId());
+        gestorPartidoPort.seleccionarEquipoSaqueInicial(setId, request.equipoId());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{partidoId}/inicio")
     public ResponseEntity<Void> confirmarInicio(@PathVariable UUID partidoId,
                                                 @RequestBody InicioPartidoRequest request) {
-        prepararPartidoPort.confirmarInicio(partidoId, request.setId());
+        gestorPartidoPort.confirmarInicioPartido(partidoId, request.setId());
         return ResponseEntity.noContent().build();
     }
 }

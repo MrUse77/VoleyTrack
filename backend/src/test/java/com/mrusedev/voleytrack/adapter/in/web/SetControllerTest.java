@@ -2,7 +2,7 @@ package com.mrusedev.voleytrack.adapter.in.web;
 
 import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
-import com.mrusedev.voleytrack.application.port.in.ConsultarPartidoPort;
+import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -24,7 +24,7 @@ class SetControllerTest {
 	private MockMvc mockMvc;
 
 	@MockitoBean
-	private ConsultarPartidoPort consultarPartidoPort;
+	private GestorPartidoPort gestorPartidoPort;
 
 	@Test
 	void opcionesPuntoDevuelveEquipoYJugadores() throws Exception {
@@ -35,7 +35,7 @@ class SetControllerTest {
 				equipoId,
 				"Club A",
 				List.of(new OpcionesPuntoDTO.JugadorOpcionDTO(jugadorId, "Jugador", "Uno", 1, true)));
-		when(consultarPartidoPort.cargarOpcionesPunto(setId, equipoId)).thenReturn(dto);
+		when(gestorPartidoPort.cargarOpcionesPunto(setId, equipoId)).thenReturn(dto);
 
 		mockMvc.perform(get("/api/sets/{setId}/equipos/{equipoId}/opciones-punto", setId, equipoId))
 				.andExpect(status().isOk())
@@ -48,7 +48,7 @@ class SetControllerTest {
 	void opcionesPuntoConRecursoInexistenteDevuelve404() throws Exception {
 		UUID setId = UUID.randomUUID();
 		UUID equipoId = UUID.randomUUID();
-		when(consultarPartidoPort.cargarOpcionesPunto(setId, equipoId))
+		when(gestorPartidoPort.cargarOpcionesPunto(setId, equipoId))
 				.thenThrow(new RecursoNoEncontradoException("Set no encontrado: " + setId));
 
 		mockMvc.perform(get("/api/sets/{setId}/equipos/{equipoId}/opciones-punto", setId, equipoId))

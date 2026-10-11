@@ -1,9 +1,7 @@
 package com.mrusedev.voleytrack.adapter.out.persistence.repository;
-import com.mrusedev.voleytrack.adapter.out.persistence.entity.EquipoEntity;
 
+import com.mrusedev.voleytrack.adapter.out.persistence.entity.EquipoEntity;
+import java.util.UUID;
 import org.springframework.data.repository.CrudRepository;
 
-import java.util.UUID;
-
-public interface EquipoSpringDataRepository extends CrudRepository<EquipoEntity, UUID> {
-}
+public interface EquipoSpringDataRepository extends CrudRepository<EquipoEntity, UUID> {}

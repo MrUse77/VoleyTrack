@@ -1,7 +1,14 @@
 package com.mrusedev.voleytrack.application.port.in;
 
-import com.mrusedev.voleytrack.application.dto.*;
-import com.mrusedev.voleytrack.domain.*;
+import com.mrusedev.voleytrack.application.dto.AlineacionPreviewDTO;
+import com.mrusedev.voleytrack.application.dto.ConfirmacionDTO;
+import com.mrusedev.voleytrack.application.dto.DatosInicioPartidoDTO;
+import com.mrusedev.voleytrack.application.dto.EquiposDTO;
+import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
+import com.mrusedev.voleytrack.application.dto.JugadorDTO;
+import com.mrusedev.voleytrack.application.dto.JugadorEnPosicion;
+import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
+import com.mrusedev.voleytrack.application.dto.PizarraEnVivoDTO;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,21 +17,25 @@ public interface GestorPartidoPort {
 
     DatosInicioPartidoDTO cargarDatosInicio(UUID partidoId);
 
-    InicioSetDTO crearSet(Partido partido);
+    PizarraEnVivoDTO obtenerPizarra(UUID partidoId);
 
-    Alineacion crearAlineacion(Equipo equipo);
+    InicioSetDTO crearSet(UUID partidoId);
 
-    List<Jugador> cargarJugadoresDisponibles(Equipo equipo);
+    AlineacionPreviewDTO crearAlineacion(UUID setId, UUID equipoId);
 
-    AlineacionPreviewDTO agregarJugadorAAlineacion(Jugador jugador, int posicion, Alineacion alineacion);
+    List<JugadorDTO> cargarJugadoresDisponibles(UUID equipoId);
 
-    void seleccionarEquipoSaqueInicial(Equipo equipo, SetPartido set);
+    AlineacionPreviewDTO agregarJugadorAAlineacion(UUID setId, UUID equipoId, UUID jugadorId, int posicion);
 
-    ConfirmacionDTO confirmarInicioPartido(Partido partido, SetPartido set);
+    void seleccionarEquipoSaqueInicial(UUID setId, UUID equipoId);
 
-    EquiposDTO iniciarAnotacion(Partido partido);
+    AlineacionPreviewDTO guardarAlineacion(UUID partidoId, UUID setId, UUID equipoId, List<JugadorEnPosicion> titulares);
 
-    OpcionesPuntoDTO cargarOpcionesPunto(SetPartido set, Equipo equipo);
+    ConfirmacionDTO confirmarInicioPartido(UUID partidoId, UUID setId);
 
-    ConfirmacionDTO confirmarPunto(Partido partido, Equipo equipo, Jugador jugador, TipoFundamento tipoFundamento);
+    EquiposDTO iniciarAnotacion(UUID partidoId);
+
+    OpcionesPuntoDTO cargarOpcionesPunto(UUID setId, UUID equipoId);
+
+    ConfirmacionDTO confirmarPunto(UUID partidoId, UUID equipoId, UUID jugadorId, String tipoFundamento);
 }

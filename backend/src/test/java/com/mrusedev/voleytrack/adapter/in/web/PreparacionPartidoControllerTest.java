@@ -5,7 +5,7 @@ import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
 import com.mrusedev.voleytrack.application.dto.JugadorEnPosicion;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
 import com.mrusedev.voleytrack.application.exception.ReglaDeNegocioException;
-import com.mrusedev.voleytrack.application.port.in.PrepararPartidoPort;
+import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -33,13 +33,13 @@ class PreparacionPartidoControllerTest {
 	private MockMvc mockMvc;
 
 	@MockitoBean
-	private PrepararPartidoPort prepararPartidoPort;
+	private GestorPartidoPort gestorPartidoPort;
 
 	@Test
 	void crearSetDevuelve201ConElSetCreado() throws Exception {
 		UUID partidoId = UUID.randomUUID();
 		UUID setId = UUID.randomUUID();
-		when(prepararPartidoPort.crearSet(partidoId))
+		when(gestorPartidoPort.crearSet(partidoId))
 				.thenReturn(new InicioSetDTO(setId, 1, false, 25));
 
 		mockMvc.perform(post("/api/partidos/{partidoId}/sets", partidoId))
@@ -48,7 +48,7 @@ class PreparacionPartidoControllerTest {
 				.andExpect(jsonPath("$.numeroSet").value(1))
 				.andExpect(jsonPath("$.limitePuntos").value(25));
 
-		verify(prepararPartidoPort).crearSet(partidoId);
+		verify(gestorPartidoPort).crearSet(partidoId);
 	}
 
 	@Test
@@ -59,7 +59,7 @@ class PreparacionPartidoControllerTest {
 		UUID jugadorId = UUID.randomUUID();
 		AlineacionPreviewDTO preview = new AlineacionPreviewDTO(equipoId, "Club Local", List.of(
 				new AlineacionPreviewDTO.JugadorEnPosicionDTO(jugadorId, "Ana", "Uno", 1, 1, true)));
-		when(prepararPartidoPort.guardarAlineacion(eq(partidoId), eq(setId), eq(equipoId), anyList()))
+		when(gestorPartidoPort.guardarAlineacion(eq(partidoId), eq(setId), eq(equipoId), anyList()))
 				.thenReturn(preview);
 
 		String body = "[{\"jugadorId\":\"" + jugadorId + "\",\"posicion\":1}]";
@@ -74,7 +74,7 @@ class PreparacionPartidoControllerTest {
 				.andExpect(jsonPath("$.jugadores[0].jugadorId").value(jugadorId.toString()))
 				.andExpect(jsonPath("$.jugadores[0].posicion").value(1));
 
-		verify(prepararPartidoPort).guardarAlineacion(
+		verify(gestorPartidoPort).guardarAlineacion(
 				eq(partidoId), eq(setId), eq(equipoId),
 				eq(List.of(new JugadorEnPosicion(jugadorId, 1))));
 	}
@@ -90,7 +90,7 @@ class PreparacionPartidoControllerTest {
 						.content("{\"equipoId\":\"" + equipoId + "\"}"))
 				.andExpect(status().isNoContent());
 
-		verify(prepararPartidoPort).seleccionarSaqueInicial(partidoId, setId, equipoId);
+		verify(gestorPartidoPort).seleccionarEquipoSaqueInicial(setId, equipoId);
 	}
 
 	@Test
@@ -103,7 +103,7 @@ class PreparacionPartidoControllerTest {
 						.content("{\"setId\":\"" + setId + "\"}"))
 				.andExpect(status().isNoContent());
 
-		verify(prepararPartidoPort).confirmarInicio(partidoId, setId);
+		verify(gestorPartidoPort).confirmarInicioPartido(partidoId, setId);
 	}
 
 	@Test
@@ -111,7 +111,7 @@ class PreparacionPartidoControllerTest {
 		UUID partidoId = UUID.randomUUID();
 		UUID setId = UUID.randomUUID();
 		doThrow(new ReglaDeNegocioException("Error al iniciar el partido: x"))
-				.when(prepararPartidoPort).confirmarInicio(partidoId, setId);
+				.when(gestorPartidoPort).confirmarInicioPartido(partidoId, setId);
 
 		mockMvc.perform(post("/api/partidos/{partidoId}/inicio", partidoId)
 						.contentType(MediaType.APPLICATION_JSON)
@@ -125,7 +125,7 @@ class PreparacionPartidoControllerTest {
 	@Test
 	void crearSetConPartidoInexistenteDevuelve404ConMensaje() throws Exception {
 		UUID partidoId = UUID.randomUUID();
-		when(prepararPartidoPort.crearSet(partidoId))
+		when(gestorPartidoPort.crearSet(partidoId))
 				.thenThrow(new RecursoNoEncontradoException("Partido no encontrado: " + partidoId));
 
 		mockMvc.perform(post("/api/partidos/{partidoId}/sets", partidoId))
@@ -140,7 +140,7 @@ class PreparacionPartidoControllerTest {
 		UUID partidoId = UUID.randomUUID();
 		UUID setId = UUID.randomUUID();
 		UUID equipoId = UUID.randomUUID();
-		when(prepararPartidoPort.guardarAlineacion(eq(partidoId), eq(setId), eq(equipoId), anyList()))
+		when(gestorPartidoPort.guardarAlineacion(eq(partidoId), eq(setId), eq(equipoId), anyList()))
 				.thenThrow(new RecursoNoEncontradoException("Set no encontrado: " + setId));
 
 		mockMvc.perform(put("/api/partidos/{partidoId}/sets/{setId}/alineacion", partidoId, setId)

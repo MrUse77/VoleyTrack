@@ -4,7 +4,7 @@ import com.mrusedev.voleytrack.application.dto.DatosInicioPartidoDTO;
 import com.mrusedev.voleytrack.application.dto.PizarraEnVivoDTO;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
 import com.mrusedev.voleytrack.application.exception.ReglaDeNegocioException;
-import com.mrusedev.voleytrack.application.port.in.ConsultarPartidoPort;
+import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -26,12 +26,12 @@ class PartidoControllerTest {
 	private MockMvc mockMvc;
 
 	@MockitoBean
-	private ConsultarPartidoPort consultarPartidoPort;
+	private GestorPartidoPort gestorPartidoPort;
 
 	@Test
 	void inicioDevuelveDatosDelPartido() throws Exception {
 		UUID partidoId = UUID.randomUUID();
-		when(consultarPartidoPort.cargarDatosInicio(partidoId))
+		when(gestorPartidoPort.cargarDatosInicio(partidoId))
 				.thenReturn(new DatosInicioPartidoDTO(partidoId, "Club A", "Club B", 5, 3, "PROGRAMADO"));
 
 		mockMvc.perform(get("/api/partidos/{partidoId}/inicio", partidoId))
@@ -42,7 +42,7 @@ class PartidoControllerTest {
 	@Test
 	void inicioInexistenteDevuelve404ConMensaje() throws Exception {
 		UUID partidoId = UUID.randomUUID();
-		when(consultarPartidoPort.cargarDatosInicio(partidoId))
+		when(gestorPartidoPort.cargarDatosInicio(partidoId))
 				.thenThrow(new RecursoNoEncontradoException("Partido no encontrado: " + partidoId));
 
 		mockMvc.perform(get("/api/partidos/{partidoId}/inicio", partidoId))
@@ -68,7 +68,7 @@ class PartidoControllerTest {
 				"EN_CURSO",
 				List.of(new PizarraEnVivoDTO.EventoPizarraDTO(
 						UUID.randomUUID(), "Jugador Local", "ATAQUE")));
-		when(consultarPartidoPort.obtenerPizarra(partidoId)).thenReturn(pizarra);
+		when(gestorPartidoPort.obtenerPizarra(partidoId)).thenReturn(pizarra);
 
 		mockMvc.perform(get("/api/partidos/{partidoId}/pizarra", partidoId))
 				.andExpect(status().isOk())
@@ -84,7 +84,7 @@ class PartidoControllerTest {
 	@Test
 	void pizarraConReglaDeNegocioDevuelve409() throws Exception {
 		UUID partidoId = UUID.randomUUID();
-		when(consultarPartidoPort.obtenerPizarra(partidoId))
+		when(gestorPartidoPort.obtenerPizarra(partidoId))
 				.thenThrow(new ReglaDeNegocioException("Regla de negocio violada"));
 
 		mockMvc.perform(get("/api/partidos/{partidoId}/pizarra", partidoId))

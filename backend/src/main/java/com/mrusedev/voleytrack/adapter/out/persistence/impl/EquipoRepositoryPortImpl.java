@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
@@ -41,6 +42,14 @@ public class EquipoRepositoryPortImpl implements EquipoRepositoryPort {
     @Override
     public Optional<Equipo> buscarPorId(UUID id) {
         return repo.findById(id).map(this::toDomain);
+    }
+
+    /** Carga en bloque: una sola consulta en vez de una por equipo (evita el N+1). */
+    @Override
+    public List<Equipo> buscarPorIds(Set<UUID> ids) {
+        return StreamSupport.stream(repo.findAllById(ids).spliterator(), false)
+                .map(this::toDomain)
+                .toList();
     }
 
     @Override

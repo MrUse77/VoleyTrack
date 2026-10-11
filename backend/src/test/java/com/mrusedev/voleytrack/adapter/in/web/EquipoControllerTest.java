@@ -2,8 +2,7 @@ package com.mrusedev.voleytrack.adapter.in.web;
 
 import com.mrusedev.voleytrack.application.dto.JugadorDTO;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
-import com.mrusedev.voleytrack.application.port.in.PrepararPartidoPort;
-import com.mrusedev.voleytrack.domain.Posicion;
+import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -26,31 +25,32 @@ class EquipoControllerTest {
 	private MockMvc mockMvc;
 
 	@MockitoBean
-	private PrepararPartidoPort prepararPartidoPort;
+	private GestorPartidoPort gestorPartidoPort;
 
 	@Test
 	void jugadoresDisponiblesDevuelve200ConLaLista() throws Exception {
 		UUID equipoId = UUID.randomUUID();
 		UUID jugadorId = UUID.randomUUID();
-		when(prepararPartidoPort.cargarJugadoresDisponibles(equipoId))
-				.thenReturn(List.of(new JugadorDTO(jugadorId, "Ana", "Uno", 7, Posicion.LIBERO, true)));
+		when(gestorPartidoPort.cargarJugadoresDisponibles(equipoId))
+				.thenReturn(List.of(new JugadorDTO(jugadorId, "Ana", "Uno", "2000-01-01", 7, "LIBERO", true)));
 
 		mockMvc.perform(get("/api/equipos/{equipoId}/jugadores", equipoId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(jugadorId.toString()))
 				.andExpect(jsonPath("$[0].nombre").value("Ana"))
 				.andExpect(jsonPath("$[0].apellido").value("Uno"))
+				.andExpect(jsonPath("$[0].fechaNacimiento").value("2000-01-01"))
 				.andExpect(jsonPath("$[0].dorsal").value(7))
 				.andExpect(jsonPath("$[0].posicion").value("LIBERO"))
 				.andExpect(jsonPath("$[0].activo").value(true));
 
-		verify(prepararPartidoPort).cargarJugadoresDisponibles(equipoId);
+		verify(gestorPartidoPort).cargarJugadoresDisponibles(equipoId);
 	}
 
 	@Test
 	void jugadoresDeEquipoInexistenteDevuelve404ConMensaje() throws Exception {
 		UUID equipoId = UUID.randomUUID();
-		when(prepararPartidoPort.cargarJugadoresDisponibles(equipoId))
+		when(gestorPartidoPort.cargarJugadoresDisponibles(equipoId))
 				.thenThrow(new RecursoNoEncontradoException("Equipo no encontrado: " + equipoId));
 
 		mockMvc.perform(get("/api/equipos/{equipoId}/jugadores", equipoId))

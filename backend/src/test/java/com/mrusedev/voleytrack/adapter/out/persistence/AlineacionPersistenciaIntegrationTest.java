@@ -1,7 +1,7 @@
 package com.mrusedev.voleytrack.adapter.out.persistence;
 
 import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
-import com.mrusedev.voleytrack.application.port.in.ConsultarPartidoPort;
+import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import com.mrusedev.voleytrack.application.port.out.EquipoRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.JugadorRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.PartidoRepositoryPort;
@@ -46,7 +46,7 @@ class AlineacionPersistenciaIntegrationTest {
     private JugadorRepositoryPort jugadorRepo;
 
     @Autowired
-    private ConsultarPartidoPort consultarPartidoPort;
+    private GestorPartidoPort gestorPartidoPort;
 
     private Equipo equipo;
     private Jugador jugador1;
@@ -105,7 +105,7 @@ class AlineacionPersistenciaIntegrationTest {
         crearAlineacionDeDosTitularesConSacadorInicial();
         setRepo.guardar(set, partidoId);
 
-        OpcionesPuntoDTO opciones = consultarPartidoPort.cargarOpcionesPunto(set.getId(), equipo.getId());
+        OpcionesPuntoDTO opciones = gestorPartidoPort.cargarOpcionesPunto(set.getId(), equipo.getId());
 
         assertThat(opciones.equipoId()).isEqualTo(equipo.getId());
         assertThat(opciones.jugadores()).hasSize(2);

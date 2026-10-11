@@ -17,13 +17,16 @@ import com.mrusedev.voleytrack.application.port.out.SustitucionRepositoryPort;
 import com.mrusedev.voleytrack.domain.Alineacion;
 import com.mrusedev.voleytrack.domain.Equipo;
 import com.mrusedev.voleytrack.domain.Evento;
+import com.mrusedev.voleytrack.domain.Partido;
 import com.mrusedev.voleytrack.domain.SetPartido;
 import com.mrusedev.voleytrack.domain.Sustitucion;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 public class SetRepositoryPortImpl implements SetRepositoryPort {
@@ -95,10 +98,30 @@ public class SetRepositoryPortImpl implements SetRepositoryPort {
     }
 
     @Override
+    public Optional<UUID> buscarPartidoId(UUID setId) {
+        return repo.findById(setId).map(SetEntity::getPartidoId);
+    }
+
+    @Override
     public List<SetPartido> buscarPorPartido(UUID partidoId) {
         return repo.findByPartidoId(partidoId).stream()
                 .map(this::toDomain)
                 .toList();
+    }
+
+    /**
+     * Carga los sets de varios partidos de una sola pasada.
+     *
+     * <p>TODO(optimizacion): hoy delega en {@link #buscarPorPartido} — correcto, pero sigue
+     * consultando por partido, asi que no elimina el N+1 todavia. La version en bloque de verdad
+     * necesita un overload {@code toDomain(SetEntity, Partido yaCargado)} para reusar los partidos
+     * ya traidos por {@code PartidoRepositoryPortImpl.buscarTodos} SIN perder la restauracion de
+     * saque / eventos / sustituciones / alineaciones que hace {@link #toDomain(SetEntity)}.
+     */
+    @Override
+    public Map<UUID, List<SetPartido>> buscarPorPartidos(Map<UUID, Partido> partidos) {
+        return partidos.keySet().stream()
+                .collect(Collectors.toMap(id -> id, this::buscarPorPartido));
     }
 
     private SetPartido toDomain(SetEntity entity) {
