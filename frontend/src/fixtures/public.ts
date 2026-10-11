@@ -487,11 +487,20 @@ export const PUBLIC_MATCHES = Object.freeze({
   ]),
 } satisfies PublicMatchFixtures);
 
+/**
+ * Prototype data: the four tiles of the design's player `.kpi-grid`
+ * (frontend/design/html/voleytrack-jugadores.html), including their `.kpi-sub` lines. The
+ * app's previous canonical pairs (Puntos Totales 245, Eficacia Ataque 52%, Aces (Saques) 18,
+ * Bloqueos 42) were superseded by the design's own labels, values and subs when the detail
+ * screen moved onto `KpiGrid`/`Kpi`. The two ranking subs ("1º del torneo", "Top 3 liga")
+ * have no app counterpart at all, so the whole set MUST be replaced by real per-player values
+ * before the screen is trusted.
+ */
 const canonicalPlayerKpis = Object.freeze([
-  Object.freeze({ label: "Puntos Totales", value: "245" }),
-  Object.freeze({ label: "Eficacia Ataque", value: "52%" }),
-  Object.freeze({ label: "Aces (Saques)", value: "18" }),
-  Object.freeze({ label: "Bloqueos", value: "42" }),
+  Object.freeze({ label: "Puntos", value: "142", sub: "3.8 / set · 1º del torneo" }),
+  Object.freeze({ label: "Ataque", value: "49%", sub: "Efectividad" }),
+  Object.freeze({ label: "Bloqueo", value: "18", sub: "0.5 / set" }),
+  Object.freeze({ label: "Saque ace", value: "11", sub: "Top 3 liga" }),
 ] satisfies PlayerDetailFixture["kpis"]);
 
 const canonicalPlayerStatBreakdown = Object.freeze([

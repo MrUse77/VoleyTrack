@@ -326,9 +326,13 @@ describe("core primitives", () => {
     // ones, so the measured total moved from 71 to 70 and the floor moves with it. The
     // matches and tournaments slices (T12/T13) rebuilt both public list screens, their
     // detail routes and the bracket widget onto the structural form, which took the measured
-    // total to 55 across 19 production files, so the floor moves to those values.
-    expect(cards.length).toBeGreaterThanOrEqual(55);
-    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(19);
+    // total to 55 across 19 production files. The teams and players slices (T14/T15) added
+    // the two new list screens and the design's `Rendimiento ÚLTIMOS 5` card, all structural,
+    // and converted the player detail's stat-breakdown and recent-matches cards onto the
+    // structural form, which took the measured total to 59 across 21 production files, so the
+    // floor moves to those values.
+    expect(cards.length).toBeGreaterThanOrEqual(59);
+    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(21);
 
     // A JSX spread could inject `padded={false}` (or a shadowing prop) behind the
     // guard's back and the count would silently drift. Fail loudly instead of
@@ -355,9 +359,13 @@ describe("core primitives", () => {
     // dashboard onto the structural form, which took the legacy form to 62 call sites in 20
     // files. T12/T13 then rebuilt the public matches screen, the tournaments list and the
     // five tournament detail routes onto the structural form, which took the legacy form to
-    // 41 call sites in 13 files, so both ceilings were lowered to the measured values.
-    expect(legacyCount).toBeLessThanOrEqual(41);
-    expect(legacyFiles.length).toBeLessThanOrEqual(13);
+    // 41 call sites in 13 files. T14/T15 rebuilt the teams and players lists, added the
+    // `Rendimiento ÚLTIMOS 5` card and replaced the player detail's KPI cards with
+    // `KpiGrid`/`Kpi` while moving its two lower cards onto the structural form, which took
+    // the legacy form to 35 call sites in 12 files, so both ceilings were lowered to the
+    // measured values.
+    expect(legacyCount).toBeLessThanOrEqual(35);
+    expect(legacyFiles.length).toBeLessThanOrEqual(12);
   });
 
   it("keeps a single form-field concept in the primitives layer", () => {

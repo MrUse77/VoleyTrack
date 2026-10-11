@@ -440,9 +440,16 @@ describe("design tokens", () => {
     // `border-vt-border bg-vt-raised` detail heroes moved onto the shared shell's structural
     // cards. Measured with this guard's own patterns and exclusions: vt-panel 61/31,
     // vt-raised 36/21, vt-raised-border 9/7 (unchanged, so its ceiling stays).
+    // T14/T15 then built the public teams and players screens. The two new list tables are
+    // rendered by the shared `DataTable` primitive, which still paints its own `vt-panel`
+    // header and `vt-raised` body (+2 each), while the team and player detail screens those
+    // slices restructured moved their own app-only tiles onto the design's --surface-2 and
+    // --bg layers and dropped the player KPI cards' raised borders. Measured with this
+    // guard's own patterns and exclusions: vt-panel 52/27, vt-raised 29/18, and
+    // vt-raised-border unchanged at 9/7 (so its ceiling stays).
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 61, baselineFiles: 31 },
-      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 36, baselineFiles: 21 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 52, baselineFiles: 27 },
+      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 29, baselineFiles: 18 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 9, baselineFiles: 7 },
     ];
 

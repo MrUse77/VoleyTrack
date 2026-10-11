@@ -18,11 +18,13 @@ import { TournamentMatchesPage } from "./features/public/TournamentMatchesPage";
 import { TournamentStandingsPage } from "./features/public/TournamentStandingsPage";
 import { TournamentBracketPage } from "./features/public/TournamentBracketPage";
 import { TournamentStatsPage } from "./features/public/TournamentStatsPage";
+import { TeamsPage } from "./features/public/TeamsPage";
 import { TeamDetailPage } from "./features/public/TeamDetailPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamStatsPage } from "./features/public/TeamStatsPage";
 import { LiveMatchPage } from "./features/public/LiveMatchPage";
+import { PlayersPage } from "./features/public/PlayersPage";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { AdminPage } from "./pages/AdminPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
@@ -49,10 +51,13 @@ const rootRoute = createRootRoute({
 	component: () => <Outlet />,
 });
 
-// The design's public sidebar (frontend/design/html/voleytrack.html) is Dashboard / Partidos /
-// Torneos / Equipos / Jugadores / En vivo. Equipos, Jugadores and En vivo are deliberately
-// absent until the tasks that build their real screens land (T14/T15/T16 in
-// odd/tasks/frontend-design-parity.md): linking them now would point at PlaceholderPage routes.
+// The design's public sidebar is Dashboard / Partidos / Torneos / Equipos / Jugadores /
+// En vivo (frontend/design/html/voleytrack.html, `sidebar-public-nav`). Equipos and
+// Jugadores joined this list in the same change that replaced their PlaceholderPage
+// routes with the real screens, so the nav only ever points at destinations that render.
+// `En vivo` is still withheld: it arrives with its own screen in a later task (T16 in
+// odd/tasks/frontend-design-parity.md) and has no route yet, so adding it now would be a
+// link to nothing rather than a shorter nav.
 // The app-only "Estadísticas" entry was removed because it was the only entry point of
 // `placeholderRoute(publicShellRoute, "/stats")`, which rendered no screen — the real
 // statistics views live at /tournaments/$id/stats and /teams/$id/stats and stay reachable
@@ -65,6 +70,8 @@ const publicNavigation: SidebarNavigationGroup[] = [
 			{ href: "/", icon: "01", label: "Dashboard" },
 			{ href: "/matches", icon: "02", label: "Partidos" },
 			{ href: "/tournaments", icon: "03", label: "Torneos" },
+			{ href: "/teams", icon: "04", label: "Equipos" },
+			{ href: "/players", icon: "05", label: "Jugadores" },
 		],
 	},
 ];
@@ -166,8 +173,16 @@ const changePasswordRoute = createRoute({
 	component: ChangePasswordPage,
 });
 
-const playersRoute = placeholderRoute(publicShellRoute, "/players", "Jugadores");
-const teamsRoute = placeholderRoute(publicShellRoute, "/teams", "Equipos");
+const playersRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/players",
+	component: PlayersPage,
+});
+const teamsRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/teams",
+	component: TeamsPage,
+});
 const adminSettingsRoute = placeholderRoute(adminShellRoute, "/admin/settings", "Configuración");
 
 const publicDashboardRoute = createRoute({
@@ -341,9 +356,6 @@ export const routeTree = rootRoute.addChildren([
 	liveMatchRoute,
 	publicShellRoute.addChildren([
 		publicDashboardRoute,
-		// These two are PlaceholderPage routes on purpose: the design defines `/teams` and
-		// `/players` as real destinations, so T14/T15 replace their screens rather than
-		// removing the routes, unlike the removed `/stats` which had no design counterpart.
 		playersRoute,
 		teamsRoute,
 		matchesRoute,

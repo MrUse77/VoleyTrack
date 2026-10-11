@@ -181,11 +181,14 @@ describe("public fixtures", () => {
     expect(PUBLIC_PLAYER_DETAILS.map(({ playerId }) => playerId)).toEqual(
       publicPlayerIds,
     );
+    // The design's own KPI tile set (frontend/design/html/voleytrack-jugadores.html),
+    // including its `.kpi-sub` lines; see the fixture comment for why it supersedes the
+    // previous canonical pairs.
     expect(PUBLIC_PLAYER_DETAILS[0].kpis).toEqual([
-      { label: "Puntos Totales", value: "245" },
-      { label: "Eficacia Ataque", value: "52%" },
-      { label: "Aces (Saques)", value: "18" },
-      { label: "Bloqueos", value: "42" },
+      { label: "Puntos", value: "142", sub: "3.8 / set · 1º del torneo" },
+      { label: "Ataque", value: "49%", sub: "Efectividad" },
+      { label: "Bloqueo", value: "18", sub: "0.5 / set" },
+      { label: "Saque ace", value: "11", sub: "Top 3 liga" },
     ]);
     expect(PUBLIC_PLAYER_DETAILS[0].statBreakdown).toEqual([
       { id: "attack", label: "Ataque", value: "140 pts", barPercent: 100, tone: "attack" },

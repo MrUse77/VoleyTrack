@@ -51,7 +51,7 @@ function MatchRow({ index, row }: { index: number; row: TeamMatchRow }) {
   const { match } = row;
   const geometry = matchRowGeometry[index] ?? "min-[1416px]:mt-5 min-[1416px]:h-16";
   const content = (
-    <div className="grid min-h-16 gap-3 rounded-xl bg-vt-panel p-4 min-[1416px]:h-full min-[1416px]:min-h-0 min-[1416px]:grid-cols-[110px_minmax(0,1fr)_120px_100px] min-[1416px]:items-center">
+    <div className="grid min-h-16 gap-3 rounded-xl bg-vt-surface-2 p-4 min-[1416px]:h-full min-[1416px]:min-h-0 min-[1416px]:grid-cols-[110px_minmax(0,1fr)_120px_100px] min-[1416px]:items-center">
       <div>
         <Badge variant={resultVariant(row.resultLabel)}>{row.resultLabel}</Badge>
       </div>

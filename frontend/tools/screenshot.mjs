@@ -715,6 +715,81 @@ const PROBE_SOURCE = `(() => {
       })()
     : null;
 
+  // Additive only. The design's public sidebar carries six destinations
+  // (frontend/design/html/voleytrack.html, its sidebar-public-nav group); the app adds them
+  // one at a
+  // time as each screen becomes real, so the rendered label list is what proves which
+  // destinations exist. Reading the label span rather than the whole anchor keeps the
+  // numeric icon prefix out of the value.
+  const navDestinations = Array.from(document.querySelectorAll("aside nav a")).map((link) => ({
+    label: (link.querySelector("span:last-child")?.textContent || "").trim(),
+    href: link.getAttribute("href"),
+    isActive: link.getAttribute("aria-current") === "page",
+  }));
+
+  // Additive only. The design's list tables are thead > tr > th cells
+  // (voleytrack.css:96) and the shared DataTable primitive renders every header as
+  // a scoped column header; this reports the header semantics actually rendered instead of the
+  // class names that produced them.
+  const tableHeaders = Array.from(document.querySelectorAll("table")).map((table) => ({
+    columnHeaders: table.querySelectorAll('th[scope="col"]').length,
+    rowHeaders: table.querySelectorAll('th[scope="row"]').length,
+    headers: Array.from(table.querySelectorAll('th[scope="col"]')).map((th) =>
+      (th.textContent || "").trim().replace(/\\s+/g, " "),
+    ),
+  }));
+
+  // Additive only. The team detail's tab strip is a labelled navigation whose entries are
+  // route links; reporting each entry's label plus the active entry's computed box proves the
+  // design's four-tab set (Detalle, Plantel (n), Partidos, Estadisticas) and its active
+  // treatment rendered.
+  const teamTabsElement = document.querySelector('[data-testid="team-tabs"]');
+  const teamTabs = teamTabsElement
+    ? Array.from(teamTabsElement.querySelectorAll("a")).map((tab) => {
+        const cs = getComputedStyle(tab);
+        return {
+          label: (tab.textContent || "").trim().replace(/\\s+/g, " "),
+          href: tab.getAttribute("href"),
+          isActive: tab.getAttribute("aria-current") === "page",
+          backgroundColor: cs.backgroundColor,
+          color: cs.color,
+          borderRadius: cs.borderRadius,
+          fontSize: cs.fontSize,
+          fontWeight: cs.fontWeight,
+        };
+      })
+    : null;
+
+  // Additive only. The design's .kpi-grid is four columns (two below 1200px,
+  // voleytrack-jugadores.css:3-4) and its .kpi-value is 32px/900 with line-height 1
+  // (lines 8-9). KpiGrid/Kpi declare role="list"/"listitem", so the grid is found
+  // through its accessible role and the resolved tracks and value typography are reported.
+  const kpiGridElement = document.querySelector('[role="list"]');
+  const kpiValueElement = kpiGridElement
+    ? kpiGridElement.querySelector('[role="listitem"] p:nth-of-type(2)')
+    : null;
+  const kpiGrid = kpiGridElement
+    ? (() => {
+        const cs = getComputedStyle(kpiGridElement);
+        const valueStyle = kpiValueElement ? getComputedStyle(kpiValueElement) : null;
+        return {
+          label: kpiGridElement.getAttribute("aria-label"),
+          childCount: kpiGridElement.querySelectorAll('[role="listitem"]').length,
+          gridTemplateColumns: cs.gridTemplateColumns,
+          columnGap: cs.columnGap,
+          value: valueStyle
+            ? {
+                text: (kpiValueElement.textContent || "").trim(),
+                fontSize: valueStyle.fontSize,
+                fontWeight: valueStyle.fontWeight,
+                lineHeight: valueStyle.lineHeight,
+                letterSpacing: valueStyle.letterSpacing,
+              }
+            : null,
+        };
+      })()
+    : null;
+
   const expected = __EXPECTED__;
   const innerText = document.body.innerText || "";
   const expectedStrings = expected.map((value) => ({ value, found: innerText.includes(value) }));
@@ -799,6 +874,14 @@ const PROBE_SOURCE = `(() => {
       tournamentsGrid,
       matchCard,
       bracket,
+      // Additive keys: new names only, every key above is unchanged. navDestinations
+      // reports which public sidebar destinations rendered, tableHeaders the column-header
+      // semantics of every table, teamTabs the team detail's tab set and active treatment,
+      // and kpiGrid the KPI grid's resolved columns and value typography.
+      navDestinations,
+      tableHeaders,
+      teamTabs,
+      kpiGrid,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

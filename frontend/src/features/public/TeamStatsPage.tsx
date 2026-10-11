@@ -34,7 +34,7 @@ export function TeamStatsPage() {
 
         <div
           aria-labelledby="team-stats-filter-label"
-          className="mt-4 rounded-2xl border border-vt-border bg-vt-raised px-[22px] py-3 min-[1416px]:h-[58px]"
+          className="mt-4 rounded-2xl border border-vt-border bg-vt-surface-2 px-[22px] py-3 min-[1416px]:h-[58px]"
           data-testid="team-stats-filter"
           role="group"
         >
@@ -50,7 +50,7 @@ export function TeamStatsPage() {
                 <li key={category.id}>
                   <span
                     aria-current={index === 0 ? "true" : undefined}
-                    className={`inline-flex min-h-[34px] w-[132px] items-center justify-center rounded-full px-4 text-[11px] font-bold ${index === 0 ? "bg-vt-accent font-black text-vt-background" : "bg-vt-panel text-vt-muted"}`}
+                    className={`inline-flex min-h-[34px] w-[132px] items-center justify-center rounded-full px-4 text-[11px] font-bold ${index === 0 ? "bg-vt-text font-black text-vt-background" : "bg-vt-surface text-vt-muted"}`}
                   >
                     {category.label}
                   </span>
@@ -71,7 +71,7 @@ export function TeamStatsPage() {
           <ol className="mt-5 space-y-5">
             {roster.map(({ player, stats }, index) => (
               <li
-                className="flex min-h-[72px] items-center rounded-xl bg-vt-panel px-5 min-[1416px]:h-[72px]"
+                className="flex min-h-[72px] items-center rounded-xl bg-vt-surface-2 px-5 min-[1416px]:h-[72px]"
                 key={player.id}
               >
                 <span className={`ml-1 w-10 text-center text-sm font-black ${index === 0 ? "text-vt-accent" : "text-vt-muted"}`}>
