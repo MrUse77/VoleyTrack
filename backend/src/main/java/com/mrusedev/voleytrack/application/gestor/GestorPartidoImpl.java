@@ -204,7 +204,8 @@ public class GestorPartidoImpl implements GestorPartidoPort {
     Equipo equipo = buscarEquipoDelSet(set, equipoId);
     Alineacion alineacion = set.getAlineacion(equipo);
     if (alineacion == null) {
-      throw new IllegalArgumentException("Alineación no encontrada para el equipo: " + equipoId);
+      throw new RecursoNoEncontradoException(
+          "Alineación no encontrada para el equipo: " + equipoId);
     }
 
     Jugador jugador = buscarJugador(jugadorId);
