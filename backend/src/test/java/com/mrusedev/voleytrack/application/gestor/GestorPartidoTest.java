@@ -295,10 +295,25 @@ class GestorPartidoTest {
         when(setRepo.buscarPartidoId(set.getId())).thenReturn(Optional.of(partido.getId()));
         when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
 
-        gestor.seleccionarEquipoSaqueInicial(set.getId(), equipoLocal.getId());
+        gestor.seleccionarEquipoSaqueInicial(partido.getId(), set.getId(), equipoLocal.getId());
 
         assertThat(set.getSaque()).isEqualTo(equipoLocal);
         verify(setRepo).guardar(set, partido.getId());
+    }
+
+    @Test
+    void seleccionarEquipoSaqueInicialConSetDeOtroPartidoLanzaRecursoNoEncontradoYSinPersistir() {
+        SetPartido set = partido.iniciarSet();
+        Partido otroPartido = new Partido(UUID.randomUUID(), equipoLocal, equipoVisitante, new CantSets(5));
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(setRepo.buscarPartidoId(set.getId())).thenReturn(Optional.of(otroPartido.getId()));
+
+        assertThatThrownBy(() ->
+                gestor.seleccionarEquipoSaqueInicial(partido.getId(), set.getId(), equipoLocal.getId()))
+                .isInstanceOf(RecursoNoEncontradoException.class)
+                .hasMessage("Set no encontrado: " + set.getId());
+
+        verify(setRepo, never()).guardar(any(), any());
     }
 
     // ── guardarAlineacion ──

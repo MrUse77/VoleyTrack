@@ -38,7 +38,8 @@ class GestorPartidoPortContractTest {
                 .isEqualTo("java.util.List<com.mrusedev.voleytrack.application.dto.JugadorDTO>");
         assertSignature("agregarJugadorAAlineacion", AlineacionPreviewDTO.class,
                 UUID.class, UUID.class, UUID.class, int.class);
-        assertSignature("seleccionarEquipoSaqueInicial", void.class, UUID.class, UUID.class);
+        assertSignature("seleccionarEquipoSaqueInicial", void.class, UUID.class, UUID.class,
+                UUID.class);
         assertSignature("confirmarInicioPartido", ConfirmacionDTO.class, UUID.class, UUID.class);
         assertSignature("iniciarAnotacion", EquiposDTO.class, UUID.class);
         assertSignature("cargarOpcionesPunto", OpcionesPuntoDTO.class, UUID.class, UUID.class);
