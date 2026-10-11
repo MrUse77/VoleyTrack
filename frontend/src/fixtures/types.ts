@@ -319,6 +319,12 @@ export type ScoringFixtures = Readonly<{
 
 export type AdminStaffFixture = Readonly<{
   id: string; fullName: string; email: string; role: string; roleLabel: string; status: string; statusLabel: string;
+  /**
+   * The design's `Torneo` column and "Torneo asignado" select
+   * (frontend/design/html/voleytrack-admin-gestion.html). The staff record had no
+   * assignment at all, so the shape gains the field the design renders.
+   */
+  tournamentLabel: string;
 }>;
 export type AdminTournamentFixture = Readonly<{
   id: string; name: string; status: TournamentStatus; statusLabel: string; category: string; dateLabel: string;
@@ -326,6 +332,12 @@ export type AdminTournamentFixture = Readonly<{
 }>;
 export type AdminMatchFixture = Readonly<{
   id: string; tournamentId: string; status: MatchStatus; statusLabel: string; scheduledLabel: string;
+  /**
+   * The design's match card prints the competition next to the schedule
+   * (frontend/design/html/voleytrack-admin-partidos.html, `.match-meta`), and the match
+   * record only carried `tournamentId`; the name is resolved from the tournament fixture.
+   */
+  tournamentName: string;
   homeTeamId: string; homeTeamName: string; awayTeamId: string; awayTeamName: string; venue: string;
 }>;
 export type AdminTeamFixture = Readonly<{

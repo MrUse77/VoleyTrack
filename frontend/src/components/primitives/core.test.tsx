@@ -335,9 +335,13 @@ describe("core primitives", () => {
     // structural form and adding the design's own structural set (set history, court, event
     // timeline, team statistics, top scorers, the two roster panels and the shared metadata
     // panel), which took the measured total to 66 across 23 production files, so the floor
-    // moves to those values.
-    expect(cards.length).toBeGreaterThanOrEqual(66);
-    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(23);
+    // moves to those values. T17 then aligned the three admin screens (the staff table + its
+    // dialog, the players and matches lists, and the three create forms): every card it added
+    // is structural and the three form boxes that carried the app-only raised fill became
+    // structural, so the measured total moved to 72 across 27 production files and the floor
+    // moves with it.
+    expect(cards.length).toBeGreaterThanOrEqual(72);
+    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(27);
 
     // A JSX spread could inject `padded={false}` (or a shadowing prop) behind the
     // guard's back and the count would silently drift. Fail loudly instead of
@@ -370,7 +374,9 @@ describe("core primitives", () => {
     // the legacy form to 35 call sites in 12 files, so both ceilings were lowered to the
     // measured values. T16 converted the live screen's three legacy Cards to the structural
     // form (its new cards already are structural), which took the legacy form to 32 call
-    // sites in 11 files, so both ceilings were lowered to the measured values again.
+    // sites in 11 files, so both ceilings were lowered to the measured values again. T17's
+    // admin alignment added only structural cards and converted no legacy one, so the legacy
+    // form stays at its measured 32/11 and neither ceiling moves.
     expect(legacyCount).toBeLessThanOrEqual(32);
     expect(legacyFiles.length).toBeLessThanOrEqual(11);
   });
@@ -747,7 +753,12 @@ describe("core primitives", () => {
     expect(html).toContain('role="dialog"');
     expect(html).toContain('aria-modal="true"');
     expect(html).toContain('aria-label="Close modal"');
-    expect(html).toContain("bg-black/60");
+    // Design source: frontend/design/html/voleytrack-admin.css:244 and :246 — the overlay is
+    // `background:rgba(6,10,18,.66)` with a 4px backdrop blur over a `--surface` panel with a
+    // `--border` edge and an 18px radius. The overlay colour is the tokenised
+    // `--color-vt-overlay` rather than a raw literal.
+    expect(html).toContain("bg-vt-overlay");
+    expect(html).toContain("bg-vt-surface");
     expect(html).toContain("Modal content");
   });
 

@@ -28,13 +28,12 @@ import { LiveNowPage } from "./features/public/LiveNowPage";
 import { PlayersPage } from "./features/public/PlayersPage";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { AdminPage } from "./pages/AdminPage";
-import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { PlanilleroPage } from "./pages/PlanilleroPage";
 import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
 import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 import { PointEntryPage } from "./features/scoring/PointEntryPage";
 import { PostMatchSummaryPage } from "./features/scoring/PostMatchSummaryPage";
-import { StaffRegisterPage } from "./features/admin/StaffRegisterPage";
+import { AdminStaffPage } from "./features/admin/AdminStaffPage";
 import { CreatePlayerPage } from "./features/admin/CreatePlayerPage";
 import { CreateTeamPage } from "./features/admin/CreateTeamPage";
 import { CreateTournamentPage } from "./features/admin/CreateTournamentPage";
@@ -100,9 +99,11 @@ const adminNavigation: SidebarNavigationGroup[] = [
 	{
 		label: "ADMINISTRACIÓN",
 		items: [
-			{ href: "/admin/staff/register", icon: "👥", label: "Staff / Planilleros" },
+			// The design's admin sidebar names this destination "Staff & gestión"
+			// (frontend/design/html/voleytrack-admin-gestion.html) and it now renders that
+			// screen: the staff table, the creation dialog and the row edit affordance.
+			{ href: "/admin/staff/register", icon: "👥", label: "Staff & gestión" },
 			{ href: "/planillero", icon: "📝", label: "Panel de planillero" },
-			{ href: "/admin/settings", icon: "⚙️", label: "Configuración" },
 		],
 	},
 ];
@@ -145,20 +146,6 @@ const adminShellRoute = createRoute({
 	component: AdminRouteShell,
 });
 
-const placeholder = (title: string) => () => <PlaceholderPage title={title} />;
-
-function placeholderRoute(
-	parent: typeof publicShellRoute | typeof adminShellRoute,
-	path: string,
-	title: string,
-) {
-	return createRoute({
-		getParentRoute: () => parent,
-		path,
-		component: placeholder(title),
-	});
-}
-
 const adminRoute = createRoute({
 	getParentRoute: () => adminShellRoute,
 	path: "/admin",
@@ -193,7 +180,6 @@ const teamsRoute = createRoute({
 	path: "/teams",
 	component: TeamsPage,
 });
-const adminSettingsRoute = placeholderRoute(adminShellRoute, "/admin/settings", "Configuración");
 
 const publicDashboardRoute = createRoute({
 	getParentRoute: () => publicShellRoute,
@@ -300,7 +286,17 @@ const adminSummaryRoute = createRoute({
 const adminStaffRegisterRoute = createRoute({
 	getParentRoute: () => adminShellRoute,
 	path: "/admin/staff/register",
-	component: StaffRegisterPage,
+	// The design's staff screen keeps its create/edit dialog in the same page, opened by the
+	// "+ Nuevo integrante" action and each row's "Editar" button
+	// (frontend/design/html/voleytrack-admin-gestion.html). The open dialog is therefore part
+	// of the URL, exactly like the create-team modals, so a dialog can be linked to and
+	// reloaded rather than only reached by a click.
+	validateSearch: (search: Record<string, unknown>) => {
+		if (typeof search.editar === "string" && search.editar !== "") return { editar: search.editar };
+		if (search.nuevo === true || search.nuevo === "1") return { nuevo: true };
+		return {};
+	},
+	component: AdminStaffPage,
 });
 const adminTournamentMatchesRoute = createRoute({
 	getParentRoute: () => adminShellRoute,
@@ -393,7 +389,6 @@ export const routeTree = rootRoute.addChildren([
 	adminShellRoute.addChildren([
 		adminRoute,
 		planilleroRoute,
-		adminSettingsRoute,
 		adminMatchSetupRoute,
 		adminScoringRoute,
 		adminPointEntryRoute,

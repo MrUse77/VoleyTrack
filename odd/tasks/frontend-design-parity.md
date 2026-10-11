@@ -997,8 +997,65 @@ readable against the completed record above; the carried-over items it lists wer
 
 ### Slice 3 — Admin screens
 
-- [ ] **T17 — Staff gestión parity.** Staff table and edit modal on one screen, replacing the
-  register-only route.
+- [x] **T17 — Staff gestión parity.** Done. The route is now the design's single `Staff & gestión` screen:
+  a `DataTable` with scoped headers (Staff, Rol, Email, Torneo, Acciones) and **one `Modal` serving both
+  create and edit**, opened through the route search so the dialog is linkable.
+  - **The route path was kept and its content changed, with reasoning:** `/admin/staff/register` is pinned
+    by the artboard manifest (index 31) and by `router.test.ts`'s canonical-manifest test, and the design
+    has exactly one staff screen, so a separate `/admin/staff` would have been a second destination for
+    one screen. `validateSearch` was added for `?editar=<id>` and `?nuevo=1`, mirroring the team create
+    page.
+  - `Modal` itself was upgraded to the design's head/body/foot structure, `--surface` panel, focus trap
+    and restore, Escape and backdrop dismissal — verified by measurement rather than by reading: role
+    `dialog`, `aria-modal`, a labelled title, seven focusables, focus starting inside, and **Tab wrapping
+    back to the first element**. A new `--color-vt-overlay` token carries the design's overlay colour
+    with a 4px backdrop blur.
+  - **The name stopped matching the content**, and the worker could not move files, so it flagged that
+    explicitly. The parent renamed `StaffRegisterPage.tsx` and its test to `AdminStaffPage` with
+    `git mv` and renamed the exported symbol across the four referencing files, verified by grep showing
+    zero remaining references to the old name and a green suite afterwards.
+- [x] **T23 — Admin players parity.** Done. The list is now the design's columns (Jugador, Equipo,
+  Posición, Altura, Pts, Acciones), a collapsible filter `Card`, an `EmptyState`, and a per-row link to
+  the player's file; the create form is a `form-card` built from structural `Card`/`CardHeader`/`CardBody`
+  with six `Field`s.
+- [x] **T24 — Admin matches parity.** Done. The list moved from a table to the design's match cards with
+  `StatePill` and a filter card, and the create form onto the same `Card`/`Field` structure with the
+  unlock choreography, a team summary and a slot select.
+  - **Measured, and this is the first time the form work from T06b shows in admin:** before, every select
+    was `h-10 rounded-lg`, i.e. 40px with an 8px radius; after, the controls measure **46px and a 12px
+    radius** on `--border` with a `--bg` fill, and the focus ring resolves through CSSOM to the accent
+    border plus the `0 0 0 3px` accent-mix shadow. The `Field` spec was written in T06b and is only now
+    observable on a real screen.
+  - Table and state evidence: staff gained five scoped headers, players went from a six-column table with
+    no filters to the design's columns with a toggle at `aria-expanded=false`, a hidden panel of two
+    controls, a live count, and a forced-empty state that then restored its rows; matches went from a
+    six-column table to a card list with a three-control panel and its own empty state.
+  - **Design disagreements, each with a design line.** The design's staff action column header is an empty
+    `<th></th>`; `Acciones` was kept because a scoped header needs a name, which is a real accessibility
+    requirement the prototype simply did not have. The design's player rows use a 32px `<img>` thumbnail
+    and no photos exist, so `Avatar` initials are used. The design's staff modal has four fields and no
+    validation; the app keeps its required and email validation and drops the DNI, phone and surname
+    fields. The design's copy is **tuteo** while this app's voice is **voseo**, so the app's voice was
+    kept. The design's descriptions embed document numbers (`3.01 ·`, `1.07 ·`), dropped to match the
+    other aligned screens. The design's slot-availability rule for creating a match was **not** built,
+    because there is no machine-readable admin schedule; it is recorded in code. The design's modal close
+    label is `Cerrar` and the new screens pass that, but the primitive's **default stays English** because
+    three scoring and team tests outside this task's surfaces pin the existing value — the worker chose
+    not to break out-of-surface tests, which is the right call.
+  - **The admin navigation was audited against the design's own admin nav** and one gap was real: the
+    app-only `Configuración` entry pointed at `/admin/settings`, which rendered a `PlaceholderPage` — a
+    destination with no screen. It was removed together with its route, the same call already made for
+    the public `/stats` entry. The app-only `Dashboard` and `Panel de planillero` entries were kept because
+    both render real screens. Measured: **seven destinations, all resolving**. The design's
+    Equipos-before-Jugadores ordering was not adopted, and that is a recorded difference rather than an
+    oversight.
+  - Ratchets lowered: `vt-panel` 45/26 → **39/20**, `vt-raised` 25/16 → **21/12**, `vt-raised-border`
+    7/5 → **6/4**, legacy `Card` unchanged at 32/11 since no legacy card was migrated here, and the
+    all-`Card` floor rising 66/23 → 72/27.
+  - Suite `47 files / 321 passed`, lint exit 0, build exit 0. Dev server stopped with a single-PID kill,
+    port released, the other session's process untouched.
+  - **Known consequence:** `/admin/settings` now returns not-found. No manifest, test or route depended on
+    it. The matches slot-availability rule remains unbuilt and recorded in code.
 - [ ] **T18 — Admin tournaments parity.** List plus create/nuevo-torneo forms.
 - [ ] **T19 — Admin tournament overview and bracket.** The `ver-copa` bracket view and the
   overview (Información, Formato, Equipos, Llaves) the admin side is missing.
@@ -1006,8 +1063,8 @@ readable against the completed record above; the carried-over items it lists wer
 - [ ] **T21 — Admin teams parity.** List plus create with the design's inline roster builder
   (replacing the two-modal flow).
 - [ ] **T22 — Admin team detail.** New route and screen, no React counterpart.
-- [ ] **T23 — Admin players parity.** List plus create.
-- [ ] **T24 — Admin matches parity.** List plus create.
+- [ ] **T23 — Admin players parity.** See the completed record above.
+- [ ] **T24 — Admin matches parity.** See the completed record above.
 
 ### Slice 4 — Scoring
 

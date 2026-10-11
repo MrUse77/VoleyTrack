@@ -13,15 +13,23 @@ const playerRecords = Object.freeze([
   Object.freeze({ id: PUBLIC_PLAYERS[0].id, teamId: sanJorge.id, teamName: sanJorge.name, fullName: PUBLIC_PLAYERS[0].fullName, number: 7, position: "Armadora", status: "active", statusLabel: "Activo" }),
   Object.freeze({ id: PUBLIC_PLAYERS[1].id, teamId: rosarioCentral.id, teamName: rosarioCentral.name, fullName: PUBLIC_PLAYERS[1].fullName, number: 11, position: "Punta receptora", status: "active", statusLabel: "Activo" }),
 ]);
+const matchTournament = PUBLIC_TOURNAMENTS.all.find((item) => item.id === match.tournamentId);
 
+// PROTOTYPE DATA — NOT REAL. The design's staff table carries a `Torneo` column and its edit
+// modal a "Torneo asignado" select (frontend/design/html/voleytrack-admin-gestion.html); the
+// single staff record is assigned to the tournament the rest of the fixtures already use.
+// It must be replaced by a real staff-to-tournament assignment.
 export const ADMIN = Object.freeze({
-  staff: Object.freeze([Object.freeze({ id: "staff-planillero-mariana-lopez", fullName: "Mariana López", email: "mariana.lopez@voleytrack.test", role: "scorer", roleLabel: "Planillero", status: "active", statusLabel: "Activo" })]),
+  staff: Object.freeze([Object.freeze({ id: "staff-planillero-mariana-lopez", fullName: "Mariana López", email: "mariana.lopez@voleytrack.test", role: "scorer", roleLabel: "Planillero", status: "active", statusLabel: "Activo", tournamentLabel: tournament.name })]),
   tournaments: Object.freeze([Object.freeze({
     id: tournament.id, name: tournament.name, status: tournament.status, statusLabel: tournament.statusLabel, category: tournament.category,
     dateLabel: tournament.dateLabel, location: tournament.location, matchesLabel: "12 partidos", teamsLabel: "8 equipos",
   })]),
   matches: Object.freeze([Object.freeze({
     id: match.id, tournamentId: match.tournamentId, status: match.status, statusLabel: match.badgeLabel, scheduledLabel: match.scheduledLabel,
+    // `MatchFixture` carries only the tournament id, so the name the design's card prints is
+    // resolved here; a missing tournament prints an explicit gap rather than an empty label.
+    tournamentName: matchTournament?.name ?? "Torneo no disponible",
     homeTeamId: match.homeTeamId, homeTeamName: match.homeTeamName, awayTeamId: match.awayTeamId, awayTeamName: match.awayTeamName, venue: match.venue,
   })]),
   teams: teamRecords,

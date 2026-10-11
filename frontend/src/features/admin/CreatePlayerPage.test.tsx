@@ -3,10 +3,11 @@ import { act, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { ADMIN } from "../../fixtures";
 import { CreatePlayerPage } from "./CreatePlayerPage";
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ to, ...props }: { to: string; children?: ReactNode } & ComponentPropsWithoutRef<"a">) => (
+  Link: ({ to, ...props }: { to: string } & ComponentPropsWithoutRef<"a"> & { children?: ReactNode }) => (
     <a {...props} href={to} />
   ),
 }));
@@ -38,23 +39,44 @@ function setInputValue(input: HTMLInputElement, value: string) {
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
+function setSelectValue(select: HTMLSelectElement, value: string) {
+  select.value = value;
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function fillValidForm(container: HTMLElement, overrides: Partial<Record<string, string>> = {}) {
+  act(() => {
+    setInputValue(getControlByLabel<HTMLInputElement>(container, "Nombre"), overrides.Nombre ?? "Lucía");
+    setInputValue(getControlByLabel<HTMLInputElement>(container, "Apellido"), overrides.Apellido ?? "Gómez");
+    setInputValue(getControlByLabel<HTMLInputElement>(container, "Fecha de nacimiento"), overrides["Fecha de nacimiento"] ?? "2001-04-12");
+    setInputValue(getControlByLabel<HTMLInputElement>(container, "Dorsal"), overrides.Dorsal ?? "9");
+    setSelectValue(getControlByLabel<HTMLSelectElement>(container, "Posición"), overrides.Posición ?? "Opuesto");
+    setSelectValue(getControlByLabel<HTMLSelectElement>(container, "Equipo"), overrides.Equipo ?? ADMIN.teams[1].name);
+  });
+}
+
 describe("CreatePlayerPage", () => {
-  it("SSR renders the canonical create-player form", () => {
+  it("SSR renders the design's form card and its six fields", () => {
     const html = renderToStaticMarkup(<CreatePlayerPage />);
 
-    expect(html).toContain("Crear Nuevo Jugador");
+    expect(html).toContain("Crear jugador");
+    expect(html).toContain("Datos del jugador");
+    expect(html).toContain("Estado automático: Activo");
     expect(html).toContain("Cancelar");
     expect(html).toContain('href="/admin/players"');
     expect(html).toContain("Nombre");
     expect(html).toContain("Apellido");
     expect(html).toContain("Fecha de nacimiento");
-    expect(html).toContain("Dorsal");
     expect(html).toContain("Posición");
-    expect(html).toContain("Datos personales");
-    expect(html).toContain("Datos deportivos");
+    expect(html).toContain("Equipo");
+    expect(html).toContain("Dorsal");
+    // The design has one two-column grid, not the app's former personal/sporting fieldsets.
+    expect(html).not.toContain("Datos personales");
+    expect(html).not.toContain("Datos deportivos");
+    for (const team of ADMIN.teams) expect(html).toContain(team.name);
   });
 
-  it("marks every player field as required and shows feedback when submitted empty", () => {
+  it("marks every field as required and reports each one when submitted empty", () => {
     const rendered = renderPage();
 
     try {
@@ -65,14 +87,15 @@ describe("CreatePlayerPage", () => {
         getControlByLabel<HTMLInputElement>(rendered.container, "Fecha de nacimiento"),
         getControlByLabel<HTMLInputElement>(rendered.container, "Dorsal"),
         getControlByLabel<HTMLSelectElement>(rendered.container, "Posición"),
+        getControlByLabel<HTMLSelectElement>(rendered.container, "Equipo"),
       ];
 
       expect(controls.every((control) => control.required)).toBe(true);
 
       act(() => form.requestSubmit());
 
-      expect(rendered.container.querySelector('[role="alert"]')?.textContent).toContain("Revisá");
       expect(controls.every((control) => control.getAttribute("aria-invalid") === "true")).toBe(true);
+      expect(document.activeElement).toBe(controls[0]);
       expect(rendered.container.textContent).not.toContain("Jugador preparado localmente");
     } finally {
       act(() => rendered.root.unmount());
@@ -80,33 +103,35 @@ describe("CreatePlayerPage", () => {
     }
   });
 
-  it("rejects a dorsal above 99 with visible accessible feedback", () => {
+  it("rejects a dorsal above 99 and a dorsal already taken inside the chosen team", () => {
     const rendered = renderPage();
 
     try {
       const form = rendered.container.querySelector("form")!;
-      const firstName = getControlByLabel<HTMLInputElement>(rendered.container, "Nombre");
-      const lastName = getControlByLabel<HTMLInputElement>(rendered.container, "Apellido");
-      const birthDate = getControlByLabel<HTMLInputElement>(rendered.container, "Fecha de nacimiento");
       const number = getControlByLabel<HTMLInputElement>(rendered.container, "Dorsal");
-      const position = getControlByLabel<HTMLSelectElement>(rendered.container, "Posición");
+      const team = getControlByLabel<HTMLSelectElement>(rendered.container, "Equipo");
 
-      act(() => {
-        setInputValue(firstName, "Lucía");
-        setInputValue(lastName, "Gómez");
-        setInputValue(birthDate, "2001-04-12");
-        setInputValue(number, "100");
-        position.value = "opposite";
-        position.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-
+      fillValidForm(rendered.container, { Dorsal: "100" });
       act(() => form.requestSubmit());
 
       expect(number.max).toBe("99");
       expect(number.getAttribute("aria-invalid")).toBe("true");
-      const helper = rendered.container.querySelector(`#${number.getAttribute("aria-describedby")}`);
-      expect(helper?.textContent).toBe("Ingresá un dorsal entre 0 y 99.");
-      expect(helper?.querySelector('[role="alert"]')?.textContent).toBe("Ingresá un dorsal entre 0 y 99.");
+      expect(rendered.container.querySelector(`#${number.getAttribute("aria-describedby")}`)?.textContent).toBe(
+        "Ingresá un dorsal entre 1 y 99.",
+      );
+
+      // The design's hint: "El dorsal debe ser único dentro del equipo seleccionado."
+      const takenPlayer = ADMIN.players[0];
+      act(() => {
+        setSelectValue(team, takenPlayer.teamName);
+        setInputValue(number, String(takenPlayer.number));
+      });
+      act(() => form.requestSubmit());
+
+      expect(number.getAttribute("aria-invalid")).toBe("true");
+      expect(rendered.container.querySelector(`#${number.getAttribute("aria-describedby")}`)?.textContent).toBe(
+        "Dorsal duplicado, ingresar otro valor",
+      );
       expect(rendered.container.textContent).not.toContain("Jugador preparado localmente");
     } finally {
       act(() => rendered.root.unmount());
@@ -122,26 +147,11 @@ describe("CreatePlayerPage", () => {
 
       try {
         const form = first.container.querySelector("form")!;
-        const firstName = getControlByLabel<HTMLInputElement>(first.container, "Nombre");
-        const lastName = getControlByLabel<HTMLInputElement>(first.container, "Apellido");
-        const birthDate = getControlByLabel<HTMLInputElement>(first.container, "Fecha de nacimiento");
-        const number = getControlByLabel<HTMLInputElement>(first.container, "Dorsal");
-        const position = getControlByLabel<HTMLSelectElement>(first.container, "Posición");
+        fillValidForm(first.container);
 
-        act(() => {
-          setInputValue(firstName, "Lucía");
-          setInputValue(lastName, "Gómez");
-          setInputValue(birthDate, "2001-04-12");
-          setInputValue(number, "7");
-          position.value = "opposite";
-          position.dispatchEvent(new Event("change", { bubbles: true }));
-        });
-
-        expect(firstName.value).toBe("Lucía");
-        expect(lastName.value).toBe("Gómez");
-        expect(birthDate.value).toBe("2001-04-12");
-        expect(number.value).toBe("7");
-        expect(position.value).toBe("opposite");
+        expect(getControlByLabel<HTMLInputElement>(first.container, "Nombre").value).toBe("Lucía");
+        expect(getControlByLabel<HTMLInputElement>(first.container, "Dorsal").value).toBe("9");
+        expect(getControlByLabel<HTMLSelectElement>(first.container, "Posición").value).toBe("Opuesto");
 
         act(() => form.requestSubmit());
 
@@ -162,6 +172,7 @@ describe("CreatePlayerPage", () => {
       expect(getControlByLabel<HTMLInputElement>(second.container, "Fecha de nacimiento").value).toBe("");
       expect(getControlByLabel<HTMLInputElement>(second.container, "Dorsal").value).toBe("");
       expect(getControlByLabel<HTMLSelectElement>(second.container, "Posición").value).toBe("");
+      expect(getControlByLabel<HTMLSelectElement>(second.container, "Equipo").value).toBe("");
       expect(second.container.textContent).not.toContain("Jugador preparado localmente");
     } finally {
       act(() => second.root.unmount());

@@ -12,6 +12,8 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 
+const match = ADMIN.matches[0];
+
 function visibleText(html: string) {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -24,71 +26,99 @@ function renderPage() {
   return { container, root };
 }
 
+function getControlByLabel<Control extends HTMLInputElement | HTMLSelectElement>(
+  container: HTMLElement,
+  labelText: string,
+) {
+  const label = [...container.querySelectorAll("label")].find((candidate) => candidate.textContent === labelText);
+  const controlId = label?.htmlFor;
+
+  if (!controlId) {
+    throw new Error(`Missing control label: ${labelText}`);
+  }
+
+  return container.querySelector<Control>(`#${controlId}`)!;
+}
+
+function selectImpossibleValue(select: HTMLSelectElement) {
+  const option = document.createElement("option");
+  option.value = "__probe__";
+  option.textContent = "—";
+  select.append(option);
+  select.value = "__probe__";
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
 describe("AdminMatchesPage", () => {
-  it("renders the fixture-driven matches table with canonical Spanish labels", () => {
+  it("renders the design's match cards with the tournament, schedule and state pill", () => {
     const html = renderToStaticMarkup(<AdminMatchesPage />);
     const text = visibleText(html);
 
     expect(text).toContain("Partidos");
-    expect(text).toContain("Administrá y consultá los partidos registrados.");
-    expect(text).toContain("Estado");
-    expect(text).toContain("Fecha y hora");
-    expect(text).toContain("Equipo local");
-    expect(text).toContain("Equipo visitante");
-    expect(text).toContain("Sede");
+    expect(text).toContain("Consulta la programación y gestiona los partidos creados.");
+    expect(text).toContain(`${match.homeTeamName} vs ${match.awayTeamName}`);
+    expect(text).toContain(match.tournamentName);
+    expect(text).toContain(match.scheduledLabel);
+    expect(text).toContain("Datos de referencia");
+    expect(text).toContain("Estado: En vivo");
+    expect(html).toContain('data-status="envivo"');
+  });
 
-    for (const match of ADMIN.matches) {
-      expect(text).toContain(match.statusLabel);
-      expect(text).toContain(match.scheduledLabel);
-      expect(text).toContain(match.homeTeamName);
-      expect(text).toContain(match.awayTeamName);
-      expect(text).toContain(match.venue);
+  it("exposes the create route and the design's filter toggle", () => {
+    const html = renderToStaticMarkup(<AdminMatchesPage />);
+
+    expect(html).toContain("Crear partido");
+    expect(html).toContain('href="/admin/matches/create"');
+    expect(html).toContain('aria-controls="matches-filter-panel"');
+    expect(html).toContain('aria-expanded="false"');
+    // Attribute order is React's, not the source's, so both orderings are accepted.
+    expect(html).toMatch(/(?=[^>]*hidden)(?=[^>]*id="matches-filter-panel")<div[^>]*>/);
+    expect(html).toContain("Todos los torneos");
+    expect(html).toContain("Todos los equipos");
+    expect(html).toContain("Todos los estados");
+    expect(html).toContain("Limpiar filtros");
+  });
+
+  it("filters the list and swaps it for the design's empty state when nothing matches", () => {
+    const rendered = renderPage();
+
+    try {
+      const container = rendered.container;
+      expect(container.querySelectorAll("li article")).toHaveLength(ADMIN.matches.length);
+      expect(container.textContent).toContain(`${ADMIN.matches.length} partido`);
+
+      const status = getControlByLabel<HTMLSelectElement>(container, "Estado");
+      act(() => selectImpossibleValue(status));
+
+      expect(container.querySelectorAll("li article")).toHaveLength(0);
+      expect(container.textContent).toContain("No hay partidos para mostrar");
+      expect(container.textContent).toContain("Cambia los filtros o crea un nuevo partido.");
+      expect(container.textContent).toContain("0 partidos");
+
+      act(() => {
+        [...container.querySelectorAll("button")]
+          .find((button) => button.textContent === "Limpiar filtros")
+          ?.click();
+      });
+
+      expect(container.querySelectorAll("li article")).toHaveLength(ADMIN.matches.length);
+    } finally {
+      act(() => rendered.root.unmount());
+      rendered.container.remove();
     }
   });
 
-  it("exposes the primary create route and named row actions", () => {
-    const html = renderToStaticMarkup(<AdminMatchesPage />);
-    const match = ADMIN.matches[0];
-    const matchLabel = `${match.homeTeamName} vs ${match.awayTeamName}`;
-
-    expect(html).toContain("+ Programar Partido");
-    expect(html).toContain('href="/admin/matches/create"');
-    expect(html).toContain("h-12");
-    expect(html).toContain("w-[200px]");
-    expect(html).toContain("max-w-full");
-    expect(html).toContain("bg-vt-accent");
-    expect(html).toContain("Acciones");
-    expect(html).toContain("✏️ Editar");
-    expect(html).toContain("🗑️ Borrar");
-    expect(html).toContain(`aria-label="Ver ${matchLabel}"`);
-    expect(html).toContain(`aria-label="Editar ${matchLabel}"`);
-    expect(html).toContain(`aria-label="Eliminar ${matchLabel}"`);
-  });
-
-  it("confirms removal and reports that the local fixture was not persisted", () => {
+  it("reveals the filter panel through its toggle's expanded state", () => {
     const rendered = renderPage();
-    const match = ADMIN.matches[0];
-    const matchLabel = `${match.homeTeamName} vs ${match.awayTeamName}`;
 
     try {
-      const removeButton = rendered.container.querySelector<HTMLButtonElement>(
-        `button[aria-label="Eliminar ${matchLabel}"]`,
-      );
+      const toggle = rendered.container.querySelector<HTMLButtonElement>('[aria-controls="matches-filter-panel"]')!;
+      const panel = rendered.container.querySelector<HTMLElement>("#matches-filter-panel")!;
 
-      expect(removeButton).not.toBeNull();
-      act(() => removeButton?.click());
-
-      expect(rendered.container.textContent).toContain(`¿Eliminar ${matchLabel} solo de esta vista?`);
-      expect(rendered.container.querySelector(`button[aria-label="Confirmar eliminación de ${matchLabel}"]`)).not.toBeNull();
-      expect(rendered.container.querySelectorAll("tbody tr")).toHaveLength(ADMIN.matches.length);
-
-      const confirmButton = rendered.container.querySelector<HTMLButtonElement>(
-        `button[aria-label="Confirmar eliminación de ${matchLabel}"]`,
-      );
-      act(() => confirmButton?.click());
-
-      expect(rendered.container.querySelectorAll("tbody tr")).toHaveLength(ADMIN.matches.length - 1);
-      expect(rendered.container.querySelector('[role="status"]')?.textContent).toContain("No se guardaron cambios.");
+      expect(panel.hasAttribute("hidden")).toBe(true);
+      act(() => toggle.click());
+      expect(toggle.getAttribute("aria-expanded")).toBe("true");
+      expect(panel.hasAttribute("hidden")).toBe(false);
     } finally {
       act(() => rendered.root.unmount());
       rendered.container.remove();

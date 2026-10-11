@@ -10,7 +10,7 @@ import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
 import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 import { PointEntryPage } from "./features/scoring/PointEntryPage";
 import { PostMatchSummaryPage } from "./features/scoring/PostMatchSummaryPage";
-import { StaffRegisterPage } from "./features/admin/StaffRegisterPage";
+import { AdminStaffPage } from "./features/admin/AdminStaffPage";
 import { CreatePlayerPage } from "./features/admin/CreatePlayerPage";
 import { CreateTeamPage } from "./features/admin/CreateTeamPage";
 import { CreateTournamentPage } from "./features/admin/CreateTournamentPage";
@@ -264,7 +264,20 @@ describe("router", () => {
     const staffRegisterRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/staff/register",
     );
-    expect(staffRegisterRoute?.options?.component).toBe(StaffRegisterPage);
+    expect(staffRegisterRoute?.options?.component).toBe(AdminStaffPage);
+    // The design's staff screen hosts its create/edit dialog in the same page
+    // (frontend/design/html/voleytrack-admin-gestion.html), so the open dialog is part of the
+    // route's search contract rather than unreachable component state.
+    expect(staffRegisterRoute?.options?.validateSearch?.({ editar: "staff-planillero-mariana-lopez" })).toEqual({
+      editar: "staff-planillero-mariana-lopez",
+    });
+    expect(staffRegisterRoute?.options?.validateSearch?.({ nuevo: "1" })).toEqual({ nuevo: true });
+    expect(staffRegisterRoute?.options?.validateSearch?.({ editar: "" })).toEqual({});
+    // `/admin/settings` was a PlaceholderPage: the design's admin navigation has no such
+    // destination (frontend/design/html/voleytrack-admin-gestion.html lists Staff & gestión,
+    // Partidos, Equipos, Jugadores, Torneos), and the nav only points at screens that render,
+    // so the route and its single nav entry were removed with it.
+    expect(routePaths(router.routeTree)).not.toContain("/admin/settings");
 
     const createPlayerRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/players/create",
@@ -397,7 +410,7 @@ describe("router", () => {
     container.remove();
   });
 
-  it("renders staff registration when the real router navigates to its canonical URL", async () => {
+  it("renders the staff management screen when the real router navigates to its canonical URL", async () => {
     const container = document.createElement("div");
     document.body.append(container);
     const root = createRoot(container);
@@ -408,7 +421,20 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/staff/register");
-    expect(container.textContent).toContain("Registrar planillero");
+    // The design's staff screen is the table plus the create/edit dialog on one page, so the
+    // old register-only assertion moves onto what the screen now renders.
+    expect(container.textContent).toContain("Staff & gestión");
+    expect(container.textContent).toContain(ADMIN.staff[0].fullName);
+    expect(container.textContent).toContain("+ Nuevo integrante");
+
+    // The dialog's own search contract: `?editar=<id>` opens it on the record.
+    await act(async () => {
+      await router.navigate({ to: "/admin/staff/register", search: { editar: ADMIN.staff[0].id } });
+    });
+
+    expect(window.location.search).toBe(`?editar=${ADMIN.staff[0].id}`);
+    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(container.textContent).toContain("Editar integrante");
 
     await act(async () => root.unmount());
     container.remove();
@@ -518,7 +544,7 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/matches/create");
-    expect(container.textContent).toContain("Crear Partido");
+    expect(container.textContent).toContain("Crear partido");
     expect(container.querySelector('a[href="/admin/matches"]')).not.toBeNull();
 
     await act(async () => root.unmount());
@@ -555,7 +581,7 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/matches");
-    expect(container.textContent).toContain("Administrá y consultá los partidos registrados.");
+    expect(container.textContent).toContain("Consulta la programación y gestiona los partidos creados.");
     expect(container.textContent).toContain(ADMIN.matches[0].homeTeamName);
 
     await act(async () => root.unmount());
@@ -591,7 +617,7 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/players");
-    expect(container.textContent).toContain("Administrá y consultá los jugadores registrados.");
+    expect(container.textContent).toContain("Jugadores registrados, con su equipo, posición, altura y puntos.");
     expect(container.textContent).toContain(ADMIN.players[0].fullName);
 
     await act(async () => root.unmount());

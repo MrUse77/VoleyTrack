@@ -303,7 +303,7 @@ function electronEntry(opts, url, output) {
 // Electron side
 // ---------------------------------------------------------------------------------------
 
-const PROBE_SOURCE = `(() => {
+const PROBE_SOURCE = `(async () => {
   const round = (n) => Math.round(n * 100) / 100;
   const rect = (el) => {
     if (!el) return null;
@@ -921,6 +921,260 @@ const PROBE_SOURCE = `(() => {
   // so the new keys below can read them without touching the calls the existing keys use.
   const sidebarStyle = sidebar.el ? getComputedStyle(sidebar.el) : null;
 
+  // ---------------------------------------------------------------------------------------
+  // Additive: admin design-alignment probes. New keys only - every key above keeps its name,
+  // order and shape, and the wrapper stays one IIFE (now async, so a probe can wait for a
+  // React re-render) whose resolved value is the same report object.
+  // ---------------------------------------------------------------------------------------
+  const describeBox = (el) => {
+    if (!el) return null;
+
+    const cs = getComputedStyle(el);
+
+    return {
+      tag: el.tagName.toLowerCase(),
+      type: el.getAttribute("type"),
+      id: el.id || null,
+      height: cs.height,
+      width: round(el.getBoundingClientRect().width),
+      borderRadius: cs.borderTopLeftRadius,
+      borderColor: cs.borderTopColor,
+      backgroundColor: cs.backgroundColor,
+      boxShadow: cs.boxShadow,
+      fontFamily: cs.fontFamily,
+      fontSize: cs.fontSize,
+      fontWeight: cs.fontWeight,
+    };
+  };
+
+  // The design's form control spec (frontend/design/html/voleytrack-admin.css:180-185): 46px
+  // tall, a 12px radius, a --border edge on the --bg fill, and a focus-visible treatment of a
+  // --accent edge plus a 3px accent-soft ring. The first visible control inside <main> is
+  // measured unfocused and focused (then blurred again), and its label / aria-describedby /
+  // aria-invalid wiring is reported so the field contract is readable without an image.
+  const formControlElement = Array.from(
+    document.querySelectorAll("main input:not([type=hidden]), main select, main textarea"),
+  ).find((el) => el.closest("[hidden]") === null && el.getBoundingClientRect().height > 0) ?? null;
+  const describedById = formControlElement?.getAttribute("aria-describedby")?.split(/\\s+/)[0] ?? null;
+
+  // The design's input, select and textarea share one rule, so the same box is reported per
+  // tag: a route whose select still carries the app's old 40px/8px treatment is then visible
+  // next to its 46px/12px input instead of being hidden behind "first control".
+  const firstControlOf = (selector) =>
+    Array.from(document.querySelectorAll(selector)).find(
+      (el) => el.closest("[hidden]") === null && el.getBoundingClientRect().height > 0,
+    ) ?? null;
+  const controlBoxes = [
+    ["input", firstControlOf("main input:not([type=hidden])")],
+    ["select", firstControlOf("main select")],
+    ["textarea", firstControlOf("main textarea")],
+  ]
+    .filter(([, el]) => el)
+    .map(([kind, el]) => ({ kind, ...describeBox(el) }));
+
+  // A script-initiated focus() does not set Chromium's keyboard-interaction flag, so
+  // :focus-visible never matches here and the painted ring cannot be observed from the page.
+  // The rule the browser actually loaded is therefore read out of the CSSOM instead: the
+  // declared border colour and box-shadow of every :focus-visible rule the probed control's
+  // classes match. Those are the design's own
+  // border-color:var(--accent) plus box-shadow:0 0 0 3px color-mix(...22%...) (admin.css:185).
+  const collectFocusRules = (element) => {
+    if (!element) return [];
+    const found = [];
+    // Tailwind v4 emits the focus-visible variants as a nested rule, so a rule's own selector
+    // just an ampersand plus :focus-visible; the parent selector is threaded through and
+    // substituted back in before the selector is matched against the control's classes.
+    const walk = (rules, parentSelector) => {
+      for (const rule of rules) {
+        const selectorText = rule.selectorText
+          ? rule.selectorText.replace(/&/g, parentSelector ?? "")
+          : null;
+
+        if (rule.cssRules) walk(rule.cssRules, selectorText ?? parentSelector);
+
+        if (!selectorText || !rule.style || !/:focus-visible/.test(selectorText)) continue;
+
+        const baseSelectors = selectorText
+          .split(",")
+          .map((selector) => selector.replace(/:focus-visible/g, ""))
+          .filter(Boolean);
+        const matches = baseSelectors.some((selector) => {
+          try {
+            return element.matches(selector);
+          } catch {
+            return false;
+          }
+        });
+
+        if (matches && (rule.style.boxShadow || rule.style.borderColor || rule.style.getPropertyValue("--tw-shadow"))) {
+          found.push({
+            selector: selectorText,
+            borderColor: rule.style.borderColor,
+            boxShadow: rule.style.boxShadow,
+            // Tailwind v4 composes its shadows through --tw-shadow, so the ring is declared
+            // there rather than in a box-shadow longhand.
+            twShadow: rule.style.getPropertyValue("--tw-shadow"),
+          });
+        }
+      }
+    };
+
+    for (const sheet of document.styleSheets) {
+      let rules = null;
+      try {
+        rules = sheet.cssRules;
+      } catch {
+        rules = null;
+      }
+
+      if (rules) walk(rules, null);
+    }
+
+    return found.slice(0, 4);
+  };
+
+  const formControl = formControlElement
+    ? (() => {
+        const label = formControlElement.id
+          ? document.querySelector('label[for="' + formControlElement.id + '"]')
+          : null;
+        const previouslyActive = document.activeElement;
+        const unfocused = describeBox(formControlElement);
+        formControlElement.focus();
+        const focused = describeBox(formControlElement);
+        const focusVisible = formControlElement.matches(":focus-visible");
+        // Restore rather than blur: blurring would move focus to <body> and make a later probe
+        // report that the dialog's own focus had been lost.
+        if (previouslyActive instanceof HTMLElement && previouslyActive !== formControlElement) {
+          previouslyActive.focus();
+        } else if (!(previouslyActive instanceof HTMLElement)) {
+          formControlElement.blur();
+        }
+
+        return {
+          labelText: label ? (label.textContent || "").trim() : null,
+          ariaDescribedBy: formControlElement.getAttribute("aria-describedby"),
+          describedByText: describedById
+            ? (document.getElementById(describedById)?.textContent || "").trim().slice(0, 80)
+            : null,
+          ariaInvalid: formControlElement.getAttribute("aria-invalid"),
+          unfocused,
+          focused,
+          focusVisible,
+          focusRules: collectFocusRules(formControlElement),
+          controls: controlBoxes,
+        };
+      })()
+    : null;
+
+  // The design's dialog (voleytrack-admin.css:244-254): role=dialog, aria-modal, a head with
+  // the title, the mono eyebrow and the round close control, a body and a foot. The focus trap
+  // is measured for real: the dialog's last focusable is focused and a Tab keydown is
+  // dispatched, which the primitive must answer by wrapping focus back to the first focusable.
+  const describeDialog = (dialog) => {
+    const focusable = Array.from(
+      dialog.querySelectorAll(
+        "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])",
+      ),
+    ).filter((el) => el.closest("[hidden]") === null);
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+    const describedBy = dialog.getAttribute("aria-describedby");
+    const closeControl = dialog.querySelector("button[aria-label]");
+    const initialActive = document.activeElement;
+    let tabWrapsToFirst = null;
+
+    if (focusable.length > 1) {
+      focusable[focusable.length - 1].focus();
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }),
+      );
+      tabWrapsToFirst = document.activeElement === focusable[0];
+    }
+
+    const report = {
+      role: dialog.getAttribute("role"),
+      ariaModal: dialog.getAttribute("aria-modal"),
+      labelledByText: labelledBy ? (document.getElementById(labelledBy)?.textContent || "").trim() : null,
+      describedByText: describedBy ? (document.getElementById(describedBy)?.textContent || "").trim() : null,
+      closeLabel: closeControl ? closeControl.getAttribute("aria-label") : null,
+      focusableCount: focusable.length,
+      focusStartsInside: dialog.contains(initialActive),
+      tabWrapsToFirst,
+      panel: describeBox(dialog),
+      bodyPadding: getComputedStyle(dialog.querySelector("div:nth-of-type(2)") ?? dialog).padding,
+    };
+
+    if (initialActive instanceof HTMLElement) initialActive.focus();
+
+    return report;
+  };
+  const modals = Array.from(document.querySelectorAll('[role="dialog"][aria-modal="true"]')).map(
+    describeDialog,
+  );
+
+  // The design's collapsible filter panel (voleytrack-admin-jugadores.html:44,
+  // voleytrack-admin-partidos.html:38): a button carrying aria-expanded/aria-controls over a
+  // card that starts hidden and stays in the DOM.
+  const filterPanels = Array.from(
+    document.querySelectorAll("main [aria-controls][aria-expanded]"),
+  ).map((toggle) => {
+    const panel = document.getElementById(toggle.getAttribute("aria-controls"));
+
+    return {
+      toggleLabel: (toggle.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40),
+      expanded: toggle.getAttribute("aria-expanded"),
+      controls: toggle.getAttribute("aria-controls"),
+      panelPresent: Boolean(panel),
+      panelHidden: panel ? panel.hasAttribute("hidden") : null,
+      controlCount: panel ? panel.querySelectorAll("input, select, textarea").length : 0,
+    };
+  });
+
+  // The design's result count (the .hint line with aria-live) and its empty state. The empty
+  // state is
+  // measured by pointing the list's first filter select at a value no row can match, waiting
+  // for the re-render, reading the DOM, and restoring the original value - so the capture that
+  // follows still shows the populated screen.
+  const listRoot = document.querySelector("main table") ?? document.querySelector("main ul");
+  // Only the design's collapsible filter panel drives the list, so the forced-empty measurement
+  // must not grab a control that belongs to a dialog or a form.
+  const listSelect = document.querySelector("main [id$='-filter-panel'] select");
+  const liveRegions = Array.from(document.querySelectorAll("main [aria-live]")).map((el) => ({
+    text: (el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 80),
+    ariaLive: el.getAttribute("aria-live"),
+    role: el.getAttribute("role"),
+  }));
+  const listStates = {
+    liveRegions,
+    initialRowCount: listRoot ? listRoot.querySelectorAll("tbody tr, :scope > li").length : null,
+    emptyStateShown: null,
+    emptyStateText: null,
+    restoredRowCount: null,
+  };
+
+  if (listRoot && listSelect) {
+    const originalValue = listSelect.value;
+    const probeOption = document.createElement("option");
+    probeOption.value = "__probe__";
+    probeOption.textContent = "\u2014";
+    listSelect.append(probeOption);
+    listSelect.value = "__probe__";
+    listSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 80));
+
+    const emptyStateElement = document.querySelector("main [role='status']");
+    listStates.emptyStateShown = document.querySelector("main table, main ul") === null;
+    listStates.emptyStateText = emptyStateElement
+      ? (emptyStateElement.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 120)
+      : null;
+
+    listSelect.value = originalValue;
+    listSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    listSelect.removeChild(probeOption);
+    listStates.restoredRowCount = document.querySelectorAll("main tbody tr, main ul > li").length;
+  }
+
   return {
     title: document.title,
     readyState: document.readyState,
@@ -1003,6 +1257,14 @@ const PROBE_SOURCE = `(() => {
       tableHeaders,
       teamTabs,
       kpiGrid,
+      // Additive keys: new names only, every key above is unchanged. formControl reports the
+      // rendered box, focus ring and label wiring of the first visible form control, modals
+      // the design's dialog contract and its focus trap, filterPanels the collapsible filter
+      // panels, and listStates the result count, the empty state and its restoration.
+      formControl,
+      modals,
+      filterPanels,
+      listStates,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

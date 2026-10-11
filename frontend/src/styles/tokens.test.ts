@@ -455,10 +455,17 @@ describe("design tokens", () => {
     // structural ones. Measured with this guard's own patterns and exclusions: vt-panel
     // 45/26, vt-raised 25/16, vt-raised-border 7/5, so every ceiling drops to its measured
     // value.
+    // T17 then aligned the three admin screens. The staff screen became the design's combined
+    // table + dialog, the players and matches lists moved onto the design's structural cards
+    // and match-card surfaces, the three create forms replaced their `bg-vt-raised` form boxes
+    // with `Card padded={false}`, and the shared `Modal` moved onto the design's --surface
+    // panel with a --border edge (dropping its raised fill and raised border). Measured with
+    // this guard's own patterns and exclusions: vt-panel 39/20, vt-raised 21/12,
+    // vt-raised-border 6/4, so every ceiling drops to its measured value again.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 45, baselineFiles: 26 },
-      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 25, baselineFiles: 16 },
-      { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 7, baselineFiles: 5 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 39, baselineFiles: 20 },
+      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 21, baselineFiles: 12 },
+      { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 6, baselineFiles: 4 },
     ];
 
     for (const { token, pattern, ceiling, baselineFiles } of ratchets) {
