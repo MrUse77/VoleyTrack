@@ -1103,10 +1103,16 @@ readable against the completed record above; the carried-over items it lists wer
     **24/8**, all-`Card` floor 72/27 → 70/28, `vt-raised-border` unchanged at 6/4.
   - Suite `47 files / 323 passed`, lint exit 0, build exit 0. Dev server stopped with a single-PID kill
     and the port released.
-  - **Two follow-ups this task could not do:** the three new routes have no entries in
-    `src/artboardManifest.ts`, which is outside its surfaces, and the standings tab still renders the
-    screen's own prototype table rather than the fixture's `detail.standings`. Both are recorded here and
-    the standings inconsistency is carried into the next round.
+  - **Two follow-ups this task could not do, and what happened to each.** The three new routes have no
+    entries in `src/artboardManifest.ts`, which is outside its surfaces. The parent attempted to add them
+    and the attempt was **reverted after the test caught it**: `artboardManifest.test.ts` pins the
+    manifest at exactly 45 entries, and the manifest is the traceability record of the *original* design
+    document's artboards — including sub-states and modals such as `Modal Card` and
+    `CU-21 Anotar Punto Flow`. Grafting the newer design pack's pages onto it would conflate two different
+    design sources, so the correct resolution is **no action**, and the follow-up is closed with that
+    reason rather than left dangling. The second follow-up is real: the standings tab still renders the
+    screen's own prototype table rather than the fixture's `detail.standings`, and it is carried into the
+    next round.
 - [ ] **T20 — Admin edit tournament.** See the completed record above: the route is
   `/admin/tournaments/$id/edit`, a sibling under the tournament it edits, mirroring the create path, with
   the overview's own "Editar torneo" link as the entry point and "Volver" returning to the overview.
