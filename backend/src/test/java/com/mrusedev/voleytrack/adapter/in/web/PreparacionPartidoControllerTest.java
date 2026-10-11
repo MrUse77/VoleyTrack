@@ -63,7 +63,7 @@ class PreparacionPartidoControllerTest {
 		when(gestorPartidoPort.guardarAlineacion(eq(partidoId), eq(setId), eq(equipoId), anyList()))
 				.thenReturn(preview);
 
-		String body = "[{\"jugadorId\":\"" + jugadorId + "\",\"posicion\":1}]";
+		String body = "[{\"jugadorId\":\"" + jugadorId + "\",\"posicionEnCancha\":1}]";
 
 		mockMvc.perform(put("/api/partidos/{partidoId}/sets/{setId}/alineacion", partidoId, setId)
 						.param("equipoId", equipoId.toString())
@@ -73,7 +73,7 @@ class PreparacionPartidoControllerTest {
 				.andExpect(jsonPath("$.equipoId").value(equipoId.toString()))
 				.andExpect(jsonPath("$.equipoNombre").value("Club Local"))
 				.andExpect(jsonPath("$.jugadores[0].jugadorId").value(jugadorId.toString()))
-				.andExpect(jsonPath("$.jugadores[0].posicion").value(1));
+				.andExpect(jsonPath("$.jugadores[0].posicionEnCancha").value(1));
 
 		verify(gestorPartidoPort).guardarAlineacion(
 				eq(partidoId), eq(setId), eq(equipoId),
