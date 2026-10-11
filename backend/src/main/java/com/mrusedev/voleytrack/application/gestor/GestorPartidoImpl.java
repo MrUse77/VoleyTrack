@@ -168,7 +168,12 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   @Transactional
   public InicioSetDTO crearSet(UUID partidoId) {
     Partido partido = buscarPartido(partidoId);
-    SetPartido set = partido.iniciarSet();
+    SetPartido set;
+    try {
+      set = partido.iniciarSet();
+    } catch (IllegalStateException e) {
+      throw new ReglaDeNegocioException(e.getMessage());
+    }
     setRepo.guardar(set, partidoId);
     return new InicioSetDTO(
         set.getId(), set.getNumeroSet(), set.isEsTieBreak(), set.getMarcador().getLimitePuntos());
@@ -182,6 +187,9 @@ public class GestorPartidoImpl implements GestorPartidoPort {
     SetPartido set = buscarSet(setId);
 
     Equipo equipo = buscarEquipoDelSet(set, equipoId);
+    if (!equipo.getId().equals(equipoId)) {
+      throw new RecursoNoEncontradoException("Equipo no pertenece al set");
+    }
     Alineacion alineacion = set.crearAlineacion(equipo);
     setRepo.guardar(set, buscarPartidoIdDeSet(setId));
     return toPreview(alineacion);
@@ -244,11 +252,17 @@ public class GestorPartidoImpl implements GestorPartidoPort {
       throw new RecursoNoEncontradoException("Set no encontrado: " + setId);
     }
 
-    Equipo equipo = buscarEquipo(equipoId);
-    Alineacion alineacion = set.crearAlineacion(equipo);
-    for (JugadorEnPosicion titular : titulares) {
-      Jugador jugador = buscarJugador(titular.jugadorId());
-      alineacion.agregarJugador(jugador, titular.posicion(), true);
+    Equipo equipo = buscarEquipoDelSet(set, equipoId);
+    Alineacion alineacion;
+    try {
+      alineacion = set.crearAlineacion(equipo);
+      for (JugadorEnPosicion titular : titulares) {
+        Jugador jugador = buscarJugador(titular.jugadorId());
+        alineacion.agregarJugador(jugador, titular.posicion(), true);
+      }
+
+    } catch (IllegalStateException e) {
+      throw new ReglaDeNegocioException(e.getMessage());
     }
 
     setRepo.guardar(set, partidoId);
@@ -417,7 +431,8 @@ public class GestorPartidoImpl implements GestorPartidoPort {
         .filter(lado -> lado.getEquipo().getId().equals(equipoId))
         .map(Lado::getEquipo)
         .findFirst()
-        .orElse(equipo);
+        .orElseThrow(
+            () -> new RecursoNoEncontradoException("Equipo no encontrado en el set: " + equipoId));
   }
 
   private Equipo buscarEquipoDelPartido(Partido partido, UUID equipoId) {
