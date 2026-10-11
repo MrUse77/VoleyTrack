@@ -269,24 +269,65 @@ not 20.)
     baseline was not byte-attributed to one specific removed rule, because the reproduction builds
     overwrote the stale bundle before it could be diffed. That is structurally safe, since the
     exclusion targets only `frontend/dist`, which contains no source of truth.
-- [ ] **T05b — Reconcile the surface and border token model with the design.** Raised while
-  planning T05, and it must land before slice 2 so screens are not touched twice.
-  The problem: the app's token model does not match the design's, and two tokens carry heavy usage
-  while the design defines neither.
-  - `--color-vt-panel` is `#0f1726` and is used in **53 files, 106 occurrences**. The design has no
-    such colour and no such layer; it builds on `--bg`, `--surface` and `--surface-2`.
-  - `--color-vt-raised-border` is `#334155` and is used in 10 places, including
-    `components/primitives/Card.tsx` and `Modal.tsx`. The design does not define it.
-  - The design has **two** border tones, `--border: #243249` and `--border-2: #1e293b`. React has a
-    counterpart for the first only, reusing `--color-vt-raised` (`#1e293b`) as a *surface* colour,
-    which is a semantic mismatch.
-  Deliverable: a written mapping of design layer to app token, a decision on whether `panel` is
-  retired in favour of `surface-2` or kept as a deliberate app-only layer, and the token changes
-  that follow. Because this is a modelling decision with a 100-plus-use blast radius, it needs an
-  explicit decision rather than being folded silently into screen work.
-  Evidence: the mapping table, the updated token file, and the guard tests still green.
-  Optimisation-shaped but not optional: every later screen task depends on knowing which token
-  means which surface.
+- [x] **T05b — Pin the layer mapping and make the non-design debt unable to grow.** Done.
+  Reframed during planning, deliberately, from "migrate 106 consumers" to "fix the rule and
+  ratchet the debt". The reasoning matters more than the outcome here.
+  - The mismatch: the app has three tokens the design does not define. `--color-vt-panel`
+    (`#0f1726`) sits *between* the design's `--bg` (`#0b1220`) and `--surface` (`#111a2b`) and is
+    used in roughly 53 files. `--color-vt-raised` (`#1e293b`) is used as a **surface**, whereas the
+    design uses that same value as `--border-2`, a **border**. `--color-vt-raised-border`
+    (`#334155`) is used in about 10 places, including `primitives/Card.tsx` and `Modal.tsx`. The
+    design's only border tones are `#243249` and `#1e293b`.
+  - **Why the global migration was refused.** Moving 106 consumers from `#0f1726` to `surface-2`
+    (`#162032`) would visibly LIGHTEN 53 files at once, and the design does not say which layer
+    each individual surface is supposed to become. The orchestrator cannot inspect the captured
+    PNGs (image reading is disabled), so there would be no way to judge the result. That is the
+    same class of blind change this feature has been avoiding all along. Doing it would also not
+    save anything: each consumer still has to be re-evaluated against the design when its screen
+    is aligned, so a blind pass would be a guess now and a correction later.
+  - **What lands instead.** The design-to-app mapping is written into `tokens.css` as an explicit
+    rule, `panel` / `raised` / `raised-border` are marked as app-only layers with no design
+    counterpart and barred from new code, and the counts are pinned by a **debt ratchet**: a guard
+    asserting each count is less than or equal to its measured current value, so the debt can only
+    shrink. The ratchet's asymmetry is the point — it tolerates a decrease from any screen
+    migration and fails on an increase.
+  - The per-screen migration is therefore not skipped; it moves into slices 2 to 4, where the
+    design HTML states which layer each surface is and the harness can verify the computed result.
+    This is also why T05b does not need to land *before* slice 2 as originally written: it is the
+    **rule** that must exist first, not the migration.
+  - **Measured counts**, which correct the estimates this document carried earlier. Occurrences,
+    not lines, and deliberately excluding the guard and the token declaration, since those merely
+    *name* the tokens and the comment block that documents the debt would otherwise look like new
+    debt:
+
+    | token | occurrences | files | ceiling |
+    |---|---|---|---|
+    | `vt-panel` | 97 | 51 | 97 |
+    | `vt-raised` | 48 | 28 | 48 |
+    | `vt-raised-border` | 9 | 7 | 9 |
+
+    The patterns are `/vt-panel(?![-\w])/g`, `/vt-raised(?![-\w])/g` and `/vt-raised-border/g`.
+    The negative lookahead is load-bearing: without it `vt-raised` also matches the prefix of
+    `vt-raised-border` and double-counts. Raw counts including the guard and the declaration are
+    107 in 53 files, 51 in 30, and 11 in 9. The earlier "106 in 53 files" in this document was the
+    raw figure mislabelled as consumer usage.
+  - The mapping rule and the semantic trap are now written into `tokens.css`: which design layer
+    each app token corresponds to, that `panel` / `raised` / `raised-border` are app-only debt
+    barred from new code, and an explicit warning that the design's `#1e293b` is the **border**
+    tone `--border-2` while `--color-vt-raised` is a **surface** that merely shares the literal.
+    That last one is the mistake most likely to be made by someone reading only the values.
+  - The ratchet was proven to bite in both directions, not just claimed: introducing one
+    `bg-vt-panel` usage failed with `expected 98 to be less than or equal to 97`, and with the
+    scratch removed and the ceiling deliberately left at 98 the count fell to 97 and still passed.
+    So it tolerates a decrease and rejects an increase. Scratch file deleted; `git status` for
+    `frontend/src` shows only `tokens.css` and `tokens.test.ts` modified.
+  - **Maintenance rule this creates.** The ceiling is pinned at the exact current count, so any new
+    use fails immediately. It is equally important that the ceiling is LOWERED in the same commit
+    as any migration, otherwise a decrease leaves the ratchet slack and the remaining debt can be
+    re-spent. Every screen task in slices 2 to 4 that reduces one of these counts must also lower
+    the corresponding ceiling.
+  - Suite `49 files / 281 passed` (280 plus the new assertion), lint exit 0, build exit 0, and the
+    built CSS still declares all three tokens (6, 4 and 2 occurrences).
 - [ ] **T06 — Add the primitives the design defines but the app lacks.** New:
   `Chip`, `StatePill` (programado / en vivo / finalizado), `LivePill` with the pulse dot,
   a filter group, and a toast surface. Test-first: one test per primitive covering its variants

@@ -20,6 +20,17 @@ function collectSourceFiles(directory: string, collected: string[] = []): string
   return collected;
 }
 
+function countOccurrences(filePaths: string[], source: string): number {
+  let total = 0;
+
+  for (const filePath of filePaths) {
+    const matches = readFileSync(filePath, "utf8").match(new RegExp(source, "g"));
+    total += matches?.length ?? 0;
+  }
+
+  return total;
+}
+
 const tokensPath = fileURLToPath(new URL("./tokens.css", import.meta.url));
 const indexPath = fileURLToPath(new URL("../index.css", import.meta.url));
 const publicShellPath = fileURLToPath(new URL("../layouts/PublicShell.tsx", import.meta.url));
@@ -277,5 +288,49 @@ describe("design tokens", () => {
     expect(source).not.toContain("slate-");
     expect(source).not.toContain("white");
     expect(source).toContain("Object.freeze");
+  });
+
+  // Design-layer debt ratchet. `vt-panel`, `vt-raised` and `vt-raised-border` are
+  // app-only tokens with no counterpart in the vendored design (frontend/design/html),
+  // which only defines --bg, --surface, --surface-2 and the border tones
+  // #243249 (--border) / #1e293b (--border-2). The migration happens one screen at a
+  // time, so this guard only forbids the debt from growing: counts must stay at or
+  // below their measured ceiling and may legitimately drop as screens are aligned
+  // (lower the ceiling in the same change whenever a count drops).
+  it("ratchets app-only surface and border token usage down without allowing new usages", () => {
+    const guardPath = resolve(fileURLToPath(import.meta.url));
+    // The declaration file necessarily names every token once (and documents them),
+    // and this guard file itself holds the patterns. Neither is a consumer, so both
+    // are excluded; everything else under src/ is ratcheted.
+    const nonConsumers = new Set([guardPath, resolve(tokensPath)]);
+    const sourceFiles = collectSourceFiles(srcRootPath).filter((filePath) => !nonConsumers.has(resolve(filePath)));
+
+    // A guard that matches zero files is a broken guard, not a passing one.
+    expect(sourceFiles.length).toBeGreaterThan(0);
+
+    // Patterns are disjoint, so the counts cannot double-count each other:
+    // - /vt-raised(?![\-\w])/ ends in a negative lookahead, so the `vt-raised` prefix of
+    //   `vt-raised-border` is NOT counted as a `vt-raised` usage (it is followed by `-`).
+    // - /vt-raised-border/ can only match its own literal, and /vt-panel(?![\-\w])/ cannot
+    //   match any part of the two raised patterns.
+    // Occurrences are counted, not lines, so several usages on one className all count.
+    // Ceilings are measured, not invented: at the moment this guard was added, the scan
+    // above found 97 vt-panel usages in 51 files, 48 vt-raised usages in 28 files and
+    // 9 vt-raised-border usages in 7 files.
+    const ratchets = [
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 97, baselineFiles: 51 },
+      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 48, baselineFiles: 28 },
+      { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 9, baselineFiles: 7 },
+    ];
+
+    for (const { token, pattern, ceiling, baselineFiles } of ratchets) {
+      const occurrences = countOccurrences(sourceFiles, pattern);
+
+      expect(
+        occurrences,
+        `${token} is an app-only layer with no design counterpart. Measured baseline: ${ceiling} occurrences across ${baselineFiles} files. ` +
+          `Fewer is progress (low this ceiling); more means new ${token} usage was introduced.`,
+      ).toBeLessThanOrEqual(ceiling);
+    }
   });
 });

@@ -1,3 +1,20 @@
+/*
+ * Design-to-app layer mapping (source: frontend/design/html/voleytrack.css and
+ * voleytrack-admin.css):
+ *   --color-vt-background -> --bg       #0b1220
+ *   --color-vt-surface    -> --surface  #111a2b
+ *   --color-vt-surface-2  -> --surface-2 #162032
+ *
+ * App-only layers with NO design counterpart: --color-vt-panel (sits between the
+ * design's --bg and --surface), --color-vt-raised and --color-vt-raised-border.
+ * These are debt: do not use them in new code, and migrate each consumer to a
+ * design-backed layer as its own screen is aligned. Counts are ratcheted down in
+ * tokens.test.ts.
+ *
+ * Warning: the design uses #1e293b as --border-2, a BORDER tone. --color-vt-raised
+ * is a SURFACE that happens to share that literal; do not mistake one for the other.
+ * The design's border tones are #243249 (--border) and #1e293b (--border-2).
+ */
 @theme {
   --color-vt-background: #0b1220;
   --color-vt-surface: #111a2b;
