@@ -1,6 +1,6 @@
 # Feature: Frontend design parity with the vendored HTML design pack
 
-**Status:** in progress
+**Status:** Slice 1 closed (foundation). Slices 2 to 4 pending.
 **Branch:** `feature/frontend-init`
 **Design source (canonical):** `frontend/design/html/` — 21 screens, 8 CSS files, `brand-spec.md`
 **Created:** 2026-10-11
@@ -796,6 +796,63 @@ readable against the completed record above; the carried-over items it lists wer
 - [ ] **T25 — Planillero parity.** Replace the current control-room screen with the design's
   assigned-matches list → selected match → setup flow, on the shared primitives instead of the
   legacy system.
+
+## Slice 1 close
+
+**21 commits, 19 of 22 tasks.** The three that do not close here do so for deliberate reasons:
+`T10c` (retire `ui/SectionShell`) belongs to slices 3 and 4 because its nine live consumers are the
+very screens those slices redesign, and `T03c` (trim the font payload) is an optimisation that blocks
+nothing. That leaves T03c as the only genuinely open Slice 1 item.
+
+What the foundation actually fixed, in order of how much it mattered:
+
+1. **Three silent failures, each invisible on its own.** An undefined colour utility (`vt-canvas` in
+  19 places) that Tailwind emitted no warning for; an **unlayered** `a, button { font: inherit }`
+   that, together with five sibling rules, defeated every font, cursor and outline utility on every
+   button and link in the app; and **Inter, which was declared but never loaded**, so the design's
+   typography had never once been rendered. The unlayered rule was the reason a fix to the other two
+   would have looked correct and done nothing.
+2. **A build that was not deterministic.** Vite's `prepareOutDir` runs after Tailwind's source scan,
+   so a stale `dist/` was being scanned and retired class names were regenerated into the stylesheet.
+   Reproduced with a planted probe before being fixed.
+3. **Two pre-existing reds that made every other verification expensive:** 38 router tests hanging in
+   `act()` due to singleton router contamination, which alone accounted for a 193-second suite that
+   now runs in under 4 seconds, and the single lint error in the repository.
+4. **No way to see a screen**, for a feature whose acceptance criterion is visual.
+
+Measured end state, from harness captures of `/`, `/admin/tournaments` and `/login`:
+
+| probe | value | design |
+|---|---|---|
+| `fonts.status` / Inter `cssCheck` | `loaded` / `true` | Inter 400-900 |
+| topbar height | 72px on both shells | 72px |
+| sidebar width, background | 248px, `rgb(17,26,43)` on both shells | 248px, `--surface` `#111a2b` |
+| sidebar divider | `1px rgb(30,41,59)` | `--border-2` `#1e293b` |
+| nav link | 13px / 600, 10px padding, gap and radius | 13px / 600, 10px |
+| page heading | 28px / 900, line-height 28px | 28px / 900, `line-height: 1` |
+| accent ink on accent fill | `rgb(11,18,32)` on `rgb(255,140,66)` | `#0b1220` on `#ff8c42` |
+| primary button radius | ~999px, height 40px | pill, 40px |
+| harness `problems` | `[]` on every route | — |
+
+The debt ratchet closed at `vt-panel` **73 occurrences in 39 files**, down from 97 in 51, with
+`vt-raised` at 46/26 and `vt-raised-border` at 9/7. Every reduction lowered the matching ceiling, so
+no freed budget was left re-spendable. Two app-only layers remain by design, to be migrated as each
+screen is aligned.
+
+The test suite went from 271 tests (38 failing, 193s) to **287 passing in under 4 seconds**. The
+count fell from a peak of 299 because the deleted dead cluster took twelve tests with it; those
+tests exercised dead code, so the loss is not lost safety.
+
+**What is deliberately still open, and why it is honest to leave it:** `ui/SectionShell` has nine
+live consumers and migrating it changes what those screens look like, so it belongs with the tasks
+that redesign them. The app-only colour layers are ratcheted rather than globally remapped, because
+the design does not say which layer each individual surface should become and the orchestrator
+cannot judge the result by eye. The `Card` uniform-padding form is labelled transitional for the
+same reason. In each case the alternative was a blind change nobody could verify.
+
+**Known limitation carried into slices 2 to 4:** the orchestrator cannot read images, so visual
+parity is asserted through computed styles and geometry, and the actual visual judgement belongs to
+the human reviewer looking at the captures in `frontend/screenshots/`.
 
 ## Baseline (T01)
 
