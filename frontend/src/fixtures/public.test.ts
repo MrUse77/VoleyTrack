@@ -48,6 +48,15 @@ describe("public fixtures", () => {
       "match-copa-nacional-boca-monteros",
     ]));
     expect(PUBLIC_DASHBOARD.live.featured.match.id).toBe("match-liga-a1-river-boca");
+    // The design's featured live card also names the match clock, the referee and the match
+    // format (frontend/design/html/voleytrack-dashboard.html:51-54). The match record has no
+    // counterpart for any of them, so they are pinned here as part of the immutable
+    // dashboard projection.
+    expect(PUBLIC_DASHBOARD.live.featured).toMatchObject({
+      bestOf: 5,
+      clockLabel: "21:42",
+      refereeName: "P. López",
+    });
     expect(PUBLIC_DASHBOARD.live.compact).toHaveLength(2);
     expect(PUBLIC_DASHBOARD.upcoming).toHaveLength(3);
     expect(Object.isFrozen(PUBLIC_DASHBOARD)).toBe(true);

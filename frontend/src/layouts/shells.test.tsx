@@ -75,8 +75,12 @@ describe("application shells", () => {
     );
     expect(html).toContain('href="/matches?status=live"');
     expect(html).toContain("Ver en vivo");
-    expect(html).toContain("COBERTURA");
-    expect(html).toContain("3 partidos en vivo");
+    // No coverage-stats block: the design's `.sidebar` is nav groups, nav items and a
+    // divider (frontend/design/html/voleytrack.css:50-56) and nothing else. The block that
+    // used to sit below the nav ("COBERTURA" / "3 partidos en vivo" / "Datos actualizados
+    // ahora") had no counterpart there, so its absence is pinned rather than merely dropped.
+    expect(html).not.toContain("COBERTURA");
+    expect(html).not.toContain("Datos actualizados ahora");
     expect(html).toContain("01");
     expect(html).toContain("03");
     expect(html).toContain('aria-current="page"');

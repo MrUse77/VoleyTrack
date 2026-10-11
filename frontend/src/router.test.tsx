@@ -709,7 +709,7 @@ describe("router", () => {
   });
 
   it.each([
-    { route: "/", content: "Dashboard público", activeHref: "/", activeLabel: "Dashboard" },
+    { route: "/", content: "Dashboard espectador", activeHref: "/", activeLabel: "Dashboard" },
     { route: "/matches", content: "Todos", activeHref: "/matches", activeLabel: "Partidos" },
     { route: "/matches?status=live", content: "En vivo", activeHref: "/matches", activeLabel: "Partidos" },
     { route: "/matches?status=today", content: "Hoy", activeHref: "/matches", activeLabel: "Partidos" },
@@ -844,12 +844,19 @@ describe("router", () => {
     expect(`${window.location.pathname}${window.location.search}`).toBe("/matches?status=live");
     expect(container.textContent).toContain(PUBLIC_MATCHES.live[0].scheduledLabel);
 
+    // The dashboard's own tournament link left with the design-less metrics block; the
+    // tournaments list is the screen whose fixtures actually link to a tournament.
     await act(async () => {
-      await router.navigate({ to: "/" });
+      await router.navigate({ to: "/tournaments" });
     });
 
+    const tournamentLink = container.querySelector(
+      `a[href="/tournaments/${PUBLIC_TOURNAMENTS.all[0].id}"]`,
+    );
+    expect(tournamentLink).not.toBeNull();
+
     await act(async () => {
-      container.querySelector(`a[href="/tournaments/${PUBLIC_TOURNAMENTS.all[0].id}"]`)?.dispatchEvent(
+      tournamentLink?.dispatchEvent(
         new MouseEvent("click", { bubbles: true, cancelable: true }),
       );
     });

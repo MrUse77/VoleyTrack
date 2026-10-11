@@ -16,6 +16,13 @@ interface SidebarProps {
   navigation: SidebarNavigationGroup[];
   roleLabel: string;
   brandSubtitle?: string;
+  /**
+   * @deprecated Ignored since the dashboard parity slice (T11). The design's `.sidebar`
+   * (frontend/design/html/voleytrack.css:50-56) holds nav groups, nav items and a divider,
+   * and nothing else — there is no coverage-stats block in it — so the block this prop used
+   * to render was removed. The prop is kept only because `layouts/PublicShell.tsx` still
+   * passes it; the shell slice that owns that file should drop the pass.
+   */
   showCoverage?: boolean;
 }
 
@@ -41,7 +48,6 @@ export function Sidebar({
   navigation,
   roleLabel,
   brandSubtitle = roleLabel,
-  showCoverage = false,
 }: SidebarProps) {
   // Design: frontend/design/html/voleytrack.css:50 and
   // frontend/design/html/voleytrack-admin.css:55 declare the SAME rule for the sidebar —
@@ -132,20 +138,6 @@ export function Sidebar({
             </div>
           ))}
         </nav>
-
-        {showCoverage ? (
-          <div className="mt-auto pt-8">
-            <div
-              aria-label="Cobertura en vivo"
-              className="rounded-[14px] bg-vt-panel px-4 py-4"
-              role="status"
-            >
-              <p className="text-[11px] font-bold tracking-[0.08em] text-vt-muted">COBERTURA</p>
-              <p className="mt-1 text-sm font-bold text-vt-text">3 partidos en vivo</p>
-              <p className="mt-1 text-[11px] font-bold text-vt-success">Datos actualizados ahora</p>
-            </div>
-          </div>
-        ) : null}
       </div>
     </aside>
   );

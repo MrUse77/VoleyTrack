@@ -429,8 +429,13 @@ describe("design tokens", () => {
     // and exclusions). vt-raised (46/26) and vt-raised-border (9/7) were untouched by that
     // deletion, so their ceilings stay at their measured values. Lowering every ceiling in the
     // same change as the drop is what keeps a slack ceiling from re-spending the freed budget.
+    // T11 then moved the public dashboard onto the design's own layers: its metrics block
+    // (four legacy Cards) and the live/upcoming shells dropped both `bg-vt-panel` usages,
+    // which took vt-panel to 71 occurrences in 38 files, so the ceiling moves with the drop.
+    // vt-raised (46/26) and vt-raised-border (9/7) were untouched again and keep their
+    // measured values.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 73, baselineFiles: 39 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 71, baselineFiles: 38 },
       { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 46, baselineFiles: 26 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 9, baselineFiles: 7 },
     ];
