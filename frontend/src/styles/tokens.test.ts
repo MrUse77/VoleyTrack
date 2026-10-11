@@ -95,7 +95,6 @@ const matchSetupPath = fileURLToPath(new URL("../features/scoring/MatchSetupPage
 const pointEntryPath = fileURLToPath(new URL("../features/scoring/PointEntryPage.tsx", import.meta.url));
 const postMatchSummaryPath = fileURLToPath(new URL("../features/scoring/PostMatchSummaryPage.tsx", import.meta.url));
 const scoringFixturePath = fileURLToPath(new URL("../fixtures/scoring.ts", import.meta.url));
-const dashboardHeroPath = fileURLToPath(new URL("../features/dashboard/components/DashboardHero.tsx", import.meta.url));
 
 describe("design tokens", () => {
   it("defines the canonical palette and desktop canvas policy", () => {
@@ -207,7 +206,7 @@ describe("design tokens", () => {
   });
 
   it("normalizes remaining slate tokens in PlayerDetail and scoring pages", () => {
-    for (const filePath of [playerDetailPath, playerSelectionModalPath, matchSetupPath, scoringConsolePath, pointEntryPath, dashboardHeroPath]) {
+    for (const filePath of [playerDetailPath, playerSelectionModalPath, matchSetupPath, scoringConsolePath, pointEntryPath]) {
       const source = readFileSync(filePath, "utf8");
       expect(source).not.toContain("bg-slate-");
       expect(source).not.toContain("text-slate-");
@@ -227,13 +226,6 @@ describe("design tokens", () => {
       expect(source).toContain("text-vt-background");
       expect(source).not.toContain("text-slate-950");
     }
-
-    const hero = readFileSync(dashboardHeroPath, "utf8");
-    expect(hero).toContain("via-vt-surface");
-    expect(hero).toMatch(/from-vt-(panel|surface)/);
-    expect(hero).toMatch(/to-vt-(background|panel)/);
-    expect(hero).not.toContain("from-slate-900");
-    expect(hero).not.toContain("to-slate-950");
   });
 
   it("normalizes PostMatchSummaryPage scoring tokens without white/black/slate leaks", () => {
@@ -407,13 +399,15 @@ describe("design tokens", () => {
     // nav's hover moved to the design's --surface-2, its admin active fill moved to
     // --accent, and the admin-active assertion in layouts/shells.test.tsx moved off
     // bg-vt-raised. T10 removed the legacy shell, the orphaned pages and the dead-route
-    // PlaceholderPage imports, which took vt-panel to 85 usages in 43 files, so it is the
-    // only ceiling that moves here (measured with this guard's own patterns and exclusions).
-    // vt-raised (46/26) and vt-raised-border (9/7) are unchanged, so their ceilings stay at
-    // their measured values. Lowering every ceiling in the same change as the drop is what
-    // keeps a slack ceiling from re-spending the freed budget.
+    // PlaceholderPage imports, which took vt-panel to 85 usages in 43 files. T10b then deleted
+    // the dead component cluster (`DashboardHero`/`DashboardLive`/`DashboardRail`,
+    // `MatchesBrowser`, the two dead barrels and `ui/Surface`), which took vt-panel to 73
+    // usages in 39 files, so the ceiling moves with it (measured with this guard's own patterns
+    // and exclusions). vt-raised (46/26) and vt-raised-border (9/7) were untouched by that
+    // deletion, so their ceilings stay at their measured values. Lowering every ceiling in the
+    // same change as the drop is what keeps a slack ceiling from re-spending the freed budget.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 85, baselineFiles: 43 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 73, baselineFiles: 39 },
       { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 46, baselineFiles: 26 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 9, baselineFiles: 7 },
     ];
