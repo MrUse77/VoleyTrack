@@ -1,0 +1,74 @@
+name: Feature request
+description: Proponer una funcionalidad o una mejora
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Ámbito
+      description: ¿A qué parte del repositorio aplica?
+      options:
+        - Backend — backend/
+        - Frontend — frontend/
+        - Documentación — *.md, openspec/
+        - Infra / Docker — docker-compose, migraciones Flyway, configuración
+        - Otro
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Componente
+      description: ¿Qué componente específico involucra?
+      options:
+        - dominio (backend/src/main/java/.../domain)
+        - aplicación / gestor (backend/src/main/java/.../application/gestor)
+        - puertos (backend/src/main/java/.../application/port)
+        - DTOs (backend/src/main/java/.../application/dto)
+        - adapter web (backend/src/main/java/.../adapter/in/web)
+        - persistencia (backend/src/main/java/.../adapter/out/persistence)
+        - frontend: public
+        - frontend: scoring
+        - frontend: auth
+        - frontend: dashboard
+        - frontend: matches
+        - frontend: admin
+        - CI / tooling
+        - Otro
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: ¿Qué querés agregar o mejorar?
+      placeholder: Descripción clara de la funcionalidad propuesta.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivación
+      description: ¿Por qué sería útil este cambio?
+      placeholder: Qué problema resuelve o qué mejora aporta.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+      description: ¿Evaluaste alguna otra solución?
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto adicional
+      description: Referencias, issues relacionados, capturas del diseño.
+    validations:
+      required: false

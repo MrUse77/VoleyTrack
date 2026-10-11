@@ -1,0 +1,81 @@
+name: Bug report
+description: Reportar un comportamiento incorrecto
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Ámbito
+      description: ¿A qué parte del repositorio aplica?
+      options:
+        - Backend — backend/
+        - Frontend — frontend/
+        - Documentación — *.md, openspec/
+        - Infra / Docker — docker-compose, migraciones Flyway, configuración
+        - Otro
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Componente
+      description: ¿Qué componente específico involucra?
+      options:
+        - dominio (backend/src/main/java/.../domain)
+        - aplicación / gestor (backend/src/main/java/.../application/gestor)
+        - puertos (backend/src/main/java/.../application/port)
+        - DTOs (backend/src/main/java/.../application/dto)
+        - adapter web (backend/src/main/java/.../adapter/in/web)
+        - persistencia (backend/src/main/java/.../adapter/out/persistence)
+        - frontend: public
+        - frontend: scoring
+        - frontend: auth
+        - frontend: dashboard
+        - frontend: matches
+        - frontend: admin
+        - CI / tooling
+        - Otro
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: ¿Qué está pasando y qué esperabas que pasara?
+      placeholder: Descripción clara del comportamiento incorrecto.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir
+      description: La secuencia mínima que dispara el problema.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / capturas
+      description: Salida de consola, stack trace o captura de pantalla.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Entorno
+      description: Dónde lo observaste.
+      placeholder: |
+        Backend: Java 21 / Gradle 9.5.1, PostgreSQL 16 (o H2 en tests)
+        Frontend: Bun/Node, navegador y versión
+    validations:
+      required: false
