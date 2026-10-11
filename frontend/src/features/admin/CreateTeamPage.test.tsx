@@ -3,42 +3,13 @@ import { act, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { ADMIN } from "../../fixtures";
 import { CreateTeamPage } from "./CreateTeamPage";
 
-const fixtureOverride = vi.hoisted(() => ({
-  players: undefined as readonly unknown[] | undefined,
-}));
-
-vi.mock("../../fixtures", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../fixtures")>();
-
-  return {
-    ...actual,
-    get PUBLIC_PLAYERS() {
-      return fixtureOverride.players ?? actual.PUBLIC_PLAYERS;
-    },
-  };
-});
-
-const navigate = vi.fn();
-
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({
-    to,
-    search,
-    ...props
-  }: {
-    to: string;
-    search?: Record<string, string>;
-    children?: ReactNode;
-  } & ComponentPropsWithoutRef<"a">) => {
-    const query = search ? new URLSearchParams(search).toString() : "";
-    return <a {...props} href={query ? `${to}?${query}` : to} />;
-  },
-  useLocation: () => ({
-    search: Object.fromEntries(new URLSearchParams(window.location.search)),
-  }),
-  useNavigate: () => navigate,
+  Link: ({ to, ...props }: { to: string; children?: ReactNode } & ComponentPropsWithoutRef<"a">) => (
+    <a {...props} href={to} />
+  ),
 }));
 
 function renderPage() {
@@ -49,15 +20,23 @@ function renderPage() {
   return { container, root };
 }
 
-function getInputByLabel(container: HTMLElement, labelText: string) {
+function controlByLabel(container: HTMLElement, labelText: string): HTMLElement {
   const label = [...container.querySelectorAll("label")].find((candidate) => candidate.textContent === labelText);
-  const inputId = label?.htmlFor;
+  const controlId = label?.htmlFor;
 
-  if (!inputId) {
-    throw new Error(`Missing input label: ${labelText}`);
+  if (!controlId) {
+    throw new Error(`Missing control label: ${labelText}`);
   }
 
-  return container.querySelector<HTMLInputElement>(`#${inputId}`)!;
+  return container.querySelector<HTMLElement>(`#${controlId}`)!;
+}
+
+function getInputByLabel(container: HTMLElement, labelText: string): HTMLInputElement {
+  return controlByLabel(container, labelText) as HTMLInputElement;
+}
+
+function getSelectByLabel(container: HTMLElement, labelText: string): HTMLSelectElement {
+  return controlByLabel(container, labelText) as HTMLSelectElement;
 }
 
 function setInputValue(input: HTMLInputElement, value: string) {
@@ -65,55 +44,86 @@ function setInputValue(input: HTMLInputElement, value: string) {
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
+function setSelectValue(select: HTMLSelectElement, value: string) {
+  Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set?.call(select, value);
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function submitClubForm(container: HTMLElement) {
+  act(() => container.querySelector("form")!.requestSubmit());
+}
+
 describe("CreateTeamPage", () => {
-  it("SSR renders the canonical create-team desktop form", () => {
+  it("SSR renders the design's two cards and its form actions", () => {
     const html = renderToStaticMarkup(<CreateTeamPage />);
 
-    expect(html).toContain("Crear Nuevo Equipo");
-    expect(html).toContain("Da de alta un club y conforma su plantel.");
-    expect(html).toContain("Nombre del Club");
-    expect(html).toContain("Ej: Club Atlético River Plate");
-    expect(html).toContain("Entrenador (Coach)");
-    expect(html).toContain("Nombre del director técnico");
-    expect(html).toContain("Aún no hay jugadores. Haz clic en &quot;Agregar Jugador&quot;.");
-    expect(html).toContain("+ Agregar Jugador");
-    expect(html).toContain("+ Asignar Jugador Libre");
-    expect(html).toContain("Registrar Equipo");
+    expect(html).toContain("Crear equipo");
+    expect(html).toContain("Registrá un club con su entrenador y su plantel de jugadores.");
+    expect(html).toContain("Datos del club");
+    expect(html).toContain("OBLIGATORIO");
+    expect(html).toContain("Nombre del club");
+    expect(html).toContain("Entrenador");
+    expect(html).toContain("Plantel");
+    expect(html).toContain("JUGADORES");
+    expect(html).toContain("Todavía no cargaste jugadores");
+    expect(html).toContain("Agregar jugador");
     expect(html).toContain("Cancelar");
+    expect(html).toContain("Crear");
+    // The design's `.file-field` needs an upload path the app does not have, so the region is
+    // not rendered rather than shipped as a control that does nothing.
+    expect(html).not.toContain("Escudo");
+    expect(html).not.toContain('type="file"');
   });
 
-  it("links Cancelar to the teams administration page", () => {
+  it("links Volver and Cancelar to the teams administration page", () => {
     const page = renderPage();
+
     try {
-      const cancel = [...page.container.querySelectorAll("a")].find((link) => link.textContent === "Cancelar");
-      expect(cancel?.getAttribute("href")).toBe("/admin/teams");
+      const links = [...page.container.querySelectorAll("a")];
+      expect(links.find((link) => link.textContent?.includes("Volver"))?.getAttribute("href")).toBe("/admin/teams");
+      expect(links.find((link) => link.textContent === "Cancelar")?.getAttribute("href")).toBe("/admin/teams");
     } finally {
       act(() => page.root.unmount());
       page.container.remove();
     }
   });
 
-  it("keeps typed team values locally and prevents submit without a network request", () => {
+  it("keeps typed club values locally and validates them without a network request", () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("Network requests are not allowed"));
     const page = renderPage();
 
     try {
-      const form = page.container.querySelector("form")!;
-      const clubName = getInputByLabel(page.container, "Nombre del Club");
-      const coach = getInputByLabel(page.container, "Entrenador (Coach)");
+      const clubName = getInputByLabel(page.container, "Nombre del club");
+      const coach = getInputByLabel(page.container, "Entrenador");
 
       act(() => {
-        setInputValue(clubName, "Club Atlético River Plate");
+        setInputValue(clubName, "Nuevo Club Vóley");
         setInputValue(coach, "Marcelo Gallardo");
       });
 
-      expect(clubName.value).toBe("Club Atlético River Plate");
+      expect(clubName.value).toBe("Nuevo Club Vóley");
       expect(coach.value).toBe("Marcelo Gallardo");
 
-      act(() => form.requestSubmit());
+      // FA-01: incomplete data.
+      act(() => {
+        setInputValue(clubName, "");
+        setInputValue(coach, "");
+      });
+      submitClubForm(page.container);
+      expect(page.container.textContent).toContain("Completá el nombre del club y el entrenador.");
 
+      // FA-02: duplicate name.
+      act(() => {
+        setInputValue(clubName, ADMIN.teams[0].name);
+        setInputValue(coach, "Marcelo Gallardo");
+      });
+      submitClubForm(page.container);
+      expect(page.container.textContent).toContain("Ya existe un equipo con ese nombre.");
+
+      act(() => setInputValue(clubName, "Nuevo Club Vóley"));
+      submitClubForm(page.container);
+      expect(page.container.textContent).toContain("Equipo preparado localmente con estado Activo. No se guardó nada.");
       expect(fetchSpy).not.toHaveBeenCalled();
-      expect(page.container.textContent).toContain("Crear Nuevo Equipo");
     } finally {
       act(() => page.root.unmount());
       page.container.remove();
@@ -121,134 +131,114 @@ describe("CreateTeamPage", () => {
     }
   });
 
-  it("validates and locally adds a new player from the add-player modal", () => {
-    navigate.mockClear();
-    window.history.replaceState({}, "", "/admin/teams/create?modal=player");
+  it("opens the design's create-player dialog from the roster button as local state", () => {
     const page = renderPage();
 
     try {
+      // The dialog is component state, not a route: the create screen declares no search
+      // contract, so no link may carry a modal query.
+      expect(page.container.querySelector('[role="dialog"]')).toBeNull();
+      expect(page.container.querySelector('a[href*="modal="]')).toBeNull();
+
+      const addPlayer = [...page.container.querySelectorAll("button")].find(
+        (button) => button.textContent === "Agregar jugador",
+      );
+      expect(addPlayer).not.toBeNull();
+
+      act(() => addPlayer!.click());
+
       const dialog = page.container.querySelector('[role="dialog"]')!;
-      expect(dialog.textContent).toContain("Agregar Jugador al Equipo");
-      expect(dialog.textContent).toContain("Registra un nuevo jugador y sumalo directamente al plantel.");
+      expect(dialog.getAttribute("aria-modal")).toBe("true");
+      expect(dialog.textContent).toContain("Crear jugador");
+      expect(dialog.textContent).toContain("Integrante del plantel");
+      expect(dialog.textContent).toContain("Cancelar");
+      expect(dialog.textContent).toContain("Agregar");
+      // Design: the `.modal-close` control is named "Cerrar" (voleytrack-admin-crear-equipo.html),
+      // which is the label the aligned admin dialogs already pass.
+      expect(dialog.querySelector('button[aria-label="Cerrar"]')).not.toBeNull();
+    } finally {
+      act(() => page.root.unmount());
+      page.container.remove();
+    }
+  });
 
-      const fullName = getInputByLabel(page.container, "Nombre Completo");
+  it("validates the player fields and adds a removable roster chip", () => {
+    const page = renderPage();
+
+    try {
+      act(() =>
+        [...page.container.querySelectorAll("button")]
+          .find((button) => button.textContent === "Agregar jugador")
+          ?.click(),
+      );
+
+      const form = page.container.querySelector<HTMLFormElement>("#create-team-player-form")!;
+      const fullName = getInputByLabel(page.container, "Nombre");
       const number = getInputByLabel(page.container, "Dorsal");
-      const position = getInputByLabel(page.container, "Posición");
-      const addButton = [...dialog.querySelectorAll("button")].find((button) => button.textContent === "Agregar al plantel")!;
+      const position = getSelectByLabel(page.container, "Posición");
+      const addButton = [...page.container.querySelectorAll("button")].find(
+        (button) => button.textContent === "Agregar",
+      )!;
 
-      act(() => addButton.click());
+      expect(addButton.getAttribute("form")).toBe("create-team-player-form");
+      expect(addButton.getAttribute("type")).toBe("submit");
+
+      act(() => form.requestSubmit());
 
       expect(fullName.getAttribute("aria-invalid")).toBe("true");
       expect(number.getAttribute("aria-invalid")).toBe("true");
       expect(position.getAttribute("aria-invalid")).toBe("true");
-      expect(dialog.textContent).toContain("Completá los campos obligatorios");
+      expect(page.container.querySelector('[role="dialog"]')?.textContent).toContain(
+        "Completá los campos obligatorios",
+      );
 
       act(() => {
         setInputValue(fullName, "Sofía Fernández");
         setInputValue(number, "18");
-        setInputValue(position, "Central");
+        setSelectValue(position, "Central");
       });
-      act(() => addButton.click());
+      act(() => form.requestSubmit());
 
-      expect(page.container.textContent).toContain("Sofía Fernández");
-      expect(page.container.textContent).toContain("Jugador \"Sofía Fernández\" agregado al plantel local.");
-      expect(navigate).toHaveBeenCalledWith({ to: "/admin/teams/create", search: {} });
-    } finally {
-      act(() => page.root.unmount());
-      page.container.remove();
-      window.history.replaceState({}, "", "/");
-    }
-  });
-
-  it("renders a distinct assign-player modal with accessible search and an honest empty state", () => {
-    window.history.replaceState({}, "", "/admin/teams/create?modal=assign-player");
-    const page = renderPage();
-
-    try {
-      const dialog = page.container.querySelector('[role="dialog"]')!;
-      expect(dialog.textContent).toContain("Asignar Jugador Libre");
-      expect(dialog.textContent).toContain("Buscá en la base de datos a los jugadores que no tienen equipo.");
-      expect(dialog.textContent).not.toContain("Agregar Jugador al Equipo");
-
-      const search = getInputByLabel(page.container, "Buscar jugador libre");
-      expect(search.type).toBe("search");
-      expect(dialog.textContent).toContain("No hay jugadores libres para asignar.");
-
-      act(() => setInputValue(search, "Valentina"));
-      expect(dialog.textContent).toContain("No hay jugadores libres para asignar.");
-    } finally {
-      act(() => page.root.unmount());
-      page.container.remove();
-      window.history.replaceState({}, "", "/");
-    }
-  });
-
-  it("does not show a free player again after assigning it to the local roster", () => {
-    fixtureOverride.players = [{
-      id: "free-player-1",
-      teamId: "",
-      fullName: "Lucía Libre",
-      number: 8,
-      position: "Central",
-      bio: "Jugadora disponible.",
-    }];
-    window.history.replaceState({}, "", "/admin/teams/create?modal=assign-player");
-    const page = renderPage();
-
-    try {
-      const dialog = page.container.querySelector('[role="dialog"]')!;
-      expect(dialog.textContent).toContain("Lucía Libre");
-      const assignButton = [...dialog.querySelectorAll("button")].find((button) => button.textContent === "Asignar")!;
-
-      act(() => assignButton.click());
-
-      expect(page.container.textContent).toContain('Jugador "Lucía Libre" asignado al plantel local.');
-      expect(dialog.textContent).not.toContain("Lucía Libre");
-      expect(dialog.textContent).toContain("No hay jugadores libres para asignar.");
-    } finally {
-      fixtureOverride.players = undefined;
-      act(() => page.root.unmount());
-      page.container.remove();
-      window.history.replaceState({}, "", "/");
-    }
-  });
-
-  it("uses the canonical player modal URL and removes it on every modal close path", () => {
-    navigate.mockClear();
-    window.history.replaceState({}, "", "/admin/teams/create?modal=player");
-    const page = renderPage();
-
-    try {
-      expect(page.container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador al Equipo");
-      expect(page.container.querySelector('[role="dialog"]')?.getAttribute("aria-modal")).toBe("true");
-      expect(page.container.querySelector('a[href="/admin/teams/create"]')?.textContent).toContain("Cancelar");
-
-      act(() => page.container.querySelector<HTMLButtonElement>('button[aria-label="Close modal"]')?.click());
-      expect(navigate).toHaveBeenLastCalledWith({ to: "/admin/teams/create", search: {} });
-
-      act(() => page.container.querySelector('[role="presentation"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-      expect(navigate).toHaveBeenLastCalledWith({ to: "/admin/teams/create", search: {} });
-    } finally {
-      act(() => page.root.unmount());
-      page.container.remove();
-      window.history.replaceState({}, "", "/");
-    }
-  });
-
-  it("links Agregar Jugador to the canonical modal URL without submitting or changing the roster", () => {
-    const page = renderPage();
-    const form = page.container.querySelector("form")!;
-    const addPlayer = [...page.container.querySelectorAll("a")].find((link) => link.textContent === "+ Agregar Jugador");
-    const submitSpy = vi.fn();
-    form.addEventListener("submit", submitSpy);
-
-    try {
-      expect(addPlayer?.getAttribute("href")).toBe("/admin/teams/create?modal=player");
+      // The dialog closed and the roster now holds one removable chip.
       expect(page.container.querySelector('[role="dialog"]')).toBeNull();
-      expect(page.container.textContent).toContain("Aún no hay jugadores");
-      const assignPlayer = [...page.container.querySelectorAll("a")].find((link) => link.textContent === "+ Asignar Jugador Libre");
-      expect(assignPlayer?.getAttribute("href")).toBe("/admin/teams/create?modal=assign-player");
-      expect(submitSpy).not.toHaveBeenCalled();
+      expect(page.container.querySelectorAll('[data-testid="create-team-squad-item"]')).toHaveLength(1);
+      expect(page.container.textContent).toContain("Sofía Fernández");
+      expect(page.container.textContent).toContain("Central · Dorsal #18");
+
+      const remove = page.container.querySelector<HTMLButtonElement>(
+        'button[aria-label="Quitar a Sofía Fernández del plantel"]',
+      );
+      expect(remove).not.toBeNull();
+
+      act(() => remove!.click());
+
+      expect(page.container.querySelectorAll('[data-testid="create-team-squad-item"]')).toHaveLength(0);
+      expect(page.container.textContent).toContain("Todavía no cargaste jugadores");
+    } finally {
+      act(() => page.root.unmount());
+      page.container.remove();
+    }
+  });
+
+  it("closes the player dialog on Cancelar without touching the roster", () => {
+    const page = renderPage();
+
+    try {
+      act(() =>
+        [...page.container.querySelectorAll("button")]
+          .find((button) => button.textContent === "Agregar jugador")
+          ?.click(),
+      );
+      expect(page.container.querySelector('[role="dialog"]')).not.toBeNull();
+
+      act(() =>
+        [...page.container.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')]
+          .find((button) => button.textContent === "Cancelar")
+          ?.click(),
+      );
+
+      expect(page.container.querySelector('[role="dialog"]')).toBeNull();
+      expect(page.container.querySelectorAll('[data-testid="create-team-squad-item"]')).toHaveLength(0);
     } finally {
       act(() => page.root.unmount());
       page.container.remove();

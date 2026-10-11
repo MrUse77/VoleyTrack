@@ -19,6 +19,10 @@ import { AdminTournamentMatchesPage } from "./features/admin/AdminTournamentMatc
 import { AdminMatchesPage } from "./features/admin/AdminMatchesPage";
 import { AdminPlayersPage } from "./features/admin/AdminPlayersPage";
 import { AdminTeamsPage } from "./features/admin/AdminTeamsPage";
+import { AdminTeamDetailPage } from "./features/admin/AdminTeamDetailPage";
+import { AdminTeamRosterPage } from "./features/admin/AdminTeamRosterPage";
+import { AdminTeamMatchesPage } from "./features/admin/AdminTeamMatchesPage";
+import { AdminTeamStatsPage } from "./features/admin/AdminTeamStatsPage";
 import { AdminTournamentsPage } from "./features/admin/AdminTournamentsPage";
 import { AdminTournamentOverviewPage } from "./features/admin/AdminTournamentOverviewPage";
 import { AdminTournamentBracketPage } from "./features/admin/AdminTournamentBracketPage";
@@ -291,13 +295,33 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/teams/create",
     );
     expect(createTeamRoute?.options?.component).toBe(CreateTeamPage);
-    expect(createTeamRoute?.options?.validateSearch?.({ modal: "player" })).toEqual({
-      modal: "player",
-    });
-    expect(createTeamRoute?.options?.validateSearch?.({ modal: "assign-player" })).toEqual({
-      modal: "assign-player",
-    });
-    expect(createTeamRoute?.options?.validateSearch?.({ modal: "unexpected" })).toEqual({});
+    // The design's create screen opens its player dialog with plain component state
+    // (`openPlayerModal()`, frontend/design/html/voleytrack-admin-crear-equipo.html) and the
+    // app-only assign-free-player dialog is gone, so the route declares no search contract.
+    expect(createTeamRoute?.options?.validateSearch).toBeUndefined();
+
+    // The admin team detail: the design's own tab set
+    // (frontend/design/html/voleytrack-admin-ver-equipo.html) as one real route per label, a
+    // sibling under the resource — the shape the admin tournament cluster uses.
+    const teamDetailRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/teams/$id",
+    );
+    expect(teamDetailRoute?.options?.component).toBe(AdminTeamDetailPage);
+
+    const teamRosterRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/teams/$id/roster",
+    );
+    expect(teamRosterRoute?.options?.component).toBe(AdminTeamRosterPage);
+
+    const teamMatchesRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/teams/$id/matches",
+    );
+    expect(teamMatchesRoute?.options?.component).toBe(AdminTeamMatchesPage);
+
+    const teamStatsRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/teams/$id/stats",
+    );
+    expect(teamStatsRoute?.options?.component).toBe(AdminTeamStatsPage);
 
     const createTournamentRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/tournaments/create",
@@ -507,49 +531,35 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/teams/create");
-    expect(container.textContent).toContain("Crear Nuevo Equipo");
+    expect(container.textContent).toContain("Crear equipo");
 
     await act(async () => root.unmount());
     container.remove();
   });
 
-  it("renders the add-player dialog for the canonical create-team modal URL", async () => {
+  it("renders the create-team player dialog from component state without a modal URL", async () => {
     const container = document.createElement("div");
     document.body.append(container);
     const root = createRoot(container);
 
     await act(async () => {
-      await router.navigate({ to: "/admin/teams/create", search: { modal: "player" } });
+      await router.navigate({ to: "/admin/teams/create" });
       root.render(<RouterProvider router={router} />);
     });
 
     expect(window.location.pathname).toBe("/admin/teams/create");
-    expect(window.location.search).toBe("?modal=player");
-    expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador al Equipo");
-
-    await act(async () => root.unmount());
-    container.remove();
-  });
-
-  it("does not render the add-player dialog for invalid create-team modal URLs", async () => {
-    const container = document.createElement("div");
-    document.body.append(container);
-    const root = createRoot(container);
-
-    await act(async () => {
-      await router.navigate({ to: "/admin/teams/create", search: { modal: "unexpected" } });
-      root.render(<RouterProvider router={router} />);
-    });
-
-    expect(window.location.search).toBe("?modal=unexpected");
+    // The route declares no search contract, so the old modal query is not a destination and
+    // the dialog is closed until the roster button opens it.
+    expect(window.location.search).toBe("");
     expect(container.querySelector('[role="dialog"]')).toBeNull();
 
     await act(async () => {
-      await router.navigate({ to: "/admin/teams/create", search: { modal: "unknown" } });
+      [...container.querySelectorAll("button")]
+        .find((button) => button.textContent === "Agregar jugador")
+        ?.click();
     });
 
-    expect(window.location.search).toBe("?modal=unknown");
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Crear jugador");
 
     await act(async () => root.unmount());
     container.remove();
@@ -621,8 +631,66 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/teams");
-    expect(container.textContent).toContain("Administrá y consultá los equipos registrados.");
+    expect(container.textContent).toContain("Listado de equipos. Seleccioná un equipo para ver su detalle.");
     expect(container.textContent).toContain(ADMIN.teams[0].name);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the admin team detail and its tab routes through the real router", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const team = ADMIN.teams[0];
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/$id", params: { id: team.id } });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe(`/admin/teams/${team.id}`);
+    expect(container.textContent).toContain(team.name);
+    expect(container.textContent).toContain("Perfil");
+    // The admin navigation's team entry is the destination this detail belongs to, and it is
+    // the one the sidebar marks current.
+    expect(container.querySelector('aside a[aria-current="page"][href="/admin/teams"]')).not.toBeNull();
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/$id/roster", params: { id: team.id } });
+    });
+    expect(window.location.pathname).toBe(`/admin/teams/${team.id}/roster`);
+    expect(container.textContent).toContain("Altura");
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/$id/matches", params: { id: team.id } });
+    });
+    expect(window.location.pathname).toBe(`/admin/teams/${team.id}/matches`);
+    expect(container.textContent).toContain("Partidos");
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/$id/stats", params: { id: team.id } });
+    });
+    expect(window.location.pathname).toBe(`/admin/teams/${team.id}/stats`);
+    expect(container.textContent).toContain("Jugadores");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the unknown admin team fallback when the real router navigates to its URL", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/$id", params: { id: "missing-team" } });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/teams/missing-team");
+    expect(container.textContent).toContain("Equipo no encontrado");
+    expect(container.querySelector('a[href="/admin/teams"]')).not.toBeNull();
 
     await act(async () => root.unmount());
     container.remove();

@@ -1289,6 +1289,137 @@ const PROBE_SOURCE = `(async () => {
       }
     : null;
 
+  // Additive: the admin team area's own probes. New keys only - every key above keeps its name,
+  // order and shape, and no existing strategy is reordered or redefined.
+  //
+  // The create screen's inline roster builder (frontend/design/html/voleytrack-admin-crear-equipo.html,
+  // the .squad-list of .squad-item chips): each chip carries the player, its .squad-remove
+  // affordance and that affordance's accessible name, and the empty state is reported next to
+  // them, so the builder's structure and its count of removable entries are readable without an
+  // image.
+  const squadItems = Array.from(
+    document.querySelectorAll('[data-testid="create-team-squad-item"]'),
+  ).map((item) => {
+    const remove = item.querySelector("button");
+    return {
+      text: (item.textContent || "").trim().replace(/\\s+/g, " "),
+      removeLabel: remove ? remove.getAttribute("aria-label") : null,
+      removeTag: remove ? remove.tagName.toLowerCase() : null,
+    };
+  });
+  const squadEmpty = document.querySelector(
+    '[data-testid="create-team-roster-card-body"] [role="status"]',
+  );
+  const adminTeamSquad = {
+    listPresent: document.querySelector('[data-testid="create-team-squad-list"]') !== null,
+    itemCount: squadItems.length,
+    items: squadItems,
+    emptyStateText: squadEmpty
+      ? (squadEmpty.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 120)
+      : null,
+  };
+  // Drive the builder once so the count of removable entries is a measured value rather than a
+  // structural guess: open the design's dialog, fill its three fields, submit, read the chips,
+  // then remove the chip again so the capture still shows the screen's own opening state. The
+  // driver is defensive: on any other route there is no "Agregar jugador" button and the run
+  // reports nulls.
+  const adminTeamSquadRun = {
+    modalOpened: null,
+    addedItemCount: null,
+    removeLabels: [],
+    restoredItemCount: null,
+  };
+  const addPlayerButton = Array.from(document.querySelectorAll("main button")).find(
+    (button) => (button.textContent || "").trim() === "Agregar jugador",
+  );
+  if (addPlayerButton) {
+    try {
+      addPlayerButton.click();
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      const dialog = document.querySelector('[role="dialog"][aria-modal="true"]');
+      adminTeamSquadRun.modalOpened = Boolean(dialog);
+      const form = dialog ? dialog.querySelector("form") : null;
+      if (form) {
+        const setValue = (el, value) => {
+          const proto = el.tagName === "SELECT" ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
+          Object.getOwnPropertyDescriptor(proto, "value").set.call(el, value);
+          el.dispatchEvent(new Event(el.tagName === "SELECT" ? "change" : "input", { bubbles: true }));
+        };
+        const fields = form.querySelectorAll("input, select");
+        setValue(fields[0], "Jugadora de prueba");
+        setValue(fields[1], "9");
+        setValue(fields[2], "Central");
+        await new Promise((resolve) => setTimeout(resolve, 40));
+        form.requestSubmit();
+        await new Promise((resolve) => setTimeout(resolve, 80));
+        adminTeamSquadRun.addedItemCount = document.querySelectorAll(
+          '[data-testid="create-team-squad-item"]',
+        ).length;
+        adminTeamSquadRun.removeLabels = Array.from(
+          document.querySelectorAll('[data-testid="create-team-squad-item"] button'),
+        ).map((button) => button.getAttribute("aria-label"));
+        const remove = document.querySelector('[data-testid="create-team-squad-item"] button');
+        if (remove) remove.click();
+        await new Promise((resolve) => setTimeout(resolve, 80));
+        adminTeamSquadRun.restoredItemCount = document.querySelectorAll(
+          '[data-testid="create-team-squad-item"]',
+        ).length;
+      }
+    } catch (error) {
+      adminTeamSquadRun.error = String(error && error.message ? error.message : error);
+    }
+  }
+  adminTeamSquad.run = adminTeamSquadRun;
+
+  // The admin team detail's own frame (frontend/design/html/voleytrack-admin-ver-equipo.html):
+  // the page head, the .detail-tabs strip and the active panel, found through the test ids
+  // the new routes declare. Reporting them proves the route resolved with its regions, and the
+  // tab key reports each label, its destination and the current entry.
+  const adminTeamRegionIds = [
+    "admin-team-detail-content",
+    "admin-team-tabs",
+    "admin-team-tab-panel",
+    "admin-team-overview-grid",
+    "admin-team-performance-card-body",
+    "admin-team-matches-card-body",
+    "admin-team-stats-card-body",
+    "admin-team-top-players-card-body",
+  ];
+  const adminTeamRegions = adminTeamRegionIds
+    .map((testId) => {
+      const el = document.querySelector('[data-testid="' + testId + '"]');
+      if (!el) return null;
+      const cs = getComputedStyle(el);
+      return {
+        testId,
+        tag: el.tagName.toLowerCase(),
+        childCount: el.childElementCount,
+        padding: cs.padding,
+        backgroundColor: cs.backgroundColor,
+        borderRadius: cs.borderTopLeftRadius,
+      };
+    })
+    .filter(Boolean);
+  const adminTeamTabsElement = document.querySelector('[data-testid="admin-team-tabs"]');
+  const adminTeamTabs = adminTeamTabsElement
+    ? {
+        ariaLabel: adminTeamTabsElement.getAttribute("aria-label"),
+        tabCount: adminTeamTabsElement.querySelectorAll("a").length,
+        tabs: Array.from(adminTeamTabsElement.querySelectorAll("a")).map((tab) => {
+          const cs = getComputedStyle(tab);
+          return {
+            label: (tab.textContent || "").trim(),
+            href: tab.getAttribute("href"),
+            isCurrent: tab.getAttribute("aria-current") === "page",
+            backgroundColor: cs.backgroundColor,
+            color: cs.color,
+            borderRadius: cs.borderRadius,
+            height: cs.height,
+          };
+        }),
+      }
+    : null;
+
   return {
     title: document.title,
     readyState: document.readyState,
@@ -1388,6 +1519,13 @@ const PROBE_SOURCE = `(async () => {
       adminTournamentRegions,
       infoRows,
       adminTournamentTabs,
+      // Additive keys: new names only, every key above is unchanged. adminTeamSquad reports the
+      // inline roster builder's chips and their named remove affordances, adminTeamRegions which
+      // of the admin team detail's regions rendered on the route, and adminTeamTabs the design's
+      // tab set with its current entry and resolved treatment.
+      adminTeamSquad,
+      adminTeamRegions,
+      adminTeamTabs,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

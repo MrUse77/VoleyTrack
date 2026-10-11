@@ -6,12 +6,7 @@ import { EmptyState } from "../../components/primitives/EmptyState";
 import { Filter, FilterGroup } from "../../components/primitives/FilterGroup";
 import { PageHeader } from "../../components/primitives/PageHeader";
 import { StateBoundary } from "../../components/states/StateBoundary";
-import {
-  PUBLIC_TEAM_DETAILS,
-  PUBLIC_TEAMS,
-  PUBLIC_TOURNAMENTS,
-  type TeamFixture,
-} from "../../fixtures";
+import { teamListRows, type TeamListRow } from "./teamList";
 
 /**
  * Design: frontend/design/html/voleytrack-equipos.html — the `teams` view is a `.page-head`
@@ -26,54 +21,16 @@ import {
  * `FilterGroup`/`Filter`) — because the two "mínimos" dimensions are numeric thresholds the
  * design expresses as a select, not as an enumerable option set. Recorded as an unbuilt
  * design region rather than silently dropped.
- */
-type TeamListRow = Readonly<{
-  id: string;
-  name: string;
-  city: string;
-  tournamentName: string | null;
-  playerCount: number;
-  record: string | null;
-}>;
-
-/**
+ *
  * The design's four rows carry prototype numbers (`14` players, `8 / 2`, `Liga A1`) that no
- * app fixture backs. This derives the same columns from the fixtures the app does have,
- * preferring a team's own `TeamDetailFixture` and falling back to the league standings for
- * its record. A team with neither keeps an em dash rather than an invented figure — the same
- * honesty rule the standings and roster tables already follow.
+ * app fixture backs. `./teamList` derives the same columns from the fixtures the app does
+ * have, preferring a team's own `TeamDetailFixture` and falling back to the league standings
+ * for its record. A team with neither keeps an em dash rather than an invented figure — the
+ * same honesty rule the standings and roster tables already follow.
  *
  * Design intent kept: the design's "· SJ" short city hint is carried as the team's `city`,
  * because the fixture stores the full name and abbreviating it would drop information.
  */
-function teamListRows(): readonly TeamListRow[] {
-  const standingsByTeamName = new Map(
-    PUBLIC_TOURNAMENTS.all.flatMap((tournament) =>
-      tournament.standings.map((standing) => [standing.teamName, standing] as const),
-    ),
-  );
-
-  return PUBLIC_TEAMS.map((team: TeamFixture) => {
-    const detail = PUBLIC_TEAM_DETAILS.find((item) => item.teamId === team.id);
-    const standing = standingsByTeamName.get(team.name);
-
-    const record = detail
-      ? `${detail.wins} / ${detail.matchesPlayed - detail.wins}`
-      : standing
-        ? `${standing.won} / ${standing.lost}`
-        : null;
-
-    return {
-      id: team.id,
-      name: team.name,
-      city: team.city,
-      tournamentName: detail?.tournamentName ?? null,
-      playerCount: detail ? detail.rosterStats.length : team.rosterPlayerIds.length,
-      record,
-    } satisfies TeamListRow;
-  });
-}
-
 export function TeamsPage() {
   const location = useLocation() as { search: Record<string, unknown> };
   const navigate = useNavigate();

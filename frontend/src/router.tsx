@@ -42,6 +42,10 @@ import { AdminTournamentMatchesPage } from "./features/admin/AdminTournamentMatc
 import { AdminMatchesPage } from "./features/admin/AdminMatchesPage";
 import { AdminPlayersPage } from "./features/admin/AdminPlayersPage";
 import { AdminTeamsPage } from "./features/admin/AdminTeamsPage";
+import { AdminTeamDetailPage } from "./features/admin/AdminTeamDetailPage";
+import { AdminTeamRosterPage } from "./features/admin/AdminTeamRosterPage";
+import { AdminTeamMatchesPage } from "./features/admin/AdminTeamMatchesPage";
+import { AdminTeamStatsPage } from "./features/admin/AdminTeamStatsPage";
 import { AdminTournamentsPage } from "./features/admin/AdminTournamentsPage";
 import { AdminTournamentOverviewPage } from "./features/admin/AdminTournamentOverviewPage";
 import { AdminTournamentBracketPage } from "./features/admin/AdminTournamentBracketPage";
@@ -356,12 +360,39 @@ const adminPlayerCreateRoute = createRoute({
 const adminTeamCreateRoute = createRoute({
 	getParentRoute: () => adminShellRoute,
 	path: "/admin/teams/create",
-	validateSearch: (search: Record<string, unknown>) => {
-		if (search.modal === "player") return { modal: "player" };
-		if (search.modal === "assign-player") return { modal: "assign-player" };
-		return {};
-	},
+	// The design's create screen opens its player dialog with a plain `openPlayerModal()`
+	// (frontend/design/html/voleytrack-admin-crear-equipo.html): it edits an unsaved in-memory
+	// roster on an unsaved form, so there is no record id to put in the URL and the route
+	// declares no search contract. The app-only `?modal=assign-player` value left with the
+	// assign-free-player dialog, which the design has no counterpart for.
 	component: CreateTeamPage,
+});
+// The admin team detail, as a sibling under the resource — the same shape the admin
+// tournament cluster uses (`/admin/tournaments/$id`) and the design's own tab set
+// (`Detalle · Plantel (n) · Partidos · Estadísticas`,
+// frontend/design/html/voleytrack-admin-ver-equipo.html). The design toggles its panels in
+// place, but this app renders one route per tab on both the public team detail and the admin
+// tournament detail, so the admin team detail follows that convention and every tab label it
+// renders resolves to a real route.
+const adminTeamDetailRoute = createRoute({
+	getParentRoute: () => adminShellRoute,
+	path: "/admin/teams/$id",
+	component: AdminTeamDetailPage,
+});
+const adminTeamRosterRoute = createRoute({
+	getParentRoute: () => adminShellRoute,
+	path: "/admin/teams/$id/roster",
+	component: AdminTeamRosterPage,
+});
+const adminTeamMatchesRoute = createRoute({
+	getParentRoute: () => adminShellRoute,
+	path: "/admin/teams/$id/matches",
+	component: AdminTeamMatchesPage,
+});
+const adminTeamStatsRoute = createRoute({
+	getParentRoute: () => adminShellRoute,
+	path: "/admin/teams/$id/stats",
+	component: AdminTeamStatsPage,
 });
 const adminTournamentCreateRoute = createRoute({
 	getParentRoute: () => adminShellRoute,
@@ -433,6 +464,10 @@ export const routeTree = rootRoute.addChildren([
 		adminUiStatesRoute,
 		adminPlayerCreateRoute,
 		adminTeamCreateRoute,
+		adminTeamDetailRoute,
+		adminTeamRosterRoute,
+		adminTeamMatchesRoute,
+		adminTeamStatsRoute,
 		adminTournamentCreateRoute,
 		adminMatchCreateRoute,
 		adminTournamentsRoute,

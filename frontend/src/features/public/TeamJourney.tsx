@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
+import type { BadgeVariant } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
 import { StateBoundary } from "../../components/states/StateBoundary";
 import {
@@ -27,8 +28,16 @@ export type TeamRouteTab = "overview" | "roster" | "matches" | "stats";
  *   is appended when the team's detail projection is known.
  * - `matches` and `stats` were already "Partidos" and "Estadísticas" and are unchanged.
  * - Nothing was removed: the design's four tabs are the app's four routes.
+ *
+ * The admin team detail (frontend/design/html/voleytrack-admin-ver-equipo.html) renders the
+ * same four labels over the same `TeamJourneyContext`, so the tab *set* is shared through
+ * this export. Its strip is not: the admin design's `.detail-tabs`
+ * (voleytrack-admin.css:279-282) is a bare 36px pill row, while the public strip is a
+ * bordered `--surface-2` bar with a trailing note, so each side renders the treatment its own
+ * design declares over the one shared label/suffix list.
  */
-function teamTabs(rosterCount: number) {
+// eslint-disable-next-line react-refresh/only-export-components
+export function teamTabs(rosterCount: number) {
   return [
     { id: "overview", label: "Detalle", suffix: "", widthClass: "w-[92px]" },
     { id: "roster", label: `Plantel (${rosterCount})`, suffix: "/roster", widthClass: "w-[104px]" },
@@ -151,6 +160,58 @@ export function TeamPlayerName({
   ) : (
     <span className={className} data-player-id={player.id}>{content}</span>
   );
+}
+
+/**
+ * The design's "Rendimiento ÚLTIMOS 5" card content: the last results as `V` / `D` / `EN VIVO`
+ * / `PRÓXIMO` pills whose text carries the outcome before its colour, plus the small
+ * label/value readout under them.
+ *
+ * Both the public team detail and the admin team detail render this card
+ * (frontend/design/html/voleytrack-equipos.html and voleytrack-admin-ver-equipo.html), so the
+ * two derivations live here instead of in either screen.
+ *
+ * Recorded divergence, forced by the fixtures rather than chosen: the design's readout is
+ * `Ataque efectivo 47%`, `Bloqueos / set 2.4`, `Errores no forzados 11.2`. The app has no
+ * per-set or unforced-error metric anywhere, so the readout reports the real per-match average
+ * of each `summaryStats` total instead of printing numbers nothing backs.
+ */
+export type TeamPerformanceBadge = Readonly<{ id: string; label: string; variant: BadgeVariant }>;
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function teamPerformanceBadges(
+  rows: readonly TeamMatchRow[],
+  teamId: string,
+  limit = 5,
+): readonly TeamPerformanceBadge[] {
+  return rows.slice(0, limit).map((row) => {
+    const { match, resultLabel } = row;
+    const score = match.score
+      ? match.homeTeamId === teamId
+        ? `${match.score.home}-${match.score.away}`
+        : `${match.score.away}-${match.score.home}`
+      : null;
+
+    if (match.status === "live") return { id: match.id, label: score ? `EN VIVO ${score}` : "EN VIVO", variant: "accent" as const };
+    if (resultLabel === "VICTORIA") return { id: match.id, label: `V ${score ?? "—"}`, variant: "ok" as const };
+    if (resultLabel === "DERROTA") return { id: match.id, label: `D ${score ?? "—"}`, variant: "danger" as const };
+    return { id: match.id, label: "PRÓXIMO", variant: "default" as const };
+  });
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function teamPerformanceReadout(
+  detail: TeamDetailFixture,
+  limit = 3,
+): readonly Readonly<{ label: string; value: string }>[] {
+  const matchesPlayed = detail.matchesPlayed > 0 ? detail.matchesPlayed : 1;
+
+  return detail.summaryStats
+    .map((stat) => ({
+      label: `${stat.label.charAt(0)}${stat.label.slice(1).toLowerCase()} / partido`,
+      value: (stat.value / matchesPlayed).toFixed(1),
+    }))
+    .slice(0, limit);
 }
 
 export function TeamNotFound() {

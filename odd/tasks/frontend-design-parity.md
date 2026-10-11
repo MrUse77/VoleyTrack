@@ -1116,9 +1116,65 @@ readable against the completed record above; the carried-over items it lists wer
 - [ ] **T20 — Admin edit tournament.** See the completed record above: the route is
   `/admin/tournaments/$id/edit`, a sibling under the tournament it edits, mirroring the create path, with
   the overview's own "Editar torneo" link as the entry point and "Volver" returning to the overview.
-- [ ] **T21 — Admin teams parity.** List plus create with the design's inline roster builder
-  (replacing the two-modal flow).
-- [ ] **T22 — Admin team detail.** New route and screen, no React counterpart.
+- [x] **T21 — Admin teams list and create.** Done, and the create screen was a real restructure rather
+  than a restyle.
+  - List: `PageHeader` with a Filtros toggle and an accent create action, a collapsible filter `Card`
+    holding a name `Field`, a live result count and a clear action, the shared `DataTable`, and an
+    `EmptyState` card.
+  - Create: a `Datos del club` card of two `Field`s and a `Plantel` card holding the roster as a chip
+    list with an empty line and an add action, an `role="alert"` status, and cancel and submit actions.
+  - **The reconciliation was about the roster, and this document's brief was wrong about it.** The brief
+    claimed the design builds the roster with an "inline sub-card for adding a player". It does not: the
+    design's add-player surface is a **modal** (`voleytrack-admin-crear-equipo.html`
+    `<div class="modal-overlay" id="player-overlay" role="dialog" aria-modal="true">` opened by
+    `openPlayerModal()`), and only the roster entries themselves are inline. So a modal was kept and the
+    roster became inline chips. The route's `validateSearch` and its two `?modal=` values were deleted,
+    because the dialog edits an unsaved in-memory roster and there is no record id to link; the
+    app-only "Asignar Jugador Libre" dialog was removed since it has no design counterpart. Router
+    assertions for both modal URLs were replaced by a no-search-contract assertion plus a
+    component-state dialog test.
+  - The design's `.file-field` crest needs an upload path this app does not have — there is no file
+    input, upload or form-data handling anywhere — so it was **not rendered**, which is the right call:
+    a control that does nothing is worse than no control.
+  - **Measured, including a driven interaction.** The list went from seven headers and no filter panel to
+    four headers with a panel at `aria-expanded="false"` holding one control and a live "2 equipos"
+    count, with the `Equipos` nav entry active. The create screen gained its heading, two `CardBody`s at
+    18px 20px and controls at **46px with a 12px radius** on the background token; the roster starts with
+    zero entries and its empty line, and was then **driven through the UI**: the modal opened, one entry
+    was added, its remove affordance carried the label "Quitar a Jugadora de prueba del plantel", and it
+    was removed back to zero. That is a real interaction test rather than a markup assertion.
+- [x] **T22 — Admin team detail.** Done, and it is new surface. Four sibling routes under the resource
+  (`/admin/teams/$id` plus `/roster`, `/matches` and `/stats`), following the admin tournament shape,
+  since the design toggles panels in place but this app renders one route per tab and every label
+  therefore resolves.
+  - Reused rather than rebuilt: `teamTabs`, `teamRosterRows`, `teamMatchRows`, and
+    `teamPerformanceBadges`/`teamPerformanceReadout` extracted out of the public `TeamJourney`, plus the
+    shared `TournamentPanelHeader`.
+  - **The shared-module refactor was proven not to leak.** One public team screen and the public
+    standings route were re-measured afterwards and came back **byte-identical** across tab sets, table
+    headers, card bodies, list states, page headings and inner text. Generalising shared surface without
+    that check would have been a guess.
+  - **The carried-over standings inconsistency is fixed, and it was removing invented data.** Before, the
+    admin standings tab rendered the screen's own frozen prototype table: **four invented rows and seven
+    headers** (`#`, Equipo, PJ, PG, PP, SETS, PTS). After, it renders `tournament.detail.standings`
+    through the same shared `standingsColumns` the public side uses: **eight fixture rows and five
+    headers**, matching the public `Clasificación` panel. That is a correctness fix, not a restyle.
+  - Honest gaps recorded: the new detail route had no genuine before-state, so the previous structure was
+    read from the committed source rather than measured; `ADMIN.teams` rows carry no tournament or record
+    so both those columns render an em dash and the tournament filter was omitted; and neither admin team
+    has a `TeamDetailFixture`, so the performance readout and stats panel are empty. Those are fixture
+    gaps, not screen defects, and they are carried into the polish list.
+  - **A pre-existing quirk worth a decision later:** TanStack's `Link` also marks the **ancestor** route's
+    link with `aria-current="page"`, so both a parent and a child navigation entry can claim to be the
+    current page. It was observed on the public shells and on the admin standings route before this task
+    and was left consistent rather than half-changed. Two elements claiming current-page is a genuine
+    accessibility smell and belongs in the polish pass.
+  - Admin navigation gap versus the design, recorded rather than fixed: the app adds Dashboard and Panel
+    de planillero, uses a different group order, and has no sign-out.
+  - Ratchets lowered: `vt-panel` 34/16 → **28/14**, `vt-raised` 14/8 → **13/7**, `vt-raised-border`
+    6/4 → **5/3**, legacy `Card` unchanged at 24/8, all-`Card` floor 70/28 → **81/35**.
+  - Suite `48 files / 329 passed`, lint exit 0, build exit 0. Dev server stopped with a single-PID kill
+    and the port released.
 - [ ] **T23 — Admin players parity.** See the completed record above.
 - [ ] **T24 — Admin matches parity.** See the completed record above.
 
