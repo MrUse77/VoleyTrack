@@ -39,9 +39,9 @@ class EquipoControllerTest {
 				.andExpect(jsonPath("$[0].id").value(jugadorId.toString()))
 				.andExpect(jsonPath("$[0].nombre").value("Ana"))
 				.andExpect(jsonPath("$[0].apellido").value("Uno"))
-				.andExpect(jsonPath("$[0].fechaNac").value("2000-01-01"))
+				.andExpect(jsonPath("$[0].fechaNacimiento").value("2000-01-01"))
 				.andExpect(jsonPath("$[0].dorsal").value(7))
-				.andExpect(jsonPath("$[0].pos").value("LIBERO"))
+				.andExpect(jsonPath("$[0].posicion").value("LIBERO"))
 				.andExpect(jsonPath("$[0].activo").value(true));
 
 		verify(gestorPartidoPort).cargarJugadoresDisponibles(equipoId);

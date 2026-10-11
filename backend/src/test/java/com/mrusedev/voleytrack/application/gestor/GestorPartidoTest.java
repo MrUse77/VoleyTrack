@@ -231,9 +231,9 @@ class GestorPartidoTest {
         assertThat(dto.id()).isEqualTo(jugador.getId());
         assertThat(dto.nombre()).isEqualTo("Jugador");
         assertThat(dto.apellido()).isEqualTo("Test");
-        assertThat(dto.fechaNac()).isEqualTo("2000-01-01");
+        assertThat(dto.fechaNacimiento()).isEqualTo("2000-01-01");
         assertThat(dto.dorsal()).isEqualTo(10);
-        assertThat(dto.pos()).isEqualTo("PUNTA_RECEPTOR");
+        assertThat(dto.posicion()).isEqualTo("PUNTA_RECEPTOR");
         assertThat(dto.activo()).isTrue();
     }
 

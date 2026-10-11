@@ -6,8 +6,8 @@ public record JugadorDTO(
         UUID id,
         String nombre,
         String apellido,
-        String fechaNac,
+        String fechaNacimiento,
         int dorsal,
-        String pos,
+        String posicion,
         boolean activo
 ) {}
