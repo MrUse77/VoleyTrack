@@ -205,3 +205,67 @@ Cada equipo tiene derecho a un máximo de seis (6) sustituciones regulares por s
 
 Los reemplazos que involucran al jugador con el rol de "Líbero" son ilimitados y no se contabilizan dentro del límite establecido en la RN-04.
 
+
+
+---
+
+## Convenciones de trabajo
+
+Todo entra por Pull Request: `main` es la rama protegida y no se pushea directo.
+
+### Ramas
+
+`<tipo>/<descripcion-kebab-case>`, sin número de issue en el nombre. Una rama por
+cambio atómico, de vida corta, con rebase sobre `main` antes del merge y borrada
+después.
+
+| Tipo | Uso | Ejemplo |
+|---|---|---|
+| `feat/` | Nueva funcionalidad | `feat/confirmacion-en-respuesta` |
+| `fix/` | Corrección | `fix/tope-sets-409` |
+| `refactor/` | Refactor sin cambio de comportamiento | `refactor/gestor-partido-por-id` |
+| `docs/` | Documentación | `docs/convenciones-de-trabajo` |
+| `chore/` | Mantenimiento, tooling, CI | `chore/templates-de-proceso` |
+| `style/` | Formato | `style/indentacion-adapter-web` |
+| `test/` | Tests | `test/contrato-del-puerto` |
+
+### Commits
+
+Conventional Commits, en español o inglés:
+
+```text
+<tipo>(<scope>): <descripción imperativa>
+
+[cuerpo: qué cambia y por qué]
+
+[footer: Refs #N / Closes #N]
+```
+
+Tipo en minúscula, asunto de hasta 72 caracteres, sin punto final. Los tipos
+permitidos están declarados en `.github/commitlint.config.mjs`.
+
+Para que se validen solos, activá el hook una vez por clon:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Se saltea con `git commit --no-verify` cuando hace falta.
+
+### Issues y PRs
+
+- Los issues se crean con los forms de `.github/ISSUE_TEMPLATE/` y se etiquetan
+  con la taxonomía del repositorio: `type:{feature,bug,chore,refactor,docs}`,
+  `priority:high` y `status:{needs-review,approved}`.
+- El PR usa `.github/pull_request_template.md`. Su **título** sigue el formato de
+  los commits y cierra los issues al final:
+  `fix(application): validar la pertenencia del set al asignar el saque inicial (#83)`.
+- El merge es **squash**, así el historial de `main` queda como una secuencia de
+  `tipo(scope): descripción (#issue)`.
+
+### Tests
+
+```bash
+cd backend && ./gradlew clean test   # JUnit 5 + AssertJ + Mockito sobre H2
+cd frontend && bun run test          # Vitest
+```
