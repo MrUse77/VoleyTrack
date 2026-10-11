@@ -14,6 +14,19 @@
  * Warning: the design uses #1e293b as --border-2, a BORDER tone. --color-vt-raised
  * is a SURFACE that happens to share that literal; do not mistake one for the other.
  * The design's border tones are #243249 (--border) and #1e293b (--border-2).
+ *
+ * Values the design hardcodes outside its own :root, tokenised here so primitives
+ * stay token-driven instead of writing raw colour literals. Each entry cites the
+ * design line it was taken from:
+ *   --color-vt-success-soft*       voleytrack-admin.css:87  .badge.ok { background:#0f2a1a; color:#86efac; border-color:#14532d }
+ *   --color-vt-warn-soft*          voleytrack-admin.css:88  .badge.warn { background:#2a1e0a; color:#fde68a; border-color:#7c4d0a }
+ *   --color-vt-accent-strong       voleytrack-admin.css:52  .avatar gradient end stop #ff6a3d
+ *   --color-vt-on-danger           voleytrack.css:61 / voleytrack-admin.css:90  white text on the --danger fill
+ *   --radius-vt-md                 voleytrack-admin.css:184 form control radius 12px
+ *   --shadow-vt-focus-ring         voleytrack-admin.css:185 focus-visible ring colour-mix 22%
+ *   --shadow-vt-toast              voleytrack.css:116       .toast box-shadow
+ *   --animate-vt-pulse             voleytrack.css:62        .live-dot pulse 1.2s @keyframes pulse
+ *   --animate-vt-toast-in          voleytrack.css:116-117  .toast -> .toast.show translate/opacity .25s
  */
 @theme {
   --color-vt-background: #0b1220;
@@ -35,7 +48,28 @@
   --color-vt-danger: #ef4444;
   --radius-vt: 16px;
   --radius-vt-sm: 10px;
+  --radius-vt-md: 12px;
   --shadow-vt: 0 8px 24px rgba(0,0,0,.35);
+  --shadow-vt-toast: 0 12px 32px rgba(0,0,0,.4);
+  --shadow-vt-focus-ring: 0 0 0 3px color-mix(in oklch, var(--color-vt-accent) 22%, transparent);
+  --color-vt-success-soft: #0f2a1a;
+  --color-vt-success-soft-text: #86efac;
+  --color-vt-success-soft-border: #14532d;
+  --color-vt-warn-soft: #2a1e0a;
+  --color-vt-warn-soft-text: #fde68a;
+  --color-vt-warn-soft-border: #7c4d0a;
+  --color-vt-accent-strong: #ff6a3d;
+  --color-vt-on-danger: #ffffff;
+  --animate-vt-pulse: vt-pulse 1.2s ease-in-out infinite;
+  --animate-vt-toast-in: vt-toast-in 250ms ease-out;
+  @keyframes vt-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .4; }
+  }
+  @keyframes vt-toast-in {
+    from { opacity: 0; transform: translateY(80px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }

@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from "react";
 
-type BadgeVariant = "default" | "success" | "danger" | "accent";
+type BadgeVariant = "default" | "success" | "danger" | "accent" | "ok" | "warn";
 
 type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
   variant?: BadgeVariant;
@@ -12,6 +12,10 @@ const variantClasses: Record<BadgeVariant, string> = {
   success: "border-vt-success/30 bg-vt-success/10 text-vt-success",
   danger: "border-vt-danger/30 bg-vt-danger/10 text-vt-danger",
   accent: "border-vt-accent/35 bg-vt-accent/10 text-vt-accent",
+  // Design source: frontend/design/html/voleytrack.css:102-103
+  // (.badge.ok / .badge.warn hardcoded surfaces, tokenised in styles/tokens.css).
+  ok: "border-vt-success-soft-border bg-vt-success-soft text-vt-success-soft-text",
+  warn: "border-vt-warn-soft-border bg-vt-warn-soft text-vt-warn-soft-text",
 };
 
 function resolveVariant(variant: BadgeVariant, tone?: BadgeProps["tone"]): BadgeVariant {

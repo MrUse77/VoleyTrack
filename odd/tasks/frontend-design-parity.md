@@ -328,13 +328,82 @@ not 20.)
     the corresponding ceiling.
   - Suite `49 files / 281 passed` (280 plus the new assertion), lint exit 0, build exit 0, and the
     built CSS still declares all three tokens (6, 4 and 2 occurrences).
-- [ ] **T06 — Add the primitives the design defines but the app lacks.** New:
-  `Chip`, `StatePill` (programado / en vivo / finalizado), `LivePill` with the pulse dot,
-  a filter group, and a toast surface. Test-first: one test per primitive covering its variants
-  and its accessible role.
-- [ ] **T07 — Align `Card` and `Button` with the design spec.** `Card` gains the `card-h` /
-  `card-b` structure; `Button` moves from the 8px radius to the design's pill radius. Guard
-  against regressions in the existing primitive tests.
+- [x] **T06 — Add the primitives the design defines but the app lacks.** Done: nine new components
+  (`Chip`, `StatePill`, `LivePill`, `FilterGroup`+`Filter`, `Toast`, `Kpi`+`KpiGrid`, `EmptyState`,
+  `InfoRow`, `Avatar`) plus `ok`/`warn` on the existing `Badge` and a new `Field` inside
+  `FormField.tsx`. All pure and props-driven — no internal state, deliberately, because the
+  directory's tests render to static markup and could not exercise effects; the same trap that hid
+  a real bug elsewhere in this repo.
+  - Twelve tokens were added, each citing the design line it came from, because the design uses
+    these values while keeping them outside its `:root`: the success-soft trio (`#0f2a1a`,
+    `#86efac`, `#14532d`), the warn-soft trio (`#2a1e0a`, `#fde68a`, `#7c4d0a`), the avatar
+    gradient stop `#ff6a3d`, `#ffffff` for ink on danger, the **third radius** 12px, the accent
+    focus ring, the toast shadow, and two animations. Raw literals were refused, as the repo's
+    tree-wide guards require.
+  - Accessibility is implemented rather than claimed: a status pill always renders its status word
+    with an `sr-only` prefix and is deliberately **not** a live region, since a listing renders many
+    of them; `LivePill` is `role="status"` + `aria-live="polite"` with an `aria-hidden` dot and
+    `motion-reduce:animate-none`; filters are real buttons with `aria-pressed` in a labelled group;
+    `Field` wires `htmlFor`/`id`, `aria-describedby` (error then hint) and `aria-invalid`; the toast
+    unmounts when closed so hidden text is never announced.
+  - Tests: suite `49 files / 292 passed` (10 existing plus 11 new in `core.test.tsx`). Verified that
+    the new tests are genuine rather than string matching: 27 `renderToStaticMarkup` calls against
+    only 5 source-file reads. RED was observed for `Field`, `StatePill` and `Filter`; the worker
+    stated plainly that the other eight tests were written after implementation and claimed no RED
+    for them.
+  - Additive discipline held: `git status` shows only `Badge.tsx`, `FormField.tsx`,
+    `core.test.tsx` and `tokens.css` modified, with no screen, layout, feature, fixture or router
+    touched. The debt ratchet stayed green and unchanged at 97 / 48 / 9, so no new debt was added.
+  - **Three corrections the worker made to this document's spec**, which is exactly why the prompt
+    told the design CSS to win:
+    1. The design's `.badge` **base** is mono 10px/800 with tracking `.06em` and padding `5px 8px`,
+       while the app's `Badge` uses `px-3 py-1 tracking-[0.2em]`, pinned by an existing test and
+       consumed by screens. Only the `ok`/`warn` colours were added, so this remains a real parity
+       gap and moves into T07.
+    2. The design's `.s-envivo` has **no border** while programado and finalizado do. The component
+       uses `border-transparent` so the pills size equally. A deliberate deviation from the CSS,
+       flagged as a risk rather than hidden.
+    3. The design's `select` chevron hardcodes `#64748b` **inside a data-URI**, which cannot be
+       tokenised, so selects keep the native indicator.
+  - Other judgement calls, reported: the toast uses a mount animation instead of the design's
+    transition (a transition needs a mount tick, and this directory is SSR-tested); the toast close
+    control is minimally styled because the design has no dismiss affordance; `--shadow-vt-toast`
+    was added rather than reusing `--shadow-vt` since the values differ.
+  - Verified independently by the parent: the new tests render markup rather than grepping source,
+    and the accessibility attributes are present in the components, not merely claimed.
+- [ ] **T06b — Retire `FormField` in favour of `Field`.** Raised by the T06 worker as the one thing
+  worth reviewing. `FormField` and the new `Field` now coexist in
+  `frontend/src/components/primitives/FormField.tsx`. Restyling `FormField` to the design's
+  46px/`--bg` control would silently restyle every admin form, which is why the worker added `Field`
+  alongside it instead of converting in place — correct for an additive slice, but two coexisting
+  form-field concepts is precisely the duplication this feature exists to remove.
+  Deliverable: label `FormField` as transitional in code with its migration owner named, and add its
+  usage count to the debt ratchet so it cannot be adopted by new code. The consumer migration itself
+  belongs in slice 3 with the admin forms, which already touch those ~20 call sites.
+  Should land together with T07, which is the same area, to avoid a separate round trip.
+- [ ] **T07 — Align `Card`, `Button` and the `Badge` base with the design spec.**
+  - `Card` per the design is a container with **no padding of its own**: `.card` is background,
+    1px border, radius 16 and `overflow:hidden`, while the spacing lives in `.card-h`
+    (`18px 20px 0`) and `.card-b` (`18px 20px`). The React `Card` is `rounded-2xl border p-6`, a box
+    with uniform padding, which is visually close for a plain card but structurally wrong for a card
+    with a header.
+    **Decision taken, and it is not the easy one:** add `CardHeader`/`CardBody` sub-parts and migrate
+    consumers **one screen at a time** inside slices 2 to 4, rather than migrating all 52 cards in a
+    single commit. Condition that keeps it honest: the uniform-padding form is explicitly labelled
+    in code as transitional, the same way the app-only colour tokens are labelled. A legacy shape
+    that keeps living without a label is exactly how duplicate systems are born, and this feature is
+    removing one of those already.
+  - `Button` must move from `rounded-lg` to the design's pill radius, and its variants need remapping:
+    the design has a default `.btn` (surface fill), `.btn.accent` and `.btn.ghost`, with height 40,
+    padding 0 16, 13px weight 700 and a 16px icon. `Card`'s `raised` variant is app-only debt under
+    T05b and belongs in this migration.
+  - The design's `.btn:hover` uses **`#2d3d5f`**, another colour the design hardcodes outside its
+    `:root`, so it needs a token with the design line cited rather than a raw literal.
+  - The `Badge` **base** is the parity gap T06 could not close: the design is mono 10px/800,
+    tracking `.06em`, padding `5px 8px`; the app uses `px-3 py-1 tracking-[0.2em]`. Aligning it moves
+    the pinned test and possibly consuming screens, so it must be done deliberately with the
+    consumers in view.
+  Guard against regressions in the existing primitive tests.
 - [ ] **T08 — Add the mono tabular numeric treatment.** Introduce the design's `.num`
   equivalent (mono family, `tabular-nums`, right alignment) and apply it to the numeric columns
   of the shared table primitive.
