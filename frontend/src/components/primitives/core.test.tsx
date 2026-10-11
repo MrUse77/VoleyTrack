@@ -22,6 +22,7 @@ import { LivePill } from "./LivePill";
 import { StatePill } from "./StatePill";
 import { Toast } from "./Toast";
 import { DataTable } from "./DataTable";
+import { Num, numClasses } from "./Num";
 import { Modal } from "./Modal";
 import { PageHeader } from "./PageHeader";
 import { TabBar } from "./TabBar";
@@ -716,6 +717,137 @@ describe("core primitives", () => {
     expect(html).toContain("Tigres");
     expect(html).toContain("Points ↓");
     expect(html).toContain("border-vt-border");
+  });
+
+  it("applies the design's numeric treatment to numeric table columns", () => {
+    const html = renderToStaticMarkup(
+      <DataTable
+        columns={[
+          { header: "Jugador", key: "player" },
+          { header: "Pts", key: "points", numeric: true },
+        ]}
+        getRowKey={(row) => row.player}
+        rows={[{ player: "Fernández, M.", points: 142 }]}
+      />,
+    );
+
+    // Design source: frontend/design/html/voleytrack.css:100
+    //   .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right}
+    // The design puts `.num` on both the header and the body cell, e.g.
+    // frontend/design/html/voleytrack-admin-jugadores.html:54:
+    //   <th class="num">Pts</th> … <td class="num">142</td>
+    const numericHeader = html.match(/<th[^>]*>Pts/)![0];
+    const numericCell = html.match(/<td[^>]*>142</)![0];
+    const textCell = html.match(/<td[^>]*>Fernández, M\.</)![0];
+
+    // `tabular-nums` is the whole point: fixed-advance digits keep columns aligned.
+    for (const cell of [numericHeader, numericCell]) {
+      expect(cell).toContain("font-mono");
+      expect(cell).toContain("tabular-nums");
+      expect(cell).toContain("text-right");
+    }
+
+    // A text column never inherits the numeric treatment: it is the table's first
+    // (identity) column and its value is a string, not a measurement.
+    expect(textCell).toContain("px-4");
+    expect(textCell).not.toContain("font-mono");
+    expect(textCell).not.toContain("tabular-nums");
+  });
+
+  it("detects a numeric column from the row data and lets a column opt out", () => {
+    const html = renderToStaticMarkup(
+      <DataTable
+        columns={[
+          { header: "Equipo", key: "team" },
+          { header: "Jugadores", key: "playerCount" },
+          { header: "Sets", key: "sets" },
+          { header: "PG / PP", key: "record", numeric: false },
+          { header: "Acción", key: "action", render: (row) => <b>{row.action}</b> },
+        ]}
+        getRowKey={(row) => row.team}
+        rows={[{ action: "Ver", playerCount: 14, record: "8 / 2", sets: "16-6", team: "UPCN San Juan" }]}
+      />,
+    );
+
+    // A number in the row data is a measurement, so it gets the design's treatment
+    // without the call site restating the utilities.
+    const inferred = html.match(/<td[^>]*>14</)![0];
+    // A formatted measurement is a string, so the row type cannot prove it is numeric.
+    const formatted = html.match(/<td[^>]*>16-6</)![0];
+    // An explicit declaration always wins: the design leaves some numeric columns left.
+    const optedOut = html.match(/<td[^>]*>8 \/ 2</)![0];
+    // A `render` column projects markup, not the row value, so its type proves nothing.
+    const rendered = html.match(/<td[^>]*><b>Ver<\/b></)![0];
+
+    expect(inferred).toContain("tabular-nums");
+    expect(inferred).toContain("font-mono");
+    expect(inferred).toContain("text-right");
+    expect(formatted).not.toContain("tabular-nums");
+    expect(optedOut).not.toContain("tabular-nums");
+    expect(rendered).not.toContain("tabular-nums");
+
+    // The design's first column is the row's identity (`#`, Equipo, Jugador in every
+    // design table that uses `.num`), which the design never marks `.num` even when its
+    // cells are numbers, as in the standings (`voleytrack-torneos.html`: `<th>#</th>`, then
+    // `<th class="num">PJ</th>`). An explicit `numeric` still overrides that reading.
+    const ranked = renderToStaticMarkup(
+      <DataTable
+        columns={[
+          { header: "#", key: "rank" },
+          { header: "Pts", key: "points" },
+        ]}
+        getRowKey={(row) => row.points}
+        rows={[{ points: 142, rank: 1 }]}
+      />,
+    );
+
+    expect(ranked.match(/<td[^>]*>1</)![0]).not.toContain("tabular-nums");
+    expect(ranked.match(/<td[^>]*>142</)![0]).toContain("tabular-nums");
+    expect(ranked.match(/<th[^>]*>#/)![0]).not.toContain("tabular-nums");
+    expect(ranked.match(/<th[^>]*>Pts/)![0]).toContain("tabular-nums");
+  });
+
+  it("exposes the design's numeric treatment as one whole constant and an inline component", () => {
+    // The triplet is only useful whole: mono digits without `tabular-nums` advance by
+    // glyph width, which is the misalignment the design treatment exists to prevent.
+    // Pinning the exact value makes a partial edit (dropping tabular-nums) fail here.
+    expect(numClasses).toBe("font-mono tabular-nums text-right");
+
+    const html = renderToStaticMarkup(<Num className="text-vt-muted">1.542</Num>);
+
+    expect(html).toContain("1.542");
+    expect(html).toContain("font-mono");
+    expect(html).toContain("tabular-nums");
+    expect(html).toContain("text-right");
+    expect(html).toContain("text-vt-muted");
+  });
+
+  it("keeps the numeric triplet in one owner instead of hand-writing it across the tree", () => {
+    // `numClasses` (Num.tsx) is the single owner of `.num`. A production class string
+    // that spells all three utilities out again is a copy that can silently drift —
+    // and the drift that matters is a missing `tabular-nums`. The walk must find
+    // something, otherwise the guard is passing because it scanned nothing.
+    const candidates = productionTsxFiles(sourceRoot).filter((file) => !file.endsWith("Num.tsx"));
+
+    expect(candidates.length).toBeGreaterThan(0);
+
+    const offenders = candidates.flatMap((file) => {
+      const source = stripComments(readFileSync(file, "utf8"));
+
+      return [...source.matchAll(/["'`]([^"'`]*)["'`]/g)]
+        .map(([, literal]) => literal)
+        .filter((literal) => {
+          const tokens = literal.split(/[\s${}]+/);
+          return (
+            tokens.includes("font-mono") &&
+            tokens.includes("tabular-nums") &&
+            tokens.includes("text-right")
+          );
+        })
+        .map((literal) => `${relative(sourceRoot, file)}: ${literal}`);
+    });
+
+    expect(offenders).toEqual([]);
   });
 
   it("renders semantic badges and the default page header hierarchy", () => {

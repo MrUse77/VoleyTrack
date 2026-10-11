@@ -382,6 +382,32 @@ const PROBE_SOURCE = `(() => {
       };
     });
 
+  // Additive only. The design's numeric table treatment (.num, voleytrack.css:100:
+  // mono family, tabular figures, right alignment) is a property of the shared table
+  // primitive, so this probe reports the resolved typography of the first treated header
+  // cell and the first treated body cell. That makes the end-to-end claim machine-readable:
+  // the JetBrains Mono entry above flips to loaded because a real cell asks for the
+  // family, not because a class name is present, and fontVariantNumeric proves the tabular
+  // figures survived the cascade. Null on a route that renders no treated cell.
+  const describeNumericCell = (el) => {
+    if (!el) return null;
+
+    const cs = getComputedStyle(el);
+
+    return {
+      tag: el.tagName.toLowerCase(),
+      text: (el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40),
+      fontFamily: cs.fontFamily,
+      fontVariantNumeric: cs.fontVariantNumeric,
+      textAlign: cs.textAlign,
+    };
+  };
+  const numericHeader = document.querySelector('th[class*="tabular-nums"]');
+  const numericBody = document.querySelector('td[class*="tabular-nums"]');
+  const numericTreatment = numericHeader || numericBody
+    ? { header: describeNumericCell(numericHeader), body: describeNumericCell(numericBody) }
+    : null;
+
   const expected = __EXPECTED__;
   const innerText = document.body.innerText || "";
   const expectedStrings = expected.map((value) => ({ value, found: innerText.includes(value) }));
@@ -419,6 +445,7 @@ const PROBE_SOURCE = `(() => {
         : { present: false, expectedWidth: 248, matchesDesign: false },
       accent,
       accentControls,
+      numericTreatment,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

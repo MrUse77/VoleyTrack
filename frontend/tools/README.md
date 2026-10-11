@@ -59,6 +59,13 @@ to `showInactive()`).
 - `probes.accent` — computed `color` / `background-color` of the first accent-filled element
   (`aside [aria-current]`, else `button`), reported as resolved `rgb(...)`; the design accent is
   `rgb(255, 140, 66)`.
+- `probes.numericTreatment` — resolved `font-family`, `font-variant-numeric` and `text-align` of
+  the first table cell carrying the design's numeric table treatment
+  (`.num`, `voleytrack.css:100`), reported separately for its `header` (`th`) and `body` (`td`)
+  cells: mono family, `tabular-nums`, right alignment. `null` when the route renders no such
+  cell. Present because it is the one probe that ties the JetBrains Mono entry in
+  `probes.fonts` to an actually rendered cell: the face loads lazily, so a `true`
+  `loadedInFontFaceSet` there is only meaningful together with a treated cell on the page.
 - `probes.content` — `innerText.length`, a text preview, `#root` child count, whether a Vite
   error overlay is present, and whether the expected strings were found.
 - `pixels` — sampled colour diversity of the captured bitmap; `isFlatSingleColor: true` means

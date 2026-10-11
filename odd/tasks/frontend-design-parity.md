@@ -507,13 +507,61 @@ not 20.)
   - **New parity finding for T09:** both routes' nav renders `text-sm font-semibold`, i.e. 14px/600,
     whereas the design's `.nav-item` is **13px/600**. That is a markup-to-design divergence, not a
     cascade problem, and it is now visible precisely because this fix let the utilities take effect.
-- [ ] **T08 — Add the mono tabular numeric treatment.** Introduce the design's `.num`
-  equivalent (mono family, `tabular-nums`, right alignment) and apply it to the numeric columns
-  of the shared table primitive.
+- [x] **T08 — Add the mono tabular numeric treatment.** Done. `frontend/src/components/primitives/Num.tsx`
+  exports one constant, `numClasses = "font-mono tabular-nums text-right"` — the design's `.num`
+  (`voleytrack.css:100`) as a single triplet over tokens — plus a small `Num` component.
+  - **Both a constant and a component, on purpose.** The constant is what a table *cell* needs,
+    because a wrapper `<span>` would make `text-align` inert; the component is the inline path for
+    the per-screen usages later slices own. This follows the repo's existing precedent
+    (`fieldControlClasses` / `fieldTextareaClasses`). Keeping it to one constant means
+    `tabular-nums` cannot be forgotten, and a tree-wide guard fails if any production class string
+    outside `Num.tsx` re-spells all three utilities.
+  - **Applied** to `DataTableColumn` via a new `numeric?: boolean` prop that overrides in both
+    directions. When omitted, the primitive decides: a column after the row's identity column whose
+    values are all numbers and which has no `render`. Applied to both `<th>` and `<td>`, matching the
+    design's `td.num` / `th.num`, and the identity column stays left-aligned because the design never
+    marks a table's first column (`voleytrack-torneos.html`). Not applied to the other design usages;
+    per-screen application belongs to the later slices.
+  - **The font load is proven, and the proof required distinguishing two signals.** On
+    `/tournaments/liga-a1-2026/standings`, `JetBrains Mono` went from `cssCheck: false` to
+    **`cssCheck: true`**, with a header `th "PJ"` and a body `td "6"` both computing
+    `font-family: "JetBrains Mono", ui-monospace, monospace`, `font-variant-numeric: tabular-nums`
+    and `text-align: right`. The important nuance the worker caught: `loadedInFontFaceSet` was
+    **already** true before the change, because `TournamentStandingsPage` renders a mono `Badge`;
+    the meaningful flip is `cssCheck`, a weight-400 query that only resolves once normal-weight mono
+    cells exist. Without that distinction the change would have looked proven when it was not.
+  - Test-first with genuine RED: `expected '<th class="px-4 py-3 font-semibold" scope="col">Pts' to
+    contain 'font-mono'`, then `expected '<td class="px-4 py-3">14<' to contain 'tabular-nums'`. The
+    guard's REDs were also produced with temporary offending code and then removed. Stated honestly:
+    the `Num` / `numClasses` guard test postdates the constant, so no RED is claimed for it.
+  - Suite `49 files / 299 passed`, lint exit 0, build exit 0, ratchet unchanged at 94 / 48 / 9.
+  - **A blind spot this exposed in the parent's own verification habit.** The built stylesheet is
+    **byte-identical** before and after (`index-BEm63GH1.css`, 92,869 bytes) because those utilities
+    were already emitted for other primitives. So "grep the built CSS" cannot distinguish *the class
+    exists in the sheet* from *the class is applied to the markup*. Only computed styles prove the
+    latter. The harness probe was extended additively (`probes.numericTreatment`).
+  - Server hygiene: two Vite servers were already running before the worker started (5173 pid 215105,
+    5174 pid 217688). It started and stopped nothing, used 5173, and confirmed both ports still
+    listen under the same pids.
 - [ ] **T09 — Align the shell with the design.** `layouts/PublicShell.tsx`,
   `layouts/AdminShell.tsx`, `components/navigation/Sidebar.tsx`,
-  `components/primitives/PageHeader.tsx`: 72px topbar, 248px sidebar, accent-driven active
-  state, and the design's 28px page heading.
+  `components/primitives/PageHeader.tsx`. Already measured correct, so do not touch: the topbar is
+  **72px** and the sidebar **248px**, both confirmed by the harness.
+  - **Nav typography is wrong and now visible**: the nav renders `text-sm font-semibold`, i.e.
+    14px/600, while the design's `.nav-item` is **13px/600**. The discrepancy was hidden until T07b
+    put the base rules into a layer; before that every link was forced to 16px by the unlayered rule.
+  - Admin active state does not follow the design. The design's `.nav-item.active` is the accent
+    fill with dark ink; the admin variant currently uses a raised background instead.
+  - The design's page heading is **28px**; the app's is currently 32px in one place and 26px in
+    another.
+  - **The missing nav destinations need a sequencing decision, and the obvious move is wrong.** The
+    design's public sidebar is Dashboard / Partidos / Torneos / Equipos / Jugadores / En vivo, while
+    the app shows Dashboard / Partidos / Torneos / Estadísticas. Adding Equipos, Jugadores and En
+    vivo to the nav **now** would link to `PlaceholderPage` routes, which is worse for a user than a
+    shorter nav. So T09 aligns the nav's *styling* and its active state, and each destination is
+    added by the task that builds its real screen: Equipos in T14, Jugadores in T15, En vivo in T16.
+    Recorded here so the gap is not silently dropped. The app's extra "Estadísticas" entry has no
+    counterpart in the design and needs its own decision in this task.
 - [ ] **T10 — Remove the legacy duplicate component system.** Delete `components/ui/*`,
   `ShellTopbar`/`ShellUtilityBar`/`ShellFooter`, the dead routes `/results`, `/gallery` and
   `/fantasy`, and the orphaned `pages/LoginPage.tsx` / `pages/MatchesPage.tsx`, after migrating
