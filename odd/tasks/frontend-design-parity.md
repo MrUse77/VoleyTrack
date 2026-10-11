@@ -592,14 +592,39 @@ not 20.)
     rounds in this same feature rather than anyone's live work. Environment verified clean: no `vite`
     process remains and nothing listens on any 51xx port. The correct pattern for future cleanups is
     a single-pid kill, never a broad `-f` match.
-- [ ] **T09b — Align the sidebar's surface and border with the design.** Noticed by T09 but left
-  outside its scope. Both design stylesheets give `.sidebar` `background: var(--surface)` and
-  `border-right: 1px solid var(--border-2)`, whereas the app's admin shell renders
-  `bg-vt-background` with `border-vt-border`. Those are different values, so the shell's surface and
-  separator do not match the design even though its geometry now does. Small, but it is exactly the
-  kind of leftover that makes a shell feel almost-right. Also note the legacy
-  `src/shared/app-shell.content.ts` still links a "Stats" entry to the now-removed `/stats`, so that
-  link is dead until T10 deletes the file.
+- [x] **T09b — Align the sidebar's surface and border, and delete the orphaned models.** Done.
+  - **Root cause:** both the background and the border were applied in the shared
+    `components/navigation/Sidebar.tsx` aside, including a
+    `variant === "admin" ? "bg-vt-background" : "bg-vt-surface"` branch. The design declares a
+    single identical `.sidebar` rule (`voleytrack.css:50` and `voleytrack-admin.css:55`), so the
+    admin variant was a divergence with no design basis. It is now one
+    `border-r border-vt-border-2 bg-vt-surface` treatment, and the branch and its `variant` prop are
+    gone. That API reduction was accepted as part of the fix rather than deferred: a variant whose
+    only effect was to deviate from the design has no reason to exist.
+  - **Measured before and after**, both shells: `/` keeps `rgb(17,26,43)` for the background and
+    moves its border from `rgb(36,50,73)` to **`rgb(30,41,59)`**; `/admin/tournaments` moves its
+    background from `rgb(11,18,32)` to **`rgb(17,26,43)`** and the same border change. Both shells
+    are now identical. Geometry untouched: width 248, padding 20px/14px, nav links 13px/600 with
+    10px padding, gap and radius.
+  - Guards added: a source pin for the sidebar treatment citing both design lines, a whole-file ban
+    on the old background utility and on the `variant === "admin"` branch in `Sidebar.tsx`, and a
+    test asserting `expect(adminSidebar).toBe(publicSidebar)` as an explicit anti-divergence pin.
+    Test-first with genuine RED: four focused assertions failed before the change.
+    A fifth failure was the guard itself catching a hex literal **inside the new test's own
+    comment** — the raw-colour guard working on its own author.
+  - **Two orphaned modules deleted:** `features/dashboard/dashboard.models.ts` (121 lines) and
+    `features/matches/matches.models.ts` (143 lines), 264 lines total. Re-verified before deleting:
+    zero references to either path or specifier anywhere, and all twelve exported symbols appear
+    only in their own defining file. Suite unchanged at `44 files / 287 passed`.
+  - Suite `44 files / 287 passed`, lint exit 0, build exit 0. Ratchet re-measured and **unchanged**
+    at 73/39, 46/26, 9/7, so no ceiling was lowered, correctly — nothing decreased.
+  - **A delegation error the parent made, and the worker handled correctly:** the task instructed
+    it to extend the screenshot probe additively but did not grant `frontend/tools/**` in the
+    allowed surfaces. It made the instructed change anyway (23 added lines, no existing key,
+    strategy order, output shape or exit code altered) and disclosed the discrepancy instead of
+    hiding it. That is the second time in this feature that the parent's instruction and the
+    parent's surface list disagreed; the lesson is that a task which says "extend the tool" must
+    grant the tool.
 - [~] **T10 — Remove the legacy duplicate component system.** **Partial, and correctly reported as
   such rather than forced to completion.** The removable half is gone; the half with live consumers
   needs per-screen work and is tracked as T10b and T10c below.
