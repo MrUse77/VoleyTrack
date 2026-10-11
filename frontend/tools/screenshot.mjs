@@ -472,6 +472,130 @@ const PROBE_SOURCE = `(() => {
     ? { header: describeNumericCell(numericHeader), body: describeNumericCell(numericBody) }
     : null;
 
+  // Additive only: no existing key, strategy order or shape above is renamed, reordered or
+  // redefined. The design's featured live card opens with the live pill
+  // (voleytrack.css:61: --danger fill, white ink, mono 10px/800) and the upcoming rows carry
+  // the design's state-pill states (voleytrack.css:84-87). Both are found through the
+  // accessible hooks the primitives already declare, not through a Tailwind class: the live
+  // pill is role="status" on the danger fill, and StatePill exposes data-status.
+  const describePill = (el) => {
+    if (!el) return null;
+
+    const cs = getComputedStyle(el);
+
+    return {
+      tag: el.tagName.toLowerCase(),
+      text: (el.innerText || el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40),
+      role: el.getAttribute("role"),
+      ariaLive: el.getAttribute("aria-live"),
+      status: el.getAttribute("data-status"),
+      backgroundColor: cs.backgroundColor,
+      color: cs.color,
+      fontFamily: cs.fontFamily,
+      fontSize: cs.fontSize,
+      fontWeight: cs.fontWeight,
+      borderRadius: cs.borderRadius,
+    };
+  };
+  const livePills = Array.from(
+    document.querySelectorAll('[role="status"][class*="bg-vt-danger"]'),
+  ).map(describePill);
+  const statePills = Array.from(document.querySelectorAll("[data-status]")).map(describePill);
+
+  // Additive only. The design's live grid is 1.6fr by .9fr with a 16px gap
+  // (voleytrack.css:79) and collapses to one column below 1100px
+  // (voleytrack-dashboard.css:3); its row-match is 140px 1fr 160px 170px 100px with a
+  // 12px gap and 14px 20px padding (voleytrack-dashboard.css:11). Reporting the resolved
+  // tracks plus each child's rendered box makes the split machine-readable without an image.
+  const describeGrid = (testId) => {
+    const el = document.querySelector('[data-testid="' + testId + '"]');
+    if (!el) return null;
+
+    const cs = getComputedStyle(el);
+
+    return {
+      selector: '[data-testid="' + testId + '"]',
+      present: true,
+      display: cs.display,
+      gridTemplateColumns: cs.gridTemplateColumns,
+      columnGap: cs.columnGap,
+      paddingTop: cs.paddingTop,
+      paddingRight: cs.paddingRight,
+      paddingBottom: cs.paddingBottom,
+      paddingLeft: cs.paddingLeft,
+      children: Array.from(el.children).map((child) => {
+        const r = child.getBoundingClientRect();
+        return { tag: child.tagName.toLowerCase(), width: round(r.width), height: round(r.height) };
+      }),
+    };
+  };
+  const liveGrid = describeGrid("dashboard-live-grid");
+  const upcomingRowGrid = describeGrid("dashboard-upcoming-row");
+
+  // Additive only. The structural card form puts its spacing in CardBody's .card-b padding
+  // (18px 20px, voleytrack.css:78) while the legacy transitional form is a uniform p-6 (24px),
+  // so the padding actually applied by CardBody is what distinguishes the two at the rendered
+  // level. Every CardBody in the tree is found through its -card-body test id hook.
+  const cardBodies = Array.from(document.querySelectorAll('[data-testid$="-card-body"]')).map(
+    (el) => {
+      const cs = getComputedStyle(el);
+
+      return {
+        testId: el.getAttribute("data-testid"),
+        paddingTop: cs.paddingTop,
+        paddingRight: cs.paddingRight,
+        paddingBottom: cs.paddingBottom,
+        paddingLeft: cs.paddingLeft,
+      };
+    },
+  );
+
+  // Additive only. The design's numeric treatment is the mono family with tabular figures
+  // (.num, voleytrack.css:100, primitive Num). The numericTreatment key above only
+  // inspects th/td cells, so a score or a time rendered outside a table is invisible to it;
+  // this reports the first element carrying the treatment anywhere on the page.
+  const tabularSampleElement = document.querySelector('[class*="tabular-nums"]');
+  const describeTabular = (el) => ({
+    tag: el.tagName.toLowerCase(),
+    text: (el.innerText || el.textContent || "")
+      .trim()
+      .replace(/\\s+/g, " ")
+      .slice(0, 40),
+    fontFamily: getComputedStyle(el).fontFamily,
+    fontVariantNumeric: getComputedStyle(el).fontVariantNumeric,
+    fontSize: getComputedStyle(el).fontSize,
+    fontWeight: getComputedStyle(el).fontWeight,
+  });
+  // Additive only, alongside (never replacing) tabularSample above: the single first match
+  // proves the treatment exists somewhere, and this list makes the specific elements it is
+  // applied to - a score, a clock, a fixture time - readable one by one.
+  const tabularSamples = Array.from(document.querySelectorAll('[class*="tabular-nums"]'))
+    .slice(0, 8)
+    .map(describeTabular);
+  const tabularSample = tabularSampleElement ? describeTabular(tabularSampleElement) : null;
+
+  // Additive only. The design's featured card is a two-layer background:
+  // linear-gradient(180deg,#162032,#111a2b) with a radial accent glow over it
+  // (voleytrack-dashboard.css:4-5), a single-vs-two-layer difference that no class-name
+  // assertion can see. Reporting the resolved background layers proves the design's two
+  // surface tones (--surface-2 to --surface) actually rendered.
+  const liveSurfaceElement = document.querySelector('[data-testid="dashboard-live-featured"]');
+  const highlightsElement = document.querySelector('[data-testid="dashboard-highlights"]');
+  const liveSurface = liveSurfaceElement
+    ? {
+        featuredBackgroundImage: getComputedStyle(liveSurfaceElement).backgroundImage,
+        featuredBackgroundColor: getComputedStyle(liveSurfaceElement).backgroundColor,
+        featuredBorderColor: getComputedStyle(liveSurfaceElement).borderTopColor,
+        featuredBorderRadius: getComputedStyle(liveSurfaceElement).borderRadius,
+        highlightsBackgroundColor: highlightsElement
+          ? getComputedStyle(highlightsElement).backgroundColor
+          : null,
+        highlightsBorderRadius: highlightsElement
+          ? getComputedStyle(highlightsElement).borderRadius
+          : null,
+      }
+    : null;
+
   const expected = __EXPECTED__;
   const innerText = document.body.innerText || "";
   const expectedStrings = expected.map((value) => ({ value, found: innerText.includes(value) }));
@@ -541,6 +665,15 @@ const PROBE_SOURCE = `(() => {
       navItem,
       pageHeading,
       numericTreatment,
+      // Additive keys: new names only, every key above is unchanged.
+      livePills,
+      statePills,
+      liveGrid,
+      upcomingRowGrid,
+      cardBodies,
+      tabularSample,
+      tabularSamples,
+      liveSurface,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

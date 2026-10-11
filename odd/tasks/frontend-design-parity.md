@@ -769,7 +769,68 @@ readable against the completed record above; the carried-over items it lists wer
 
 ### Slice 2 — Public (spectator) screens
 
-- [ ] **T11 — Dashboard parity.** Hero-first live match card, "Próximos destacados / HOY" rail.
+- [x] **T11 — Dashboard parity.** Done: the screen is now the design's three regions, and it is the
+  first visible design work of the whole feature.
+  - Structure: page head → `PageHeader`; the live grid → `grid min-[1100px]:grid-cols-[1.6fr_0.9fr]`;
+    the featured live match → `Card padded={false}` with `CardBody`, `LivePill`, `Chip`, `Num` for
+    the clock and scores, a 4px decorative progress rail and an accent link wearing the button
+    treatment; the highlights rail → `Card` with `CardHeader` ("Próximos destacados" plus a mono
+    `HOY`) and `CardBody` holding two tiles and a full-width dashed ghost link; the upcoming matches →
+    a `Card` with a head row and a real `<ul>` of rows using `StatePill` and `Num`.
+  - **Measured before and after**, which is the point of the harness. Before: heading "Dashboard
+    público", zero live pills, zero state pills, a 716/364 grid at 24px gap, no `CardBody` at all.
+    After: heading **"Dashboard espectador"** at 28px/900 with line-height 28px; **one live pill**
+    with `role="status"` and `aria-live="polite"` in mono 10px/800 on `rgb(239,68,68)`; **three
+    state pills**; the grid at **696.31 / 391.69 = exactly 1.6 / 0.9** with a 16px gap; `CardBody`
+    at 18px 20px; the score `2 : 1` in **JetBrains Mono 36px/800 tabular-nums**; row grid
+    140/444/160/170/100 with 12px gap and 14px 20px padding; and the featured card's radial accent
+    glow over the `#162032 → #111a2b` gradient.
+  - Copy removed because the design has no counterpart: a four-metric block, its "Partidos en vivo"
+    heading, "Última acción", an app-only "Confirmado", and the whole design-less coverage block
+    that lived in the sidebar (`COBERTURA`, "3 partidos en vivo", "Datos actualizados ahora").
+    Copy adopted from the design with line citations: the heading and description, "Próximos
+    destacados" / "HOY", "Próximos partidos" / "Ver todos", "Ver partido en vivo →", and the
+    team and best-of lines. The removal is proven at the rendered level: the captured `innerText`
+    went from containing `COBERTURA 3 partidos en vivo Datos actualizados ahora` to not containing
+    the string at all, and the two assertions that pinned it were **inverted into absence pins**,
+    which is the right shape for protecting a deletion.
+  - **Three corrections to the parent's own instructions, each decided by the design:**
+    1. I described the highlights rail's date-venue line as mono. `dashboard.html:57` declares only
+       margin, colour and 11px, so it inherits Inter. The worker followed the design over the prompt.
+    2. I attributed the design-less coverage copy to the dashboard; it actually lived in
+       `components/navigation/Sidebar.tsx`, verified by the parent with a grep before authorizing its
+       removal. My attribution was simply wrong.
+    3. I mandated `CardBody` while the prototype uses one-off inline padding for two boxes, so those
+       boxes are 2px and 4px/6px narrower than the prototype. Accepted deliberately and documented in
+       the card comment rather than forking the card system for it, since the agreed plan is to get
+       structure right across the screens first and polish afterwards.
+  - **Judgement the parent rates highly:** the design's call to action reads "Ver los 16 partidos →",
+    and our fixtures hold ten. The worker rendered "Ver todos los partidos →" and refused to print a
+    false count to match the prototype's wording, noting the number can return when a real total
+    exists. It also resolved a genuine inconsistency in the design itself — the same card uses two
+    mark fills with no rule — by adopting `--blue`, the design's own default team-mark fill in other
+    screens, rather than inventing a rule.
+  - New primitive surface, approved: `components/primitives/buttonClasses.ts` exporting the button
+    treatments so a link can wear `.btn` without duplicating the classes, with `Button` rendering
+    through the same module and a drift test between them; plus an optional `size` prop for the
+    design's 32px form. The design itself writes `<a class="btn accent">`, so this is the honest
+    shape and it prevents per-screen class duplication.
+  - `PUBLIC_DASHBOARD.metrics` was removed once it had zero consumers, and the three fixture fields
+    added from the design — `bestOf`, `clockLabel`, `refereeName` — are explicitly labelled
+    **PROTOTYPE DATA, NOT REAL**, to be replaced when the backend exposes real values. Worth noting:    the repo's own `src/boundary.ts` guard rejects the words `api` and `http` even inside comments,
+    so the label had to be reworded.
+  - Ratchets lowered as required: legacy-`Card` ceiling 66/21 → **62/20** with the all-`Card` floor
+    raised 66 → 70, and `vt-panel` 73/39 → **71/38**. Every `CardBody` usage moved a card onto the
+    structural form, which is exactly what the ratchet was for.
+  - Suite `44 files / 289 passed` in 3.50s, lint exit 0, build exit 0. One screenshot run exited 1
+    with no report while Vite was still compiling the first request; the immediate re-run was clean
+    and is the recorded measurement. The dev server was stopped with a single-PID kill and the port
+    released.
+  - Left for the shell work: `PublicShell.tsx` still passes the now-ignored `showCoverage` prop, which
+    should be dropped. Also found: `router.test.tsx` pinned the removed dashboard copy and a
+    tournament link that only the deleted metrics card rendered — the assertion was wrong, not the
+    screen, and it was updated with an explicit existence assertion before clicking so it cannot
+    silently become a no-op.
 - [ ] **T12 — Matches parity.** Filter panel, 6-card grid, state pills.
 - [ ] **T13 — Tournaments parity.** Card grid with type filters; detail with Clasificación TOP 5,
   Llaves de playoffs, Equipos participantes and the bracket.

@@ -376,12 +376,6 @@ const riverBolivarUpcomingMatch = Object.freeze({
 } satisfies MatchFixture);
 
 export const PUBLIC_DASHBOARD = Object.freeze({
-  metrics: Object.freeze([
-    Object.freeze({ label: "EN VIVO", value: "3", detail: null, href: null }),
-    Object.freeze({ label: "PRÓXIMOS", value: "12", detail: "7 días", href: null }),
-    Object.freeze({ label: "TORNEOS", value: "4", detail: "Activos", href: `/tournaments/${ligaRosarina.id}` }),
-    Object.freeze({ label: "PUNTOS REGISTRADOS", value: "1.248", detail: "Semana", href: null }),
-  ]),
   live: Object.freeze({
     featured: Object.freeze({
       match: featuredDashboardLiveMatch,
@@ -389,6 +383,17 @@ export const PUBLIC_DASHBOARD = Object.freeze({
       homeSetsWon: riverBocaDashboardVisualSnapshot.homeSetsWon,
       awaySetsWon: riverBocaDashboardVisualSnapshot.awaySetsWon,
       latestAction: "Ataque punto",
+      // PROTOTYPE DATA — NOT REAL. The design's featured live card carries three values the
+      // match record itself does not: a match clock, the officiating referee and the match
+      // format (voleytrack-dashboard.html:51-54 — "21:42 · Árbitro: P. López",
+      // "al mejor de 5"). They are the design prototype's own values, copied here so the
+      // screen can render its structure; public.test.ts pins them only so the shape cannot
+      // drift. They must be replaced by real data (a clock, a referee assignment and the
+      // tournament's format) as soon as the backend exposes them, and must not be read as
+      // facts about this match.
+      bestOf: 5,
+      clockLabel: "21:42",
+      refereeName: "P. López",
       visualSnapshot: riverBocaDashboardVisualSnapshot,
     }),
     compact: Object.freeze([
