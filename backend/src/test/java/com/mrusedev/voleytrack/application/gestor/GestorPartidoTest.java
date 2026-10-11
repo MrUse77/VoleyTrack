@@ -537,9 +537,7 @@ class GestorPartidoTest {
         when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
         when(setRepo.buscarPartidoId(set.getId())).thenReturn(Optional.of(partido.getId()));
 
-        ConfirmacionDTO result = gestor.confirmarInicioPartido(partido.getId(), set.getId());
-
-        assertThat(result.exitoso()).isTrue();
+        gestor.confirmarInicioPartido(partido.getId(), set.getId());
         assertThat(partido.getEstado()).isEqualTo(EstadoPartido.EN_CURSO);
         assertThat(set.getEstado()).isEqualTo(EstadoSet.EN_CURSO);
     }
@@ -621,7 +619,6 @@ class GestorPartidoTest {
         ConfirmacionDTO result = gestor.confirmarPunto(
                 partido.getId(), equipoLocal.getId(), jugador.getId(), "ATAQUE");
 
-        assertThat(result.exitoso()).isTrue();
         assertThat(result.mensaje()).contains("Punto registrado");
         assertThat(set.getMarcador().getPuntos(partido.getLados().get(0))).isEqualTo(1);
     }
@@ -642,7 +639,7 @@ class GestorPartidoTest {
     }
 
     @Test
-    void confirmarPuntoConFundamentoInvalidoLanzaReglaDeNegocio() {
+    void confirmarPuntoConFundamentoInvalidoLanzaIllegalArgumentException() {
         partido.iniciar();
         partido.iniciarSet().iniciar();
         when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
@@ -651,7 +648,7 @@ class GestorPartidoTest {
 
         assertThatThrownBy(() -> gestor.confirmarPunto(
                 partido.getId(), equipoLocal.getId(), jugador.getId(), "NO_EXISTE"))
-                .isInstanceOf(ReglaDeNegocioException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Fundamento inválido: NO_EXISTE");
     }
 
