@@ -2,6 +2,7 @@
   "name": "voleytrack",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "pnpm@12.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +12,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-query": "^5.97.0",
     "@tanstack/react-router": "^1.168.13",

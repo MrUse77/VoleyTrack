@@ -129,20 +129,45 @@ guards only one file against this token, so the migration was left half-applied.
     repo's `-vt-` convention because Tailwind v4 namespaces `--radius-*` and `--shadow-*`. The
     design's CSS gives no variable name for the shadow; it appears only in the derived
     `brand-spec.md`.
-- [ ] **T03b — Actually load the design fonts.** Discovered while doing T03: the app declares
-  `--font-sans: "Inter", system-ui, sans-serif` but **never loads Inter**. There is no
-  `@font-face`, no Google Fonts link, no `@fontsource` package and no font reference in
-  `index.html`, so the app has been rendering the system font. The design's typography (Inter
-  400-900 plus JetBrains Mono) is one of its five stated visual rules, so this is a real parity
-  gap and it is **pre-existing**.
-  Decision taken by the product owner: **self-host with Fontsource**.  Add
-  `@fontsource/inter` and `@fontsource/jetbrains-mono` and import the weights the design uses
-  (Inter 400/500/600/700/800/900, JetBrains Mono 500/700). No third-party runtime fetch, works
-  offline.
-  Files: `frontend/package.json`, `frontend/src/index.css`, plus a test asserting the families
-  resolve. Evidence: the emitted build must contain real font files and an `@font-face` block,
-  not just the family name.
-  Blocked-on nothing; lands in Slice 1 because every screen depends on it.
+- [x] **T03b — Load the design fonts and pin the package manager.** Done.
+  - Pre-existing parity gap: the app declared `"Inter"` in `--font-sans` but **never loaded it** —
+    no `@font-face`, no Google Fonts link, no `@fontsource` package, no font reference in
+    `index.html` — so it had been rendering the system font, while the design pack loads Inter
+    400-900 plus JetBrains Mono and its brand spec calls that typography part of the system.
+  - Product-owner decision: self-host with Fontsource, and make **pnpm** the canonical manager.
+  - Change: `packageManager: pnpm@12.6.0` in `frontend/package.json`; `frontend/bun.lock` deleted
+    with `git rm`; `@fontsource/inter` and `@fontsource/jetbrains-mono` added; eight `latin-*`
+    entry points imported into `frontend/src/index.css` (Inter 400/500/600/700/800/900, JetBrains
+    Mono 500/700); `tokens.css` deliberately untouched, since the existing family names start
+    resolving once real `@font-face` rules exist.
+  - The `latin-*` entry points were chosen with evidence: `grep -c @font-face` gives 1 block for
+    `latin-400.css` versus 7 for `400.css`, which also ships cyrillic, greek and vietnamese.
+  - Test-first with observed RED then GREEN: the new `frontend/src/styles/fonts.test.ts` failed
+    with `2 failed | 1 passed (3)` before the imports existed, then passed `3 passed (3)`. Its
+    discriminating power was checked by temporarily removing one import (`1 failed | 2 passed`)
+    and restoring it byte-identically.
+  - Evidence that the fonts are genuinely in the build, not just declared: 16 font files emitted
+    into `dist/assets/` — 8 `.woff2` (188,784 B) plus 8 `.woff` (242,952 B), 431,736 B total —
+    with 8 `@font-face` blocks (6 `Inter`, 2 `JetBrains Mono`) and every `src` pointing at a local
+    asset. No third-party font origin remains anywhere in the build.
+  - Suite `49 files / 278 passed`, exit 0; `pnpm run lint` exit 0 with zero diagnostics;
+    `pnpm run build` exit 0, 1955 modules.
+  - Correction to the parent's own arithmetic: the predicted "48 files / 276 passed" was wrong — a
+    new test file adds a file and `fonts.test.ts` holds three tests, so 49 files and 278 tests is
+    the correct expected value.
+  - Caveat on one guard, honestly reported rather than papered over: the requested
+    `git diff frontend/pnpm-lock.yaml` guard was **unexecutable**, because that lockfile was
+    untracked and therefore had no diff baseline. The substitute evidence was pnpm reporting
+    `+2` with no updated entries, snapshot entries going 332 to 334, and only the two
+    `@fontsource` directories in `node_modules/.pnpm` carrying a new mtime. That guard becomes
+    executable from now on, since the lockfile is being committed.
+- [ ] **T03c — Trim the font payload.** Raised by T03b: the eight legacy `.woff` fallbacks are
+  242,952 B, **56% of the 431,736 B added**, and no browser that supports the app's modern stack
+  needs them over `.woff2`. Investigate and decide between the Fontsource variable-font packages
+  (a single weight-axis file per subset instead of six static weights), a custom `@font-face`
+  block that keeps only `.woff2`, or leaving it as is. Report the real byte trade-off with the
+  installed packages' actual contents, then decide. Optimisation only: the current state works
+  and is verified, so this is not a correctness task and must not regress the fonts.
 - [ ] **T04 — Repair the broken accent-contrast utility.** Replace the 20 `text-vt-canvas`
   occurrences across 17 files with `text-vt-background`, and widen the guard in
   `styles/tokens.test.ts` so no source file can introduce the undefined token again. Test-first:
@@ -276,8 +301,16 @@ guard T10 relies on to prove the dead routes are gone. It is therefore repaired 
 
 - Node `v24.11.1` (repo `engines: ~24`).
 - Branch `feature/frontend-init`, upstream `origin/feature/frontend-init`, default `origin/main`.
-- `frontend/dist/`, `node_modules/` and `frontend/pnpm-lock.yaml` are **not** covered by
+- **Package manager: pnpm**, decided by the product owner and pinned in `frontend/package.json` as
+  `packageManager: pnpm@<local version>` (the local toolchain is 12.6.0). The stale tracked
+  `frontend/bun.lock` was deleted and the previously untracked `frontend/pnpm-lock.yaml` becomes
+  the tracked lockfile.
+- `frontend/dist/`, `node_modules/` and `frontend/pnpm-lock.yaml` were **not** covered by
   `.gitignore`, so commits must stage explicit paths and must never use `git add -A`.
+- Commands recorded earlier in this document were genuinely run with `bun`/`bunx` at the time.
+  They are kept verbatim as history rather than rewritten; from T03b onward pnpm is canonical.
+  Historical artifacts elsewhere (`openspec/**`, `frontend/design/voleytrack-webapp-uiux-audit.md`)
+  still say `bun run`/`bunx` and are deliberately left as records of their own period.
 
 ## Risks
 
