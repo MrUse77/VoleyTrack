@@ -184,6 +184,21 @@ class GestorPartidoTest {
         verifyNoInteractions(setRepo);
     }
 
+    @Test
+    void crearSetConTopeDeSetsLanzaReglaDeNegocioExceptionYSinPersistir() {
+        partido.iniciar();
+        for (int i = 0; i < 5; i++) {
+            partido.iniciarSet();
+        }
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+
+        assertThatThrownBy(() -> gestor.crearSet(partido.getId()))
+                .isInstanceOf(ReglaDeNegocioException.class)
+                .hasMessage("Ya se alcanzó el máximo de sets");
+
+        verifyNoInteractions(setRepo);
+    }
+
     // ── crearAlineacion ──
 
     @Test
@@ -330,6 +345,22 @@ class GestorPartidoTest {
         verify(setRepo, never()).guardar(any(), any());
     }
 
+    @Test
+    void seleccionarEquipoSaqueInicialConEquipoDeOtroPartidoLanzaRecursoNoEncontradoYSinPersistir() {
+        SetPartido set = partido.iniciarSet();
+        Equipo ajeno = new Equipo(UUID.randomUUID(), "Ajeno", "X");
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(setRepo.buscarPartidoId(set.getId())).thenReturn(Optional.of(partido.getId()));
+        when(equipoRepo.buscarPorId(ajeno.getId())).thenReturn(Optional.of(ajeno));
+
+        assertThatThrownBy(() ->
+                gestor.seleccionarEquipoSaqueInicial(partido.getId(), set.getId(), ajeno.getId()))
+                .isInstanceOf(RecursoNoEncontradoException.class)
+                .hasMessage("Equipo no encontrado en el set: " + ajeno.getId());
+
+        verify(setRepo, never()).guardar(any(), any());
+    }
+
     // ── guardarAlineacion ──
 
     @Test
@@ -447,6 +478,50 @@ class GestorPartidoTest {
                 equipoLocal.getId(), List.of(new JugadorEnPosicion(jugador.getId(), 1))))
                 .isInstanceOf(RecursoNoEncontradoException.class)
                 .hasMessage("Jugador no encontrado: " + jugador.getId());
+
+        verify(setRepo, never()).guardar(any(), any());
+    }
+
+    @Test
+    void guardarAlineacionConMasDeSieteTitularesLanzaReglaDeNegocioExceptionYSinPersistir() {
+        SetPartido set = partido.iniciarSet();
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(setRepo.buscarPartidoId(set.getId())).thenReturn(Optional.of(partido.getId()));
+        when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
+        when(jugadorRepo.buscarPorId(jugador.getId())).thenReturn(Optional.of(jugador));
+
+        List<JugadorEnPosicion> ochoTitulares = List.of(
+                new JugadorEnPosicion(jugador.getId(), 1),
+                new JugadorEnPosicion(jugador.getId(), 2),
+                new JugadorEnPosicion(jugador.getId(), 3),
+                new JugadorEnPosicion(jugador.getId(), 4),
+                new JugadorEnPosicion(jugador.getId(), 5),
+                new JugadorEnPosicion(jugador.getId(), 6),
+                new JugadorEnPosicion(jugador.getId(), 7),
+                new JugadorEnPosicion(jugador.getId(), 8));
+
+        assertThatThrownBy(() -> gestor.guardarAlineacion(partido.getId(), set.getId(),
+                equipoLocal.getId(), ochoTitulares))
+                .isInstanceOf(ReglaDeNegocioException.class)
+                .hasMessage("La alineación no puede tener más de 7 jugadores (6 + líbero)");
+
+        verify(setRepo, never()).guardar(any(), any());
+    }
+
+    @Test
+    void guardarAlineacionConEquipoDeOtroPartidoLanzaRecursoNoEncontrado() {
+        SetPartido set = partido.iniciarSet();
+        Equipo ajeno = new Equipo(UUID.randomUUID(), "Ajeno", "X");
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(setRepo.buscarPartidoId(set.getId())).thenReturn(Optional.of(partido.getId()));
+        when(equipoRepo.buscarPorId(ajeno.getId())).thenReturn(Optional.of(ajeno));
+
+        assertThatThrownBy(() -> gestor.guardarAlineacion(partido.getId(), set.getId(),
+                ajeno.getId(), List.of(new JugadorEnPosicion(jugador.getId(), 1))))
+                .isInstanceOf(RecursoNoEncontradoException.class)
+                .hasMessage("Equipo no encontrado en el set: " + ajeno.getId());
 
         verify(setRepo, never()).guardar(any(), any());
     }
