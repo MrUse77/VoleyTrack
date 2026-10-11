@@ -286,6 +286,20 @@ class GestorPartidoTest {
         verify(setRepo, never()).guardar(any(), any());
     }
 
+    @Test
+    void agregarJugadorAAlineacionSinAlineacionParaElEquipoLanzaRecursoNoEncontrado() {
+        SetPartido set = partido.iniciarSet();
+        when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
+
+        assertThatThrownBy(() ->
+                gestor.agregarJugadorAAlineacion(set.getId(), equipoLocal.getId(), jugador.getId(), 1))
+                .isInstanceOf(RecursoNoEncontradoException.class)
+                .hasMessage("Alineación no encontrada para el equipo: " + equipoLocal.getId());
+
+        verify(setRepo, never()).guardar(any(), any());
+    }
+
     // ── seleccionarEquipoSaqueInicial ──
 
     @Test
