@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Admin · Crear equipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack-admin.css" />
+</head>
+<body>
+<div id="app" class="app" data-od-id="app-shell-admin">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+        <div class="avatar">A</div>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+    <aside class="sidebar">
+      <div class="nav-group">
+        <p class="nav-title">Admin · Gestión</p>
+        <a class="nav-item" href="voleytrack-admin-gestion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M20 21a8 8 0 1 0-16 0"/></svg> Staff & gestión</a>
+        <a class="nav-item" href="voleytrack-admin-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg> Partidos</a>
+        <a class="nav-item active" href="voleytrack-admin-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" href="voleytrack-admin-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" href="voleytrack-admin-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+      </div>
+      <a class="nav-item" style="margin-top:10px;color:var(--muted)" href="voleytrack-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Cerrar sesión</a>
+    </aside>
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1>Crear equipo</h1>
+          <p>Registra un club con su entrenador y su plantel de jugadores.</p>
+        </div>
+        <div class="head-actions">
+          <a class="btn ghost" href="voleytrack-admin-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg> Volver</a>
+        </div>
+      </div>
+
+      <div class="card" data-od-id="info-club">
+        <div class="card-h">Datos del club <small>OBLIGATORIO</small></div>
+        <div class="card-b">
+          <div class="form-grid">
+            <div class="field full">
+              <label>Nombre del club</label>
+              <input type="text" id="club-nombre" placeholder="Ej: UPCN San Juan" />
+            </div>
+            <div class="field">
+              <label>Entrenador</label>
+              <input type="text" id="club-entrenador" placeholder="Ej: Juan Pérez" />
+            </div>
+            <div class="field">
+              <label>Escudo</label>
+              <label class="file-field">
+                <span class="thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+                <span><b>Subir escudo</b><p>PNG, JPG o SVG · máx 2 MB</p></span>
+                <input type="file" id="club-escudo" accept=".png,.jpg,.jpeg,.svg" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px" data-od-id="plantel">
+        <div class="card-h">Plantel <small>JUGADORES</small></div>
+        <div class="card-b">
+          <div class="squad-list" id="squad-list">
+            <div class="squad-empty" id="squad-empty">Todavía no cargaste jugadores. Usá "+ Agregar jugador" para incorporar el plantel.</div>
+          </div>
+          <div style="margin-top:14px"><button class="btn ghost" onclick="openPlayerModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Agregar jugador</button></div>
+        </div>
+      </div>
+
+      <p class="error-msg" id="error-msg"></p>
+
+      <div class="form-actions" style="max-width:100%">
+        <a class="btn ghost" href="voleytrack-admin-equipos.html">Cancelar</a>
+        <button class="btn accent" onclick="crearEquipo()">Crear</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal Crear jugador -->
+<div class="modal-overlay" id="player-overlay" role="dialog" aria-modal="true" aria-labelledby="player-title">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="player-title">Crear jugador</h2>
+        <small>Integrante del plantel</small>
+      </div>
+      <button class="modal-close" aria-label="Cerrar" onclick="closePlayerModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full">
+          <label>Nombre</label>
+          <input type="text" id="player-nombre" placeholder="Ej: Fernández, M." />
+        </div>
+        <div class="field">
+          <label>Dorsal</label>
+          <input type="number" id="player-dorsal" placeholder="7" min="1" />
+        </div>
+        <div class="field">
+          <label>Posición</label>
+          <select id="player-pos">
+            <option>Punta</option><option>Central</option><option>Opuesto</option><option>Armador</option><option>Líbero</option>
+          </select>
+        </div>
+      </div>
+      <p class="error-msg" id="player-error"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closePlayerModal()">Cancelar</button>
+      <button class="btn accent" onclick="addPlayer()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const equiposExistentes = ['UPCN San Juan','Bolívar Vóley','Ciudad Vóley','Boca Juniors','River Plate'];
+let squad = [];
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2200); }
+function showError(msg){ document.getElementById('error-msg').textContent = msg; }
+function showPlayerError(msg){ document.getElementById('player-error').textContent = msg; }
+
+/* escudo: mostrar preview */
+document.getElementById('club-escudo').addEventListener('change', function(e){
+  const thumb = document.querySelector('.file-field .thumb');
+  if(e.target.files && e.target.files[0]){
+    const url = URL.createObjectURL(e.target.files[0]);
+    thumb.innerHTML = '<img src="'+url+'" alt="escudo" />';
+    document.querySelector('.file-field b').textContent = e.target.files[0].name;
+  }
+});
+
+/* modal crear jugador */
+function openPlayerModal(){
+  document.getElementById('player-nombre').value = '';
+  document.getElementById('player-dorsal').value = '';
+  document.getElementById('player-pos').selectedIndex = 0;
+  showPlayerError('');
+  document.getElementById('player-overlay').classList.add('open');
+}
+function closePlayerModal(){ document.getElementById('player-overlay').classList.remove('open'); }
+function addPlayer(){
+  const nombre = document.getElementById('player-nombre').value.trim();
+  const dorsal = document.getElementById('player-dorsal').value.trim();
+  const pos = document.getElementById('player-pos').value;
+  if(!nombre){ showPlayerError('Ingresá el nombre del jugador'); return; }
+  if(!dorsal){ showPlayerError('Ingresá el dorsal'); return; }
+  squad.push({nombre, dorsal, pos});
+  renderSquad();
+  closePlayerModal();
+  toast('Jugador agregado');
+}
+function removePlayer(i){ squad.splice(i,1); renderSquad(); }
+function renderSquad(){
+  const list = document.getElementById('squad-list');
+  const empty = document.getElementById('squad-empty');
+  if(squad.length === 0){ empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  list.querySelectorAll('.squad-item').forEach(n=> n.remove());
+  squad.forEach((p,i)=>{
+    const el = document.createElement('div');
+    el.className = 'squad-item';
+    el.innerHTML = '<span class="num-badge">'+p.dorsal+'</span><div><b>'+p.nombre+'</b><small>'+p.pos+' · Dorsal #'+p.dorsal+'</small></div><button class="squad-remove" aria-label="Quitar" onclick="removePlayer('+i+')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>';
+    list.appendChild(el);
+  });
+}
+
+/* crear equipo: validaciones FA-01 / FA-02 */
+function crearEquipo(){
+  const nombre = document.getElementById('club-nombre').value.trim();
+  const entrenador = document.getElementById('club-entrenador').value.trim();
+  // FA-02: nombre duplicado
+  if(equiposExistentes.some(e => e.toLowerCase() === nombre.toLowerCase())){
+    showError('Ya existe un equipo con ese nombre');
+    return;
+  }
+  // FA-01: datos incompletos
+  if(!nombre || !entrenador){
+    showError('Completá el nombre del club y el entrenador');
+    return;
+  }
+  showError('');
+  // SU-6: registra con estado "Activo"
+  toast('Equipo creado con estado Activo');
+  setTimeout(()=> location.href='voleytrack-admin-equipos.html', 600);
+}
+
+document.getElementById('player-overlay').addEventListener('click', e=>{ if(e.target.id==='player-overlay') closePlayerModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ if(document.getElementById('player-overlay').classList.contains('open')) closePlayerModal(); } });
+</script>
+</body>
+</html>

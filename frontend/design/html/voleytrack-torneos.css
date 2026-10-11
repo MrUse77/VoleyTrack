@@ -1,0 +1,105 @@
+/* VoleyTrack — sección TORNEOS · estilos propios */
+
+.tournament-filters{max-height:0;overflow:hidden;opacity:0;visibility:hidden;margin-bottom:0;border:1px solid transparent;border-radius:var(--radius);background:var(--surface);transition:max-height .22s ease,opacity .18s ease,margin-bottom .22s ease,border-color .18s ease,visibility 0s linear .22s}
+.tournament-filters.open{max-height:360px;opacity:1;visibility:visible;margin-bottom:16px;border-color:var(--border);transition:max-height .22s ease,opacity .18s ease,margin-bottom .22s ease,border-color .18s ease,visibility 0s}
+.tournament-filters-inner{padding:18px 20px}
+.tournament-filter-grid{display:grid;grid-template-columns:repeat(3,minmax(140px,1fr));gap:12px}
+.tournament-filter-field label{display:block;margin-bottom:7px;color:#e2e8f0;font-size:12px;font-weight:700}
+.tournament-filter-field select{width:100%;min-height:44px;padding:0 36px 0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg);font:600 13px var(--font-body);outline:none}
+.tournament-filter-field select:hover{border-color:#2d3d5f}
+.tournament-filter-field select:focus-visible,.tournament-filters .btn:focus-visible,#tournaments-filter-button:focus-visible{border-color:var(--accent);outline:3px solid var(--accent-soft);outline-offset:2px}
+.tournament-filter-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border-2)}
+.tournament-results-count{margin:0;color:var(--muted);font-family:var(--font-mono);font-size:11px;font-weight:700}
+.tournament-results-count strong{color:var(--fg)}
+.tournament-filters .btn,#tournaments-filter-button{min-height:44px}
+.tournament-empty{display:none;padding:42px 20px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);text-align:center}
+.tournament-empty.visible{display:block}
+.tournament-empty h2{margin:0;font-size:16px}
+.tournament-empty p{margin:6px 0 0;color:var(--muted);font-size:13px}
+@media(max-width:1100px){.tournament-filter-grid{grid-template-columns:repeat(2,minmax(140px,1fr))}.tournament-filters.open{max-height:520px}}
+@media(max-width:560px){.tournament-filter-grid{grid-template-columns:1fr}.tournament-filter-footer{align-items:stretch;flex-direction:column}.tournament-filter-footer .btn{justify-content:center}.tournament-filters.open{max-height:760px}}
+@media(prefers-reduced-motion:reduce){.tournament-filters,.tournament-filters.open{transition:none}}
+
+/* ===== Torneos clickeables ===== */
+[data-view="tournaments"] .cards-grid > .card{cursor:pointer;position:relative;transition:border-color .15s ease,transform .15s ease,box-shadow .15s ease}
+[data-view="tournaments"] .cards-grid > .card:hover{border-color:color-mix(in oklch,var(--accent) 46%,var(--border));transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.35)}
+[data-view="tournaments"] .cards-grid > .card:focus-visible{outline:3px solid var(--accent-soft);outline-offset:2px}
+[data-view="tournaments"] .cards-grid > .card[aria-disabled="true"]{cursor:default;opacity:.6}
+[data-view="tournaments"] .cards-grid > .card[aria-disabled="true"]:hover{transform:none;box-shadow:none;border-color:var(--border)}
+.card-arrow{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:999px;border:1px solid var(--border-2);background:var(--bg);display:grid;place-items:center;color:var(--muted);transition:.15s}
+[data-view="tournaments"] .cards-grid > .card:hover .card-arrow{background:var(--accent);border-color:var(--accent);color:#0b1220}
+
+/* ===== Vista detalle de torneo ===== */
+.tor-detail-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+@media(max-width:1200px){.tor-detail-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.tor-detail-kpis{grid-template-columns:1fr}}
+.tor-kpi{padding:18px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border)}
+.tor-kpi-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.tor-kpi-value{font-size:32px;font-weight:900;letter-spacing:-0.02em;line-height:1;margin:8px 0 6px;font-variant-numeric:tabular-nums}
+.tor-kpi-sub{font-size:12px;color:var(--muted)}
+.tor-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:900px){.tor-detail-grid{grid-template-columns:1fr}}
+.tor-detail-grid--single{grid-template-columns:1fr}
+.info-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-2);font-size:13px}
+.info-row:last-child{border-bottom:0}
+.info-row b{font-weight:700}
+.info-row span{color:var(--muted)}
+.tor-section{min-width:0;margin-top:16px}
+.tor-competition{overflow:hidden}
+.tor-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0;padding:12px 18px;border-bottom:1px solid var(--border-2);background:var(--surface-2)}
+.tor-tab{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.tor-tab:hover{color:var(--fg);border-color:#2d3d5f}
+.tor-tab.active{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tor-tab:focus-visible,.tor-stats .filter:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.tor-panel{display:none}
+.tor-panel.active{display:block}
+.tor-panels,.tor-tab-panel{min-width:0}
+.tor-tab-panel .card-h,.tor-section>.card-h{padding:16px 18px;border-bottom:1px solid var(--border-2)}
+.tor-tab-panel{padding:0}
+.tor-empty{padding:34px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+/* ===== Bracket de llaves (Copa / Playoffs) ===== */
+.tor-competition .bracket-intro{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border-2);background:var(--bg)}
+.tor-competition .bracket-intro p{margin:0;color:var(--muted);font-size:12px}
+.bracket-status{flex-shrink:0;padding:5px 8px;border:1px solid color-mix(in oklch,var(--accent) 55%,var(--border));border-radius:999px;background:var(--accent-soft);color:#ffd0ad;font-family:var(--font-mono);font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.bracket-scroll{width:100%;max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-inline:contain;padding:18px;scrollbar-color:var(--border) transparent}
+.bracket-scroll:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.bracket{display:grid;align-items:start;gap:28px;width:max-content;min-width:100%;padding-bottom:4px}
+.bracket--four-rounds{grid-template-columns:repeat(4,230px)}
+.bracket--three-rounds{grid-template-columns:repeat(3,230px)}
+.bracket-round{display:flex;flex-direction:column;gap:12px;min-width:230px}
+.bracket-round h3{height:20px;margin:0 0 4px;color:var(--muted);font-family:var(--font-mono);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.bracket-match{min-height:82px;padding:9px 10px 8px;border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;background:var(--surface-2)}
+.bracket-match small{display:block;margin-bottom:5px;color:var(--muted-2);font-family:var(--font-mono);font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.bracket-match span{display:block;overflow:hidden;padding:3px 2px;color:var(--fg);font-size:12px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.bracket-match span+span{border-top:1px solid var(--border)}
+.bracket-match span.is-pending{color:var(--muted);font-weight:600}
+.bracket-match--final{border-color:color-mix(in oklch,var(--accent) 55%,var(--border));background:var(--accent-soft)}
+.bracket-round:nth-child(2) .bracket-match+.bracket-match{margin-top:8px}
+.bracket-round:nth-child(3) .bracket-match+.bracket-match{margin-top:16px}
+@media(max-width:600px){
+  .tor-competition .bracket-intro{align-items:flex-start;flex-direction:column;gap:8px}
+  .bracket-scroll{padding:16px}
+  .bracket{gap:24px}
+}
+
+/* ===== Estadísticas (ranking con sub-tabs) ===== */
+.tor-stats-tabs{margin:0;padding:12px 18px;border-bottom:1px solid var(--border-2);background:var(--surface-2)}
+.tor-stats .filters .filter{height:34px;font-size:12px}
+.tor-stats .filter:hover{color:var(--fg);border-color:#2d3d5f}
+.tor-stats-panel{display:none;min-width:0}
+.tor-stats-panel.active{display:block}
+.tor-table-scroll{max-width:100%;border:0;border-radius:0;background:transparent;overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain}
+.tor-matches table{min-width:620px}
+.tor-stats table{min-width:560px}
+.tor-stats table tr:last-child td{border-bottom:0}
+.stat-rank{display:flex;align-items:center}
+.rank-num{width:26px;height:26px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border-2);display:grid;place-items:center;font-family:var(--font-mono);font-weight:800;font-size:12px;color:var(--muted)}
+.rank-num.top{background:var(--accent);border-color:var(--accent);color:#0b1220}
+.tor-stats .num.big{font-size:15px;font-weight:800;color:var(--fg)}
+@media(max-width:600px){
+  .tor-tabs,.tor-stats-tabs{padding:12px}
+  .tor-tab,.tor-stats .filters .filter{min-height:40px}
+  .tor-tab-panel .card-h,.tor-section>.card-h{align-items:flex-start;flex-direction:column;padding:14px 16px}
+}
+@media(prefers-reduced-motion:reduce){.bracket,.bracket-match,.tor-tab{transition:none}}

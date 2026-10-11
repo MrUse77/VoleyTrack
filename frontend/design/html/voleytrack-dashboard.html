@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack.css" />
+<link rel="stylesheet" href="voleytrack-dashboard.css" />
+</head>
+<body>
+<div id="app" class="app active" data-od-id="app-shell-invitado">
+
+<header class="topbar" data-od-id="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+<aside class="sidebar" data-od-id="sidebar-public-nav">
+      <div class="nav-group">
+        <p class="nav-title">Invitado · Público</p>
+        <a class="nav-item active" data-view="dashboard" href="voleytrack-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard</a>
+        <a class="nav-item" data-view="matches" href="voleytrack-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg> Partidos <span class="count">16</span></a>
+        <a class="nav-item" data-view="tournaments" href="voleytrack-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+        <a class="nav-item" data-view="teams" href="voleytrack-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" data-view="players" href="voleytrack-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" data-view="live" href="voleytrack-live.html"><span class="live-dot" style="width:8px;height:8px;background:var(--danger);border-radius:999px"></span> En vivo</a>
+      </div>
+      <div class="divider"></div>
+    </aside>
+    <main class="main">
+<section class="view active" data-view="dashboard" data-od-id="view-dashboard">
+        <div class="page-head">
+          <div><h1>Dashboard espectador</h1><p>Vista pública principal — partido en vivo y próximos encuentros.</p></div>
+        </div>
+
+        <div class="live-grid">
+          <div class="match-live" data-od-id="live-match-card">
+            <div style="display:flex;align-items:center;gap:10px;position:relative"><span class="live-pill"><span class="live-dot"></span> EN VIVO · SET 3</span><span class="chip">Aldo Cantoni · Liga A1</span><span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--muted)">21:42 · Árbitro: P. López</span></div>
+            <div class="teams" style="margin-top:18px">
+              <div class="team"><div class="team-logo" style="background:#3b82f6">U</div><b>UPCN San Juan</b><p>Local · 2 sets</p></div>
+              <div style="text-align:center"><div class="score">2 <small>:</small> 1</div><div class="vs">al mejor de 5</div><div style="font-family:var(--font-mono);font-size:12px;font-weight:800;margin-top:6px">18 <span style="color:var(--muted)">—</span> 21</div></div>
+              <div class="team"><div class="team-logo" style="background:#ff8c42">B</div><b>Bolívar Vóley</b><p>Visitante · 1 set</p></div>
+            </div>
+            <div class="progress"><i></i></div>
+            <div style="display:flex;justify-content:flex-end;margin-top:14px"><a class="btn accent" href="voleytrack-live.html" data-od-id="featured-live-match-cta">Ver partido en vivo →</a></div>
+          </div>
+          <div class="card" style="padding:0">
+            <div class="card-h">Próximos destacados <small>HOY</small></div>
+            <div style="padding:12px 16px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--border-2);border-radius:12px;background:var(--bg)"><div style="width:36px;height:36px;border-radius:10px;background:var(--accent);display:grid;place-items:center;font-weight:900;color:#0b1220">B</div><div style="flex:1"><b style="font-size:13px">Boca vs Monteros</b><p style="margin:0;color:var(--muted);font-size:11px">JUE 10 JUL · 21:00 · La Bombonerita</p></div></div>
+              <div style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--border-2);border-radius:12px;background:var(--bg)"><div style="width:36px;height:36px;border-radius:10px;background:#3b82f6;display:grid;place-items:center;font-weight:900;color:white">R</div><div style="flex:1"><b style="font-size:13px">River vs Ciudad</b><p style="margin:0;color:var(--muted);font-size:11px">VIE 11 JUL · 20:30 · River Plate</p></div></div>
+              <a class="btn ghost" style="width:100%;justify-content:center;border-style:dashed" href="voleytrack-partidos.html">Ver los 16 partidos →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="upcoming" data-od-id="upcoming-list">
+          <div class="upcoming-head"><h3>Próximos partidos</h3><a class="btn" style="height:32px;font-size:12px" href="voleytrack-partidos.html">Ver todos</a></div>
+          <div class="row-match"><span class="rm-time">JUE 10 JUL · 21:00</span><span class="rm-vs">Boca Juniors vs Monteros</span><span class="rm-meta">Copa Nacional</span><span class="rm-meta">La Bombonerita</span><span class="rm-state"><span class="state-pill s-programado">Programado</span></span></div>
+          <div class="row-match"><span class="rm-time">VIE 11 JUL · 20:30</span><span class="rm-vs">UPCN San Juan vs Bolívar</span><span class="rm-meta">Liga A1</span><span class="rm-meta">Aldo Cantoni</span><span class="rm-state"><span class="state-pill s-envivo">En vivo</span></span></div>
+          <div class="row-match"><span class="rm-time">SÁB 12 JUL · 19:00</span><span class="rm-vs">Ciudad vs Obras SJ</span><span class="rm-meta">Liga A1</span><span class="rm-meta">Gorki Grana</span><span class="rm-state"><span class="state-pill s-programado">Programado</span></span></div>
+          <div class="row-match"><span class="rm-time">DOM 13 JUL · 18:00</span><span class="rm-vs">Ateneo vs Ferro</span><span class="rm-meta">Liga Femenina</span><span class="rm-meta">Ateneo</span><span class="rm-state"><span class="state-pill s-programado">Programado</span></span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function switchView(name){
+  const target = name==='team-detail' ? 'team-detail' : name==='player-detail' ? 'player-detail' : name;
+  document.querySelectorAll('.view').forEach(v=> v.classList.toggle('active', v.dataset.view===target));
+  document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(b=>{ const v=b.dataset.view; let active=v===target || (target==='team-detail'&&v==='teams') || (target==='player-detail'&&v==='players'); b.classList.toggle('active', active); });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function setFilter(el){ el.parentElement.querySelectorAll('.filter').forEach(f=> f.classList.remove('active')); el.classList.add('active'); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2200); }
+</script>
+</body>
+</html>

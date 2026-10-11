@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Torneos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack.css" />
+<link rel="stylesheet" href="voleytrack-torneos.css" />
+</head>
+<body>
+<div id="app" class="app active" data-od-id="app-shell-invitado">
+
+<header class="topbar" data-od-id="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+<aside class="sidebar" data-od-id="sidebar-public-nav">
+      <div class="nav-group">
+        <p class="nav-title">Invitado · Público</p>
+        <a class="nav-item" data-view="dashboard" href="voleytrack-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard</a>
+        <a class="nav-item" data-view="matches" href="voleytrack-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg> Partidos <span class="count">16</span></a>
+        <a class="nav-item active" data-view="tournaments" href="voleytrack-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+        <a class="nav-item" data-view="teams" href="voleytrack-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" data-view="players" href="voleytrack-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" data-view="live" href="voleytrack-live.html"><span class="live-dot" style="width:8px;height:8px;background:var(--danger);border-radius:999px"></span> En vivo</a>
+      </div>
+      <div class="divider"></div>
+    </aside>
+    <main class="main">
+<section class="view active" data-view="tournaments" data-od-id="view-tournaments">
+        <div class="page-head"><div><h1>Torneos</h1><p>1.03 + Z.07–Z.09 — Exploratorio futuro. V1 muestra listado básico; tabs detalle/tab están modelados pero fuera de scope.</p></div><div class="head-actions"><button class="btn" type="button" aria-expanded="false" aria-controls="tournaments-filter-panel" data-od-id="tournaments-filter-button" id="tournaments-filter-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg> Filtros</button></div></div>
+        <div class="tournament-filters" id="tournaments-filter-panel" data-od-id="tournaments-filter-panel" aria-hidden="true">
+          <div class="tournament-filters-inner">
+            <div class="tournament-filter-grid">
+              <div class="tournament-filter-field"><label for="tournaments-type-filter">Tipo</label><select id="tournaments-type-filter" data-od-id="tournaments-type-filter"><option value="">Todos</option><option value="Liga">Liga</option><option value="Copa">Copa</option><option value="Bracket">Bracket</option></select></div>
+              <div class="tournament-filter-field"><label for="tournaments-stage-filter">Etapa</label><select id="tournaments-stage-filter" data-od-id="tournaments-stage-filter"><option value="">Todas</option><option value="En curso">En curso</option><option value="Próximo">Próximo</option><option value="Futuro">Futuro</option></select></div>
+              <div class="tournament-filter-field"><label for="tournaments-teams-filter">Equipos mínimos</label><select id="tournaments-teams-filter" data-od-id="tournaments-teams-filter"><option value="">Cualquier cantidad</option><option value="16">16</option><option value="18">18</option></select></div>
+            </div>
+            <div class="tournament-filter-footer">
+              <p class="tournament-results-count" id="tournaments-results-count" data-od-id="tournaments-results-count" aria-live="polite"><strong>3</strong> torneos</p>
+              <button class="btn ghost" type="button" id="tournaments-clear-filters" data-od-id="tournaments-clear-filters">Limpiar filtros</button>
+            </div>
+          </div>
+        </div>
+        <div class="cards-grid">
+          <div class="card" style="padding:16px;padding-right:52px" role="button" tabindex="0" data-type="Liga" data-stage="En curso" data-teams="18" data-tournament-key="liga-a1" aria-label="Ver detalle de Liga Argentina A1 25/26" data-od-id="tournament-card-liga-a1"><span class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></span><small style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:800">LIGA A1 · EN CURSO</small><h3 style="margin:8px 0 6px">Liga Argentina A1 25/26</h3><p style="color:var(--muted);font-size:13px;margin:0">18 equipos · 132 partidos · Finaliza 12 dic</p><div style="display:flex;gap:8px;margin-top:12px"><span class="badge ok">En curso</span><span class="badge">132 partidos</span></div></div>
+          <div class="card" style="padding:16px;padding-right:52px" role="button" tabindex="0" data-type="Copa" data-stage="Próximo" data-teams="16" data-tournament-key="copa-nacional" aria-label="Ver detalle de Copa Nacional" data-od-id="tournament-card-copa-nacional"><span class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></span><small style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:800">COPA · PRÓXIMO</small><h3 style="margin:8px 0 6px">Copa Nacional</h3><p style="color:var(--muted);font-size:13px;margin:0">16 equipos · Eliminación directa</p><div style="display:flex;gap:8px;margin-top:12px"><span class="badge warn">Próximo</span></div></div>
+          <div class="card" style="padding:16px;opacity:.6" aria-disabled="true" data-type="Bracket" data-stage="Futuro" data-od-id="tournament-card-bracket"><small style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:800">Z.18 BRACKET — FUTURO</small><h3 style="margin:8px 0 6px">Bracket interactivo</h3><p style="color:var(--muted);font-size:13px;margin:0">Diseño exploratorio, no en V1</p></div>
+        </div>
+        <div class="tournament-empty" id="tournaments-empty-state" data-od-id="tournaments-empty-state" role="status"><h2>No hay torneos que coincidan</h2><p>Prueba a reducir los filtros o límpialos para ver todos los torneos.</p></div>
+      </section>
+      <section class="view" data-view="tournament-detail" data-od-id="view-tournament-detail">
+        <div id="tournament-detail-root"></div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function switchView(name){
+  const target = name==='team-detail' ? 'team-detail' : name==='player-detail' ? 'player-detail' : name==='tournament-detail' ? 'tournament-detail' : name;
+  document.querySelectorAll('.view').forEach(v=> v.classList.toggle('active', v.dataset.view===target));
+  document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(b=>{ const v=b.dataset.view; let active=v===target || (target==='team-detail'&&v==='teams') || (target==='player-detail'&&v==='players') || (target==='tournament-detail'&&v==='tournaments'); b.classList.toggle('active', active); });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function setFilter(el){ el.parentElement.querySelectorAll('.filter').forEach(f=> f.classList.remove('active')); el.classList.add('active'); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2200); }
+
+/* ===== Helpers ===== */
+function escTeam(name,cls){
+  return `<span${cls?` class="${cls}"`:''}>${name}</span>`;
+}
+function bracketMatch(label,a,b,opts){
+  opts=opts||{};
+  const aCls=a.includes('Ganador')||a.includes('Por')||a.includes('Clasificado')?'is-pending':'';
+  const bCls=b.includes('Ganador')||b.includes('Por')||b.includes('Clasificado')?'is-pending':'';
+  return `<div class="bracket-match${opts.final?' bracket-match--final':''}"><small>${label}</small>${escTeam(a,aCls)}${escTeam(b,bCls)}</div>`;
+}
+function bracketRound(name,matches){
+  return `<div class="bracket-round"><h3>${name}</h3>${matches.join('')}</div>`;
+}
+function bracket(rounds,variant){
+  return `<div class="bracket-scroll" tabindex="0" aria-label="Llaves del torneo. Desplazá horizontalmente para ver todas las rondas."><div class="bracket ${variant||''}">${rounds.join('')}</div></div>`;
+}
+function bracketIntro(status,text){
+  return `<div class="bracket-intro"><span class="bracket-status">${status}</span><p>${text}</p></div>`;
+}
+
+/* ===== Datos de detalle ===== */
+const TOURNAMENT_DETAILS={
+  'liga-a1':{
+    title:'Liga Argentina A1',
+    badge:'ok', badgeText:'En curso',
+    subtitle:'Detalle del torneo · Liga regular + playoffs · Temporada 2025/26',
+    kpis:[{label:'Equipos',value:'18',sub:'Liga regular'},{label:'Partidos',value:'132',sub:'132 programados'},{label:'Jornada',value:'14',sub:'De 34'},{label:'Finaliza',value:'12 dic',sub:'Temporada 25/26'}],
+    info:[['Nombre','Liga Argentina A1'],['Temporada','2025/26'],['Sistema','Liga regular'],['Equipos','18'],['Estado','En curso'],['Inicio','15 mar 2026'],['Final','12 dic 2026']],
+    tabs:[
+      {label:'Clasificación', active:true, body:
+        '<div class="card-h">Clasificación <small>TOP 5</small></div>'+
+        '<div class="table-wrap" style="border:0;border-radius:0;background:transparent"><table>'+
+        '<thead><tr><th>#</th><th>Equipo</th><th class="num">PJ</th><th class="num">PG</th><th class="num">Pts</th></tr></thead>'+
+        '<tbody>'+
+        '<tr><td>1</td><td><b>Ciudad Vóley</b></td><td class="num">13</td><td class="num">9</td><td class="num">27</td></tr>'+
+        '<tr><td>2</td><td><b>UPCN San Juan</b></td><td class="num">13</td><td class="num">8</td><td class="num">24</td></tr>'+
+        '<tr><td>3</td><td><b>Bolívar Vóley</b></td><td class="num">13</td><td class="num">7</td><td class="num">21</td></tr>'+
+        '<tr><td>4</td><td><b>Boca Juniors</b></td><td class="num">13</td><td class="num">5</td><td class="num">16</td></tr>'+
+        '<tr><td>5</td><td><b>River Plate</b></td><td class="num">13</td><td class="num">4</td><td class="num">13</td></tr>'+
+        '</tbody></table></div>'},
+      {label:'Playoffs', active:false, body:
+        '<div class="card-h"><span>Llaves de playoffs</span><small>PENDIENTE DE CLASIFICACIÓN</small></div>'+
+        bracketIntro('Pendiente','Las llaves se completarán al cerrar la fase regular y confirmar los ocho equipos clasificados.')+
+        bracket([
+          bracketRound('Cuartos',[
+            bracketMatch('Llave 1','Clasificado #1','Clasificado #8'),
+            bracketMatch('Llave 2','Clasificado #4','Clasificado #5'),
+            bracketMatch('Llave 3','Clasificado #2','Clasificado #7'),
+            bracketMatch('Llave 4','Clasificado #3','Clasificado #6')
+          ]),
+          bracketRound('Semifinales',[
+            bracketMatch('Llave 5','Ganador llave 1','Ganador llave 2'),
+            bracketMatch('Llave 6','Ganador llave 3','Ganador llave 4')
+          ]),
+          bracketRound('Final',[
+            bracketMatch('Llave 7','Ganador llave 5','Ganador llave 6',{final:true})
+          ])
+        ],'bracket--three-rounds')}
+    ],
+    matches:{
+      heading:'Próximos partidos', sub:'JORNADA 15',
+      rows:[
+        ['UPCN San Juan','Ciudad Vóley','17 mar','21:00'],
+        ['Bolívar Vóley','Boca Juniors','17 mar','19:00'],
+        ['River Plate','UPCN San Juan','18 mar','20:30']
+      ]
+    },
+    stats:{
+      period:'LIGA A1 · ATAQUE, BLOQUEO, SAQUE Y RECEPCIÓN',
+      tabs:[
+        {label:'Ataque', active:true, cols:['Jugador','Equipo','Efic.','Pts'], rows:[
+          ['Fernández · #7','UPCN San Juan','47%','182'],
+          ['López · #10','Bolívar Vóley','45%','169'],
+          ['Sosa · #3','Ciudad Vóley','44%','161'],
+          ['Álvarez · #9','Boca Juniors','42%','150'],
+          ['Romero · #5','River Plate','41%','144'],
+          ['Gutiérrez · #11','UPCN San Juan','39%','131']
+        ]},
+        {label:'Bloqueo', active:false, cols:['Jugador','Equipo','Bloq/set','Total'], rows:[
+          ['López · #10','Bolívar Vóley','2.4','58'],
+          ['Medina · #8','Ciudad Vóley','2.1','52'],
+          ['Fernández · #7','UPCN San Juan','1.9','47'],
+          ['Castillo · #4','Boca Juniors','1.7','41'],
+          ['Álvarez · #9','Boca Juniors','1.5','36'],
+          ['Ruiz · #6','River Plate','1.3','31']
+        ]},
+        {label:'Saque', active:false, cols:['Jugador','Equipo','Aces','Efic.'], rows:[
+          ['Sosa · #3','Ciudad Vóley','28','8.3%'],
+          ['Gutiérrez · #11','UPCN San Juan','24','7.6%'],
+          ['Fernández · #7','UPCN San Juan','21','6.9%'],
+          ['Romero · #5','River Plate','18','6.1%'],
+          ['Castillo · #4','Boca Juniors','15','5.4%'],
+          ['López · #10','Bolívar Vóley','13','4.8%']
+        ]},
+        {label:'Recepción', active:false, cols:['Jugador','Equipo','Perfecta','% Pos'], rows:[
+          ['Peralta · #2','Ciudad Vóley','121','54%'],
+          ['Fernández · #7','UPCN San Juan','112','51%'],
+          ['Sosa · #3','Ciudad Vóley','108','49%'],
+          ['Torres · #12','Bolívar Vóley','101','47%'],
+          ['Gutiérrez · #11','UPCN San Juan','97','45%'],
+          ['Medina · #8','River Plate','89','42%']
+        ]}
+      ]
+    }
+  },
+  'copa-nacional':{
+    title:'Copa Nacional',
+    badge:'warn', badgeText:'Próximo',
+    subtitle:'Detalle del torneo · Eliminación directa · Temporada 2026',
+    kpis:[{label:'Equipos',value:'16',sub:'Inscritos'},{label:'Partidos',value:'15',sub:'Eliminación directa'},{label:'Fase',value:'8vos',sub:'Ronda inicial'},{label:'Finaliza',value:'30 nov',sub:'Temporada 2026'}],
+    info:[['Nombre','Copa Nacional'],['Temporada','2026'],['Sistema','Eliminación directa'],['Equipos','16'],['Estado','Próximo'],['Inicio','23 jun 2026'],['Final','30 nov 2026']],
+    tabs:[
+      {label:'Participantes', active:true, body:
+        '<div class="card-h">Equipos participantes <small>6 CONFIRMADOS · 16 CUPOS</small></div>'+
+        '<div class="table-wrap" style="border:0;border-radius:0;background:transparent"><table>'+
+        '<thead><tr><th>#</th><th>Equipo</th><th class="num">Torneo</th></tr></thead>'+
+        '<tbody>'+
+        '<tr><td>1</td><td><b>UPCN San Juan</b></td><td class="num">Liga A1</td></tr>'+
+        '<tr><td>2</td><td><b>Bolívar Vóley</b></td><td class="num">Liga A1</td></tr>'+
+        '<tr><td>3</td><td><b>Boca Juniors</b></td><td class="num">Liga A1</td></tr>'+
+        '<tr><td>4</td><td><b>Ciudad Vóley</b></td><td class="num">Liga A1</td></tr>'+
+        '<tr><td>5</td><td><b>River Plate</b></td><td class="num">Liga A1</td></tr>'+
+        '<tr><td>6</td><td><b>Obras SJ</b></td><td class="num">Liga A1</td></tr>'+
+        '</tbody></table></div>'},
+      {label:'Llaves', active:false, body:
+        '<div class="card-h"><span>Llaves de eliminación directa</span><small>16 EQUIPOS · PROGRAMADO</small></div>'+
+        bracketIntro('Programado','Los cruces se completarán cuando se confirmen todos los participantes.')+
+        bracket([
+          bracketRound('Octavos',[
+            bracketMatch('Llave 1','UPCN San Juan','Por definir'),
+            bracketMatch('Llave 2','Bolívar Vóley','Por definir'),
+            bracketMatch('Llave 3','Boca Juniors','Por definir'),
+            bracketMatch('Llave 4','Ciudad Vóley','Por definir'),
+            bracketMatch('Llave 5','River Plate','Por definir'),
+            bracketMatch('Llave 6','Obras SJ','Por definir'),
+            bracketMatch('Llave 7','Por definir','Por definir'),
+            bracketMatch('Llave 8','Por definir','Por definir')
+          ]),
+          bracketRound('Cuartos',[
+            bracketMatch('Llave 9','Ganador llave 1','Ganador llave 2'),
+            bracketMatch('Llave 10','Ganador llave 3','Ganador llave 4'),
+            bracketMatch('Llave 11','Ganador llave 5','Ganador llave 6'),
+            bracketMatch('Llave 12','Ganador llave 7','Ganador llave 8')
+          ]),
+          bracketRound('Semifinales',[
+            bracketMatch('Llave 13','Ganador llave 9','Ganador llave 10'),
+            bracketMatch('Llave 14','Ganador llave 11','Ganador llave 12')
+          ]),
+          bracketRound('Final',[
+            bracketMatch('Llave 15','Ganador llave 13','Ganador llave 14',{final:true})
+          ])
+        ],'bracket--four-rounds')}
+    ],
+    matches:{
+      heading:'Partidos programados', sub:'OCTAVOS · EN CONFIRMACIÓN',
+      rows:[
+        ['UPCN San Juan','Obras SJ','23 jun','20:30'],
+        ['Bolívar Vóley','River Plate','23 jun','19:00'],
+        ['Boca Juniors','Ciudad Vóley','24 jun','21:00']
+      ]
+    },
+    stats:{
+      period:'COPA NACIONAL · ESTADÍSTICAS PREVIAS AL TORNEO',
+      tabs:[
+        {label:'Ataque', active:true, cols:['Jugador','Equipo','Efic.','Pts'], rows:[
+          ['Fernández · #7','UPCN San Juan','47%','182'],
+          ['López · #10','Bolívar Vóley','45%','169'],
+          ['Sosa · #3','Ciudad Vóley','44%','161'],
+          ['Álvarez · #9','Boca Juniors','42%','150'],
+          ['Romero · #5','River Plate','41%','144'],
+          ['Gutiérrez · #11','UPCN San Juan','39%','131']
+        ]},
+        {label:'Bloqueo', active:false, cols:['Jugador','Equipo','Bloq/set','Total'], rows:[
+          ['López · #10','Bolívar Vóley','2.4','58'],
+          ['Medina · #8','Ciudad Vóley','2.1','52'],
+          ['Fernández · #7','UPCN San Juan','1.9','47'],
+          ['Castillo · #4','Boca Juniors','1.7','41'],
+          ['Álvarez · #9','Boca Juniors','1.5','36'],
+          ['Ruiz · #6','River Plate','1.3','31']
+        ]},
+        {label:'Saque', active:false, cols:['Jugador','Equipo','Aces','Efic.'], rows:[
+          ['Sosa · #3','Ciudad Vóley','28','8.3%'],
+          ['Gutiérrez · #11','UPCN San Juan','24','7.6%'],
+          ['Fernández · #7','UPCN San Juan','21','6.9%'],
+          ['Romero · #5','River Plate','18','6.1%'],
+          ['Castillo · #4','Boca Juniors','15','5.4%'],
+          ['López · #10','Bolívar Vóley','13','4.8%']
+        ]},
+        {label:'Recepción', active:false, cols:['Jugador','Equipo','Perfecta','% Pos'], rows:[
+          ['Peralta · #2','Ciudad Vóley','121','54%'],
+          ['Fernández · #7','UPCN San Juan','112','51%'],
+          ['Sosa · #3','Ciudad Vóley','108','49%'],
+          ['Torres · #12','Bolívar Vóley','101','47%'],
+          ['Gutiérrez · #11','UPCN San Juan','97','45%'],
+          ['Medina · #8','River Plate','89','42%']
+        ]}
+      ]
+    }
+  }
+};
+
+const tournamentDetailRoot=document.getElementById('tournament-detail-root');
+
+function statTable(cols,rows,id){
+  const metrics=cols.slice(2);
+  return `<div class="table-wrap tor-table-scroll" data-od-id="${id}"><table>`+
+    '<thead><tr><th>#</th><th>Jugador</th>'+metrics.map(c=>`<th class="num">${c}</th>`).join('')+'</tr></thead>'+ 
+    '<tbody>'+rows.map((row,i)=>`<tr><td style="width:44px"><div class="stat-rank"><span class="rank-num${i===0?' top':''}">${i+1}</span></div></td>`+
+      `<td><div style="display:flex;flex-direction:column"><b>${row[0]}</b><small style="color:var(--muted);font-size:11px">${row[1]}</small></div></td>`+
+      metrics.map((c,ci)=>`<td class="num${ci===metrics.length-1?' big':''}">${row[ci+2]}</td>`).join('')+'</tr>').join('')+
+    '</tbody></table></div>';
+}
+
+function renderTournamentDetail(key){
+  const data=TOURNAMENT_DETAILS[key];
+  if(!data){ toast('Torneo no disponible'); return; }
+  const infoRows=data.info.map(r=>`<div class="info-row"><b>${r[0]}</b><span>${r[1]}</span></div>`).join('');
+  const tabButtons=data.tabs.map((t,i)=>`<button class="tor-tab${t.active?' active':''}" type="button" role="tab" id="tor-tab-${key}-${i}" aria-selected="${t.active}" aria-controls="tor-panel-${key}-${i}" tabindex="${t.active?'0':'-1'}" data-tab-index="${i}" data-od-id="tor-tab-${key}-${i}">${t.label}</button>`).join('');
+  const tabPanels=data.tabs.map((t,i)=>`<div class="tor-panel${t.active?' active':''}" id="tor-panel-${key}-${i}" role="tabpanel" aria-labelledby="tor-tab-${key}-${i}" data-panel-index="${i}" data-od-id="tor-panel-${key}-${i}"${t.active?'':' hidden'}><div class="tor-tab-panel">${t.body}</div></div>`).join('');
+  const stats=data.stats||null;
+  const statButtons=stats?stats.tabs.map((t,i)=>`<button class="filter${t.active?' active':''}" type="button" role="tab" id="stat-tab-${key}-${i}" aria-selected="${t.active}" aria-controls="stat-panel-${key}-${i}" tabindex="${t.active?'0':'-1'}" data-stat-index="${i}" data-od-id="stat-tab-${key}-${i}">${t.label}</button>`).join(''):'';
+  const statPanels=stats?stats.tabs.map((t,i)=>`<div class="tor-stats-panel${t.active?' active':''}" id="stat-panel-${key}-${i}" role="tabpanel" aria-labelledby="stat-tab-${key}-${i}" data-stat-panel="${i}" data-od-id="stat-panel-${key}-${i}"${t.active?'':' hidden'}>${statTable(t.cols,t.rows,`stat-table-${key}-${i}`)}</div>`).join(''):'';
+  const statsCard=stats?`<section class="card tor-section tor-stats" data-od-id="tor-estadisticas-${key}"><div class="card-h" data-od-id="tor-estadisticas-cabecera-${key}"><span>Estadísticas</span><small>${stats.period}</small></div><div class="filters tor-stats-tabs" role="tablist" aria-label="Estadísticas por fundamento" data-od-id="tor-estadisticas-tabs-${key}">${statButtons}</div><div class="tor-stats-panels">${statPanels}</div></section>`:'';
+  const matches=data.matches||null;
+  const matchesCard=matches?`<section class="card tor-section tor-matches" data-od-id="tor-proximos-${key}"><div class="card-h" data-od-id="tor-proximos-cabecera-${key}"><span>${matches.heading}</span><small>${matches.sub}</small></div><div class="table-wrap tor-table-scroll" data-od-id="tor-proximos-tabla-${key}"><table><thead><tr><th>Partido</th><th>Fecha</th><th>Hora</th><th>Estado</th></tr></thead><tbody>${matches.rows.map(r=>`<tr><td><b>${r[0]}</b> vs <b>${r[1]}</b></td><td>${r[2]}</td><td class="num">${r[3]}</td><td><span class="badge ok">Programado</span></td></tr>`).join('')}</tbody></table></div></section>`:'';
+  tournamentDetailRoot.innerHTML=
+    `<div class="page-head"><div><h1>${data.title} <span class="badge ${data.badge}">${data.badgeText}</span></h1><p>${data.subtitle}</p></div>`+
+    `<div class="head-actions"><button class="btn ghost" type="button" onclick="switchView('tournaments')" data-od-id="tor-detail-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg> Volver</button></div></div>`+
+    `<div class="tor-detail-kpis" data-od-id="tor-kpis-${key}">${data.kpis.map(k=>`<div class="tor-kpi"><div class="tor-kpi-label">${k.label}</div><div class="tor-kpi-value">${k.value}</div><div class="tor-kpi-sub">${k.sub}</div></div>`).join('')}</div>`+
+    `<div class="tor-detail-grid tor-detail-grid--single"><div class="card"><div class="card-h">Información <small>DATOS GENERALES</small></div><div class="card-b">${infoRows}</div></div></div>`+
+    `<section class="card tor-section tor-competition" data-od-id="tor-competencia-${key}"><div class="tor-tabs" role="tablist" aria-label="Contenido de ${data.title}" data-od-id="tor-tabs-${key}">${tabButtons}</div><div class="tor-panels">${tabPanels}</div></section>`+
+    matchesCard+
+    statsCard;
+  switchView('tournament-detail');
+  const competitionTabs=[...tournamentDetailRoot.querySelectorAll('.tor-tab')];
+  competitionTabs.forEach((tab,index)=>{
+    tab.addEventListener('click',()=>selectTorTab(tournamentDetailRoot,tab));
+    tab.addEventListener('keydown',event=>moveTabFocus(event,competitionTabs,index,tab=>selectTorTab(tournamentDetailRoot,tab)));
+  });
+  if(stats){
+    const statTabs=[...tournamentDetailRoot.querySelectorAll('.tor-stats .filter')];
+    statTabs.forEach((tab,index)=>{
+      tab.addEventListener('click',()=>selectStatTab(tournamentDetailRoot,tab));
+      tab.addEventListener('keydown',event=>moveTabFocus(event,statTabs,index,tab=>selectStatTab(tournamentDetailRoot,tab)));
+    });
+  }
+}
+
+function moveTabFocus(event,tabs,index,select){
+  if(event.key!=='ArrowLeft'&&event.key!=='ArrowRight') return;
+  event.preventDefault();
+  const step=event.key==='ArrowRight'?1:-1;
+  const next=tabs[(index+step+tabs.length)%tabs.length];
+  select(next);
+  next.focus();
+}
+
+function selectTorTab(root,tab){
+  const idx=tab.dataset.tabIndex;
+  root.querySelectorAll('.tor-tab').forEach(t=>{ const sel=t.dataset.tabIndex===idx; t.classList.toggle('active',sel); t.setAttribute('aria-selected',String(sel)); t.tabIndex=sel?0:-1; });
+  root.querySelectorAll('.tor-panel').forEach(p=>{ const sel=p.dataset.panelIndex===idx; p.classList.toggle('active',sel); p.hidden=!sel; });
+}
+
+function selectStatTab(root,tab){
+  const idx=tab.dataset.statIndex;
+  root.querySelectorAll('.tor-stats .filter').forEach(t=>{ const sel=t.dataset.statIndex===idx; t.classList.toggle('active',sel); t.setAttribute('aria-selected',String(sel)); t.tabIndex=sel?0:-1; });
+  root.querySelectorAll('.tor-stats .tor-stats-panel').forEach(p=>{ const sel=p.dataset.statPanel===idx; p.classList.toggle('active',sel); p.hidden=!sel; });
+}
+
+const tournamentClickableCards=[...document.querySelectorAll('[data-view="tournaments"] .cards-grid > .card[data-tournament-key]')];
+tournamentClickableCards.forEach(card=>{
+  const key=card.dataset.tournamentKey;
+  const open=()=>renderTournamentDetail(key);
+  card.addEventListener('click',open);
+  card.addEventListener('keydown',event=>{ if(event.key==='Enter'||event.key===' '){ event.preventDefault(); open(); } });
+});
+
+const tournamentFilterButton=document.getElementById('tournaments-filter-button');
+const tournamentFilterPanel=document.getElementById('tournaments-filter-panel');
+const tournamentFilterControls=[
+  document.getElementById('tournaments-type-filter'),
+  document.getElementById('tournaments-stage-filter'),
+  document.getElementById('tournaments-teams-filter')
+];
+const tournamentCards=[...document.querySelectorAll('[data-view="tournaments"] .cards-grid > .card')];
+const tournamentGrid=document.querySelector('[data-view="tournaments"] .cards-grid');
+const tournamentResultsCount=document.getElementById('tournaments-results-count');
+const tournamentEmptyState=document.getElementById('tournaments-empty-state');
+
+function toggleTournamentFilters(forceOpen){
+  const open=typeof forceOpen==='boolean' ? forceOpen : !tournamentFilterPanel.classList.contains('open');
+  tournamentFilterPanel.classList.toggle('open',open);
+  tournamentFilterPanel.setAttribute('aria-hidden',String(!open));
+  tournamentFilterButton.setAttribute('aria-expanded',String(open));
+}
+
+function filterTournaments(){
+  const [type,stage,minTeams]=tournamentFilterControls.map(control=>control.value);
+  let visibleCount=0;
+  tournamentCards.forEach(card=>{
+    const hasEnoughTeams=!minTeams || (card.dataset.teams && Number(card.dataset.teams)>=Number(minTeams));
+    const visible=(!type || card.dataset.type===type) &&
+      (!stage || card.dataset.stage===stage) &&
+      hasEnoughTeams;
+    card.hidden=!visible;
+    if(visible) visibleCount+=1;
+  });
+  tournamentResultsCount.innerHTML=`<strong>${visibleCount}</strong> ${visibleCount===1 ? 'torneo' : 'torneos'}`;
+  tournamentGrid.hidden=visibleCount===0;
+  tournamentEmptyState.classList.toggle('visible',visibleCount===0);
+}
+
+tournamentFilterButton.addEventListener('click',()=>toggleTournamentFilters());
+tournamentFilterControls.forEach(control=>control.addEventListener('change',filterTournaments));
+document.getElementById('tournaments-clear-filters').addEventListener('click',()=>{
+  tournamentFilterControls.forEach(control=>{ control.value=''; });
+  filterTournaments();
+});
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape' && tournamentFilterPanel.classList.contains('open')){
+    toggleTournamentFilters(false);
+    tournamentFilterButton.focus();
+  }
+});
+</script>
+</body>
+</html>

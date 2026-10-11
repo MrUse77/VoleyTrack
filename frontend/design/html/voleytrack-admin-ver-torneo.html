@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Admin · Ver torneo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack-admin.css" />
+</head>
+<body>
+<div id="app" class="app" data-od-id="app-shell-admin">
+
+  <header class="topbar" data-od-id="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" aria-label="Buscar" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+        <div class="avatar">A</div>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+    <aside class="sidebar">
+      <div class="nav-group">
+        <p class="nav-title">Admin · Gestión</p>
+        <a class="nav-item" href="voleytrack-admin-gestion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M20 21a8 8 0 1 0-16 0"/></svg> Staff & gestión</a>
+        <a class="nav-item" href="voleytrack-admin-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg> Partidos</a>
+        <a class="nav-item" href="voleytrack-admin-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" href="voleytrack-admin-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" href="voleytrack-admin-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+      </div>
+      <a class="nav-item" style="margin-top:10px;color:var(--muted)" href="voleytrack-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Cerrar sesión</a>
+    </aside>
+    <main class="main">
+      <div class="page-head" data-od-id="page-head-ver">
+        <div>
+          <h1>Liga Argentina A1 <span class="badge ok">En curso</span></h1>
+          <p>Detalle del torneo · Liga regular + playoffs · Temporada 2025/26</p>
+        </div>
+        <div class="head-actions">
+          <a class="btn ghost" href="voleytrack-admin-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg> Volver</a>
+          <a class="btn" href="voleytrack-admin-editar-torneo.html">Editar torneo</a>
+          <a class="btn accent" href="voleytrack-admin-crear-partido.html?torneo=liga-a1" data-od-id="create-league-match-cta">Crear partido</a>
+        </div>
+      </div>
+
+      <div class="kpi-grid" data-od-id="kpis-torneo">
+        <div class="kpi"><div class="kpi-label">Equipos</div><div class="kpi-value">18</div><div class="kpi-sub">Liga regular</div></div>
+        <div class="kpi"><div class="kpi-label">Partidos</div><div class="kpi-value">132</div><div class="kpi-sub">132 programados</div></div>
+        <div class="kpi"><div class="kpi-label">Jornada</div><div class="kpi-value">14</div><div class="kpi-sub">De 34</div></div>
+        <div class="kpi"><div class="kpi-label">Finaliza</div><div class="kpi-value">12 dic</div><div class="kpi-sub">Temporada 25/26</div></div>
+      </div>
+
+      <div class="detail-grid detail-grid--single">
+        <div class="card" data-od-id="info-torneo">
+          <div class="card-h">Información <small>DATOS GENERALES</small></div>
+          <div class="card-b">
+            <div class="info-row"><b>Nombre</b><span>Liga Argentina A1</span></div>
+            <div class="info-row"><b>Temporada</b><span>2025/26</span></div>
+            <div class="info-row"><b>Sistema</b><span>Liga regular</span></div>
+            <div class="info-row"><b>Equipos</b><span>18</span></div>
+            <div class="info-row"><b>Estado</b><span>En curso</span></div>
+            <div class="info-row"><b>Inicio</b><span>15 mar 2026</span></div>
+            <div class="info-row"><b>Final</b><span>12 dic 2026</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <section class="card tournament-content" data-od-id="competencia-liga-a1">
+        <div class="detail-tabs tournament-tabs" role="tablist" aria-label="Etapas de Liga Argentina A1" data-od-id="tabs-liga-a1">
+          <button class="detail-tab active" type="button" role="tab" id="tab-clasificacion" aria-selected="true" aria-controls="panel-clasificacion" tabindex="0" data-od-id="tab-clasificacion">Clasificación</button>
+          <button class="detail-tab" type="button" role="tab" id="tab-playoffs" aria-selected="false" aria-controls="panel-playoffs" tabindex="-1" data-od-id="tab-playoffs">Playoffs</button>
+        </div>
+
+        <div class="tab-panel active" id="panel-clasificacion" role="tabpanel" aria-labelledby="tab-clasificacion" data-od-id="panel-clasificacion">
+          <div class="card-h">Clasificación <small>TOP 5</small></div>
+          <div class="table-wrap" style="border:0;border-radius:0;background:transparent">
+            <table>
+              <thead><tr><th>#</th><th>Equipo</th><th class="num">PJ</th><th class="num">PG</th><th class="num">Pts</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><b>Ciudad Vóley</b></td><td class="num">13</td><td class="num">9</td><td class="num">27</td></tr>
+                <tr><td>2</td><td><b>UPCN San Juan</b></td><td class="num">13</td><td class="num">8</td><td class="num">24</td></tr>
+                <tr><td>3</td><td><b>Bolívar Vóley</b></td><td class="num">13</td><td class="num">7</td><td class="num">21</td></tr>
+                <tr><td>4</td><td><b>Boca Juniors</b></td><td class="num">13</td><td class="num">5</td><td class="num">16</td></tr>
+                <tr><td>5</td><td><b>River Plate</b></td><td class="num">13</td><td class="num">4</td><td class="num">13</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-playoffs" role="tabpanel" aria-labelledby="tab-playoffs" hidden data-od-id="panel-playoffs">
+          <div class="card-h" data-od-id="llaves-playoffs-encabezado">
+            <span>Llaves de playoffs</span>
+            <small>PENDIENTE DE CLASIFICACIÓN</small>
+          </div>
+          <div class="bracket-intro" data-od-id="llaves-playoffs-estado">
+            <span class="bracket-status">Pendiente</span>
+            <p>Las llaves se completarán al cerrar la fase regular y confirmar los ocho equipos clasificados.</p>
+          </div>
+          <div class="bracket-scroll" data-od-id="llaves-playoffs-tablero" tabindex="0" aria-label="Llaves pendientes de los playoffs. Desplazá horizontalmente para ver todas las rondas.">
+            <div class="bracket bracket--three-rounds">
+              <div class="bracket-round" data-od-id="playoffs-cuartos">
+                <h3>Cuartos</h3>
+                <div class="bracket-match" data-od-id="playoffs-llave-1"><small>Llave 1</small><span>Clasificado #1</span><span>Clasificado #8</span></div>
+                <div class="bracket-match" data-od-id="playoffs-llave-2"><small>Llave 2</small><span>Clasificado #4</span><span>Clasificado #5</span></div>
+                <div class="bracket-match" data-od-id="playoffs-llave-3"><small>Llave 3</small><span>Clasificado #2</span><span>Clasificado #7</span></div>
+                <div class="bracket-match" data-od-id="playoffs-llave-4"><small>Llave 4</small><span>Clasificado #3</span><span>Clasificado #6</span></div>
+              </div>
+              <div class="bracket-round" data-od-id="playoffs-semifinales">
+                <h3>Semifinales</h3>
+                <div class="bracket-match" data-od-id="playoffs-llave-5"><small>Llave 5</small><span>Ganador llave 1</span><span>Ganador llave 2</span></div>
+                <div class="bracket-match" data-od-id="playoffs-llave-6"><small>Llave 6</small><span>Ganador llave 3</span><span>Ganador llave 4</span></div>
+              </div>
+              <div class="bracket-round" data-od-id="playoffs-final">
+                <h3>Final</h3>
+                <div class="bracket-match bracket-match--final" data-od-id="playoffs-llave-7"><small>Llave 7</small><span>Ganador llave 5</span><span>Ganador llave 6</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="card" style="margin-top:16px" data-od-id="proximos-partidos">
+        <div class="card-h">Próximos partidos <small>JORNADA 15</small></div>
+        <div class="table-wrap" style="border:0;border-radius:0;background:transparent">
+          <table>
+            <thead><tr><th>Partido</th><th>Fecha</th><th>Hora</th><th>Estado</th></tr></thead>
+            <tbody id="league-matches-body" data-od-id="league-matches-body">
+              <tr><td><b>UPCN San Juan</b> vs <b>Ciudad Vóley</b></td><td>17 mar</td><td class="num">21:00</td><td><span class="badge ok">Programado</span></td></tr>
+              <tr><td><b>Bolívar Vóley</b> vs <b>Boca Juniors</b></td><td>17 mar</td><td class="num">19:00</td><td><span class="badge ok">Programado</span></td></tr>
+              <tr><td><b>River Plate</b> vs <b>UPCN San Juan</b></td><td>18 mar</td><td class="num">20:30</td><td><span class="badge ok">Programado</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script>
+document.querySelectorAll('[role="tablist"]').forEach((tablist) => {
+  const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  const selectTab = (tab) => {
+    tabs.forEach((item) => {
+      const selected = item === tab;
+      item.classList.toggle('active', selected);
+      item.setAttribute('aria-selected', String(selected));
+      item.tabIndex = selected ? 0 : -1;
+      const panel = document.getElementById(item.getAttribute('aria-controls'));
+      panel.classList.toggle('active', selected);
+      panel.hidden = !selected;
+    });
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => selectTab(tab));
+    tab.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      const step = event.key === 'ArrowRight' ? 1 : -1;
+      const next = tabs[(index + step + tabs.length) % tabs.length];
+      selectTab(next);
+      next.focus();
+    });
+  });
+});
+function readLeagueMatches(){try{const value=JSON.parse(localStorage.getItem('voleytrack-admin-matches')||'[]');return Array.isArray(value)?value.filter(match=>match.tournamentId==='liga-a1'):[]}catch{return []}}
+const leagueBody=document.getElementById('league-matches-body');
+readLeagueMatches().sort((a,b)=>a.scheduledAt.localeCompare(b.scheduledAt)).forEach(match=>{
+  const [date,time]=match.scheduledAt.split('T');const row=document.createElement('tr');
+  row.innerHTML='<td><b></b> vs <b></b></td><td></td><td class="num"></td><td><span class="state-pill"></span></td>';
+  const names=row.querySelectorAll('b');names[0].textContent=match.homeTeamName;names[1].textContent=match.awayTeamName;
+  row.children[1].textContent=new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'short'}).format(new Date(`${date}T12:00:00`));row.children[2].textContent=time;const status=row.querySelector('span');status.classList.add(match.status==='En vivo'?'s-envivo':'s-programado');status.textContent=match.status;leagueBody.append(row);
+});
+</script>
+</body>
+</html>

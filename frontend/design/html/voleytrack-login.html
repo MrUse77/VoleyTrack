@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Login Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<style>
+:root{
+  --bg:#0b1220;
+  --surface:#111a2b;
+  --surface-2:#162032;
+  --fg:#f8fafc;
+  --muted:#94a3b8;
+  --muted-2:#64748b;
+  --border:#243249;
+  --border-2:#1e293b;
+  --accent:#ff8c42;
+  --accent-soft: color-mix(in oklch, var(--accent) 14%, transparent);
+  --blue:#3b82f6;
+  --success:#22c55e;
+  --danger:#ef4444;
+  --radius:16px;
+  --radius-sm:10px;
+  --font-display: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+*{box-sizing:border-box}
+html{scrollbar-gutter:stable}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+img{max-width:100%;display:block}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#1e2a44;border-radius:999px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ===== LOGIN (standalone) ===== */
+.login-wrap{display:grid;grid-template-columns:640px 1fr;min-height:100vh}
+.branding{background:var(--surface);display:flex;flex-direction:column;justify-content:center;padding:80px;border-right:1px solid var(--border)}
+.brand-logo{font-size:48px;font-weight:900;letter-spacing:-0.03em;display:flex;align-items:center;gap:12px}
+.brand-logo span.vb{width:44px;height:44px;border-radius:12px;background:var(--accent);display:grid;place-items:center;font-size:22px}
+.brand-claim{color:var(--muted);font-size:16px;margin-top:16px;max-width:32ch}
+.brand-stats{display:flex;gap:32px;margin-top:48px}
+.brand-stats b{font-size:28px;font-weight:800;letter-spacing:-0.02em}
+.brand-stats p{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 0}
+.form-col{display:flex;align-items:center;justify-content:center;padding:40px;background:var(--bg)}
+.form-box{width:100%;max-width:480px}
+.form-box h1{font-size:32px;font-weight:900;letter-spacing:-0.02em;margin:0}
+.form-box .sub{color:var(--muted);font-size:14px;margin:8px 0 32px}
+.label{font-size:13px;font-weight:700;color:#e2e8f0;margin:0 0 8px;display:block;letter-spacing:.01em}
+.input{width:100%;height:48px;border-radius:10px;border:1px solid var(--border-2);background:var(--surface);color:var(--fg);padding:0 16px;font-size:14px;outline:none;transition:.15s}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.input::placeholder{color:var(--muted-2)}
+.btn-primary{width:100%;height:48px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:#0b1220;font-weight:800;font-size:14px;letter-spacing:.01em;transition:.15s}
+.btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
+
+@media(max-width:920px){
+  .login-wrap{grid-template-columns:1fr}
+  .branding{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN ADMIN -->
+<div id="view-login" data-od-id="auth-login-admin">
+  <div class="login-wrap">
+    <div class="branding" data-od-id="branding-panel">
+      <div class="brand-logo"><span class="vb" style="background:transparent;border:0;overflow:visible;padding:0;width:54px;height:54px"><img src="imagen.png" alt="VoleyTrack" style="width:100%;height:100%;object-fit:contain;border-radius:0;filter:brightness(0) saturate(100%) invert(62%) sepia(68%) saturate(3100%) hue-rotate(346deg) brightness(101%) contrast(101%)" /></span> VoleyTrack</div>
+      <div class="brand-claim">Panel de administración — gestión de staff, equipos, jugadores y torneos.</div>
+    </div>
+    <div class="form-col">
+      <div class="form-box">
+        <h1>Admin</h1>
+        <p class="sub">Acceso restringido. Demo: cualquier email válido.</p>
+        <form id="loginForm" onsubmit="return false">
+          <label class="label">Email</label>
+          <input class="input" id="email" placeholder="admin@voleytrack.com" value="admin@voleytrack.com" />
+          <label class="label" style="margin-top:14px">Contraseña</label>
+          <input class="input" id="pass" type="password" placeholder="••••••••" value="admin2026" />
+          <button class="btn-primary" id="btnLogin" style="margin-top:18px">Iniciar sesión →</button>
+          <span id="loginMsg" style="display:block;margin-top:10px;color:var(--danger);font-size:13px;min-height:18px"></span>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const btnLogin=document.getElementById('btnLogin');
+btnLogin.addEventListener('click', ()=>{ const email=document.getElementById('email').value.trim(); const pass=document.getElementById('pass').value.trim(); const msg=document.getElementById('loginMsg'); if(!email.includes('@')){msg.textContent='Ingresá un email válido'; return;} if(pass.length<3){msg.textContent='Contraseña muy corta'; return;} location.href='voleytrack-admin-gestion.html'; });
+document.getElementById('pass').addEventListener('keydown', e=>{ if(e.key==='Enter') btnLogin.click(); });
+</script>
+</body>
+</html>
