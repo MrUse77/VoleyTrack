@@ -1,6 +1,7 @@
 package com.mrusedev.voleytrack.adapter.in.web;
 
 import com.mrusedev.voleytrack.application.dto.AlineacionPreviewDTO;
+import com.mrusedev.voleytrack.application.dto.ConfirmacionDTO;
 import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
 import com.mrusedev.voleytrack.application.dto.JugadorEnPosicion;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
@@ -57,9 +58,10 @@ public class PreparacionPartidoController {
   }
 
   @PostMapping("/{partidoId}/inicio")
-  public ResponseEntity<Void> confirmarInicio(
+  public ResponseEntity<ConfirmacionDTO> confirmarInicio(
       @PathVariable UUID partidoId, @RequestBody InicioPartidoRequest request) {
-    gestorPartidoPort.confirmarInicioPartido(partidoId, request.setId());
-    return ResponseEntity.noContent().build();
+    ConfirmacionDTO confirmacion =
+        gestorPartidoPort.confirmarInicioPartido(partidoId, request.setId());
+    return ResponseEntity.ok(confirmacion);
   }
 }
