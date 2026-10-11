@@ -316,22 +316,56 @@ not 20.)
     a class-like occurrence instead of the bare substring that its own literal contains.
   Note: `src/styles/tokens.test.ts` also references the legacy modules (`shellUtilityBarPath`,
   `navItemPath`, `shellTopbarPath`, `loginPagePath`), so it must be updated in the same commit.
-- [ ] **T10b — Establish a reproducible visual verification path.** Requirement discovered while
-  preparing the slice close: this feature's acceptance criterion is visual parity, and there is
-  currently **no way to render a screen and look at it**. Tests, lint and build prove the code is
-  sound, never that it matches the design. Available tooling as measured: **Firefox** is the only
-  browser installed (`/usr/bin/firefox`); no Chromium, no Playwright, no Puppeteer.
-  Firefox's `--headless --screenshot` is usable but races a client-rendered React app, because it
-  fires after the load event while React mounts afterwards.
-  Deliverable: one reliable way to capture a screen at a fixed viewport (target 1440px wide, the
-  design's canvas), deterministic enough to compare two runs. Candidate approaches, cheapest
-  first: drive Firefox headless with an explicit settle step; capture through an Electron
-  `webContents.capturePage()` harness (Electron is already installed and local to the sibling
-  open-design checkout, so it adds no dependency to this repo); or add a real browser-automation
-  dependency if neither is reliable, accepting that as an explicit dependency decision.
-  Evidence: a captured image of one real route, plus proof the same route captured twice is
-  stable. This unblocks visual verification for every screen in slices 2 to 4, so it must land
-  before slice 2 begins.
+- [x] **T10b — Establish a reproducible visual verification path.** Done, and it immediately paid
+  for itself; it does not need a Firefox or Playwright dependency.
+  - Tool: `frontend/tools/screenshot.mjs`, exposed as `pnpm screenshot`, documented in
+    `frontend/tools/README.md`. Drives a hidden Electron `BrowserWindow` and captures through
+    `webContents.capturePage()` at a 1440x900 viewport. Electron is reused from the sibling
+    open-design checkout (`ELECTRON_BIN` overrides the path), so this repo gains no dependency.
+  - The command, as actually used: `pnpm screenshot --route / --out <path>` against
+    `pnpm run dev`. It waits for the app to mount, waits for fonts, settles, and freezes
+    animations, transitions and the caret before capturing, so runs are comparable.
+  - **Determinism proven, which is the whole point**: `/login` captured four times gave identical
+    bytes (40,097) and an identical `sha256`, `cmp` byte-identical; `/` captured twice likewise
+    (103,003). Independently re-run by the parent with the same byte count and dominant colour.
+  - It emits a machine-readable `<png>.json` next to the image. That matters because **image
+    reading is disabled in this harness**, so the parent cannot inspect a PNG; the JSON is the
+    evidence the orchestrator can actually check, and the PNG is what the human reviewer judges.
+    Division of labour, deliberate: the orchestrator asserts computed values, the human judges the
+    visual result.
+  - Probes are checked against a `designReference` block baked into the tool (canvas 1440, topbar
+    72, sidebar 248, accent `#ff8c42`, body font Inter). Measured on `/`: topbar height **72** and
+    sidebar width **248**, both flagged `matchesDesign: true`; body font **Inter** with
+    `fontFaceSetSize: 8` and Inter `cssCheck: true`.
+  - **This independently confirms T04 and T03b at the rendered level.** The accent probe on
+    `aside [aria-current]` resolves `color: rgb(11, 18, 32)` over `background-color:
+    rgb(255, 140, 66)`. T04's fix was reasoned from the design's `.nav-item.active{color:#0b1220}`
+    and is now measured on a rendered page, not inferred from CSS text. And Inter, which the app
+    had never actually loaded, is genuinely applied.
+  - Its own failure paths were tested rather than assumed: a single-colour page exits 1 with
+    `captured image is one flat colour`, a Vite error overlay exits 1 while quoting the overlay
+    text, and an unreachable URL exits 68 without writing a PNG. A blank canvas or an error
+    overlay cannot pass as a screenshot.
+  - The parent independently re-ran it: same 103,003 bytes, same dominant colour, `problems: []`,
+    and the dev server was cleaned up (port closed, no stray processes). Fourteen orphaned
+    `/tmp/voleytrack-screenshot-*` profiles left by the worker's debugging were cleaned up too.
+  - Findings this surfaced immediately, to be handled in T09 and T11: the public nav renders
+    `01 Dashboard / 02 Partidos / 03 Torneos / 04 Estadísticas`, whereas the design's public
+    sidebar is Dashboard / Partidos / Torneos / **Equipos / Jugadores / En vivo**. The app is
+    missing three design nav destinations and has one the design lacks. The dashboard body copy
+    (`COBERTURA`, `3 partidos en vivo`, `Datos actualizados ahora`) also has no counterpart in the
+    design page. Both are real parity gaps, not capture artefacts.
+  - JetBrains Mono reports `cssCheck: false` and `loadedInFontFaceSet: false`. This is expected and
+    benign rather than a regression: browsers load a font lazily, only once something uses it, and
+    nothing on these routes applies `font-mono` yet. T08 is the task that will exercise it, and
+    this probe becomes the check that the mono face actually loads then.
+  - Known fragility, reported by the worker instead of hidden: the harness depends on the sibling
+    Electron binary at `/home/agustin/Dev/open-design/...` unless `ELECTRON_BIN` is set; a
+    top-level `await app.whenReady()` deadlocks in an Electron ESM entry; hardware acceleration
+    cannot be disabled without a capture hang, so GPU stays on; sharing Electron's default profile
+    with the sibling app crashes the GPU process, so a dedicated `$TMPDIR` profile is used; and a
+    hidden window never emits `requestAnimationFrame`, hence the timer race in the settle step.
+  - Captures land in `frontend/screenshots/`, which is gitignored.
 
 ### Slice 2 — Public (spectator) screens
 
