@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "../../components/primitives/Button";
-import { FormField } from "../../components/primitives/FormField";
+import { Field, fieldControlClasses } from "../../components/primitives/FormField";
 import { SectionShell } from "../../components/ui/SectionShell";
 import { ADMIN } from "../../fixtures";
 
@@ -71,20 +71,22 @@ export function CreateMatchPage() {
             />
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
-            <FormField
-              id="match-scheduled-at"
-              label="Fecha y Hora"
-              onChange={(event) => updateField("scheduledAt", event.target.value)}
-              type="datetime-local"
-              value={form.scheduledAt}
-            />
-            <FormField
-              id="match-venue"
-              label="Sede"
-              onChange={(event) => updateField("venue", event.target.value)}
-              placeholder="Ej: Polideportivo Municipal"
-              value={form.venue}
-            />
+            <Field id="match-scheduled-at" label="Fecha y Hora">
+              <input
+                className={fieldControlClasses}
+                onChange={(event) => updateField("scheduledAt", event.target.value)}
+                type="datetime-local"
+                value={form.scheduledAt}
+              />
+            </Field>
+            <Field id="match-venue" label="Sede">
+              <input
+                className={fieldControlClasses}
+                onChange={(event) => updateField("venue", event.target.value)}
+                placeholder="Ej: Polideportivo Municipal"
+                value={form.venue}
+              />
+            </Field>
           </div>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">

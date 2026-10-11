@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "../../components/primitives/Button";
-import { FormField } from "../../components/primitives/FormField";
+import { Field, fieldControlClasses } from "../../components/primitives/FormField";
 import { SectionShell } from "../../components/ui/SectionShell";
 
 type StaffRole = "scorer" | "assistant" | "coordinator";
@@ -65,8 +65,14 @@ function validateStaffForm(form: StaffForm): StaffErrors {
   return errors;
 }
 
-function fieldMessage(error: string | undefined, hint: string) {
-  return error ? <span role="alert">{error}</span> : hint;
+/**
+ * `Field` renders an optional hint and an optional error as two separate slots, so the
+ * old single-message field has to choose one: passing both would put two ids in
+ * `aria-describedby`. The error keeps its `role="alert"` wrapper, and `Field` derives
+ * `aria-invalid` from `error` being present.
+ */
+function feedbackProps(error: string | undefined, hint: string): { error?: ReactNode; hint?: ReactNode } {
+  return error ? { error: <span role="alert">{error}</span> } : { hint };
 }
 
 export function StaffRegisterPage() {
@@ -128,68 +134,63 @@ export function StaffRegisterPage() {
 
         <fieldset className="grid gap-5 rounded-xl border border-vt-border p-4">
           <legend className="px-2 text-sm font-bold text-vt-text">Datos personales</legend>
-          <FormField
-            autoComplete="given-name"
-            id={fieldIds.firstName}
-            label="Nombre"
-            aria-invalid={Boolean(errors.firstName)}
-            helperText={fieldMessage(errors.firstName, "Nombre de pila")}
-            name="firstName"
-            onChange={(event) => updateField("firstName", event.target.value)}
-            placeholder="Ej. Juan"
-            required
-            value={form.firstName}
-          />
-          <FormField
-            autoComplete="family-name"
-            id={fieldIds.lastName}
-            label="Apellido"
-            aria-invalid={Boolean(errors.lastName)}
-            helperText={fieldMessage(errors.lastName, "Apellido de la persona")}
-            name="lastName"
-            onChange={(event) => updateField("lastName", event.target.value)}
-            placeholder="Ej. Pérez"
-            required
-            value={form.lastName}
-          />
-          <FormField
-            id={fieldIds.dni}
-            inputMode="numeric"
-            label="DNI"
-            aria-invalid={Boolean(errors.dni)}
-            helperText={fieldMessage(errors.dni, "Sin puntos ni espacios")}
-            name="dni"
-            onChange={(event) => updateField("dni", event.target.value)}
-            placeholder="Ej. 32123456"
-            required
-            value={form.dni}
-          />
-          <FormField
-            autoComplete="tel"
-            id={fieldIds.phone}
-            label="Teléfono"
-            aria-invalid={Boolean(errors.phone)}
-            helperText={fieldMessage(errors.phone, "Código de área + número")}
-            name="phone"
-            onChange={(event) => updateField("phone", event.target.value)}
-            placeholder="Ej. 1123456789"
-            required
-            type="tel"
-            value={form.phone}
-          />
-          <FormField
-            autoComplete="email"
-            id={fieldIds.email}
-            label="Email"
-            aria-invalid={Boolean(errors.email)}
-            helperText={fieldMessage(errors.email, "correo@ejemplo.com")}
-            name="email"
-            onChange={(event) => updateField("email", event.target.value)}
-            placeholder="correo@ejemplo.com"
-            required
-            type="email"
-            value={form.email}
-          />
+          <Field id={fieldIds.firstName} label="Nombre" {...feedbackProps(errors.firstName, "Nombre de pila")}>
+            <input
+              autoComplete="given-name"
+              className={fieldControlClasses}
+              name="firstName"
+              onChange={(event) => updateField("firstName", event.target.value)}
+              placeholder="Ej. Juan"
+              required
+              value={form.firstName}
+            />
+          </Field>
+          <Field id={fieldIds.lastName} label="Apellido" {...feedbackProps(errors.lastName, "Apellido de la persona")}>
+            <input
+              autoComplete="family-name"
+              className={fieldControlClasses}
+              name="lastName"
+              onChange={(event) => updateField("lastName", event.target.value)}
+              placeholder="Ej. Pérez"
+              required
+              value={form.lastName}
+            />
+          </Field>
+          <Field id={fieldIds.dni} label="DNI" {...feedbackProps(errors.dni, "Sin puntos ni espacios")}>
+            <input
+              className={fieldControlClasses}
+              inputMode="numeric"
+              name="dni"
+              onChange={(event) => updateField("dni", event.target.value)}
+              placeholder="Ej. 32123456"
+              required
+              value={form.dni}
+            />
+          </Field>
+          <Field id={fieldIds.phone} label="Teléfono" {...feedbackProps(errors.phone, "Código de área + número")}>
+            <input
+              autoComplete="tel"
+              className={fieldControlClasses}
+              name="phone"
+              onChange={(event) => updateField("phone", event.target.value)}
+              placeholder="Ej. 1123456789"
+              required
+              type="tel"
+              value={form.phone}
+            />
+          </Field>
+          <Field id={fieldIds.email} label="Email" {...feedbackProps(errors.email, "correo@ejemplo.com")}>
+            <input
+              autoComplete="email"
+              className={fieldControlClasses}
+              name="email"
+              onChange={(event) => updateField("email", event.target.value)}
+              placeholder="correo@ejemplo.com"
+              required
+              type="email"
+              value={form.email}
+            />
+          </Field>
         </fieldset>
 
         <fieldset className="mt-5 grid gap-5 rounded-xl border border-vt-border p-4">

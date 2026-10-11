@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "../../components/primitives/Button";
-import { FormField } from "../../components/primitives/FormField";
+import { Field, fieldControlClasses } from "../../components/primitives/FormField";
 import { SectionShell } from "../../components/ui/SectionShell";
 
 type TournamentForm = {
@@ -41,29 +41,32 @@ export function CreateTournamentPage() {
         }}
       >
         <div className="grid gap-5">
-          <FormField
-            id="tournament-name"
-            label="Nombre del Torneo"
-            onChange={(event) => updateField("name", event.target.value)}
-            placeholder="Ej: Liga Nacional 2026"
-            value={form.name}
-          />
-          <FormField
-            id="tournament-start-date"
-            label="Fecha de Inicio"
-            onChange={(event) => updateField("startDate", event.target.value)}
-            placeholder="DD/MM/AAAA"
-            type="date"
-            value={form.startDate}
-          />
-          <FormField
-            id="tournament-end-date"
-            label="Fecha de Fin"
-            onChange={(event) => updateField("endDate", event.target.value)}
-            placeholder="DD/MM/AAAA"
-            type="date"
-            value={form.endDate}
-          />
+          <Field id="tournament-name" label="Nombre del Torneo">
+            <input
+              className={fieldControlClasses}
+              onChange={(event) => updateField("name", event.target.value)}
+              placeholder="Ej: Liga Nacional 2026"
+              value={form.name}
+            />
+          </Field>
+          <Field id="tournament-start-date" label="Fecha de Inicio">
+            <input
+              className={fieldControlClasses}
+              onChange={(event) => updateField("startDate", event.target.value)}
+              placeholder="DD/MM/AAAA"
+              type="date"
+              value={form.startDate}
+            />
+          </Field>
+          <Field id="tournament-end-date" label="Fecha de Fin">
+            <input
+              className={fieldControlClasses}
+              onChange={(event) => updateField("endDate", event.target.value)}
+              placeholder="DD/MM/AAAA"
+              type="date"
+              value={form.endDate}
+            />
+          </Field>
           <div className="grid gap-2">
             <label className="text-sm font-medium text-vt-text" htmlFor="tournament-format">Tipo de Competición</label>
             <select

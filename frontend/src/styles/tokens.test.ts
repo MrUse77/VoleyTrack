@@ -314,11 +314,14 @@ describe("design tokens", () => {
     // - /vt-raised-border/ can only match its own literal, and /vt-panel(?![\-\w])/ cannot
     //   match any part of the two raised patterns.
     // Occurrences are counted, not lines, so several usages on one className all count.
-    // Ceilings are measured, not invented: at the moment this guard was added, the scan
-    // above found 97 vt-panel usages in 51 files, 48 vt-raised usages in 28 files and
-    // 9 vt-raised-border usages in 7 files.
+    // Ceilings are measured, not invented. The layer-mapping change measured 97 vt-panel
+    // usages in 51 files, 48 vt-raised usages in 28 files and 9 vt-raised-border usages in
+    // 7 files. Retiring the duplicated form-field wrapper, moving the Badge base onto the
+    // design's --bg fill and dropping the retired-wrapper assertion from core.test.tsx
+    // took vt-panel down to 94 usages in 48 files, so that ceiling is lowered here in the
+    // same change (a slack ceiling is a broken ratchet).
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 97, baselineFiles: 51 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 94, baselineFiles: 48 },
       { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 48, baselineFiles: 28 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 9, baselineFiles: 7 },
     ];

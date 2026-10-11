@@ -8,7 +8,7 @@ type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
 };
 
 const variantClasses: Record<BadgeVariant, string> = {
-  default: "border-vt-border bg-vt-panel text-vt-muted",
+  default: "border-vt-border bg-vt-background text-vt-muted",
   success: "border-vt-success/30 bg-vt-success/10 text-vt-success",
   danger: "border-vt-danger/30 bg-vt-danger/10 text-vt-danger",
   accent: "border-vt-accent/35 bg-vt-accent/10 text-vt-accent",
@@ -30,7 +30,15 @@ export function Badge({ className = "", variant = "default", tone, ...props }: B
   const resolved = resolveVariant(variant, tone);
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] leading-none ${variantClasses[resolved]} ${className}`.trim()}
+      // Design source: frontend/design/html/voleytrack.css:101-103 (admin:86-88)
+      //   .badge{font-family:var(--font-mono);font-size:10px;font-weight:800;
+      //          letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;
+      //          border-radius:999px;border:1px solid var(--border);
+      //          background:var(--bg);color:var(--muted)}
+      // `leading-none` is kept from the previous base: the design's `.badge` is an inline
+      // box whose inherited 1.5 line-height the vendored `inline-flex` equivalent cannot
+      // reproduce, and the enumerated spec says nothing about line-height.
+      className={`inline-flex items-center rounded-full border px-2 py-[5px] font-mono text-[10px] font-extrabold uppercase leading-none tracking-[0.06em] ${variantClasses[resolved]} ${className}`.trim()}
       {...props}
     />
   );

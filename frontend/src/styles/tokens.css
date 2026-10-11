@@ -25,6 +25,8 @@
  *   --radius-vt-md                 voleytrack-admin.css:184 form control radius 12px
  *   --shadow-vt-focus-ring         voleytrack-admin.css:185 focus-visible ring colour-mix 22%
  *   --shadow-vt-toast              voleytrack.css:116       .toast box-shadow
+ *   --color-vt-border-hover        voleytrack.css:70 / voleytrack-admin.css:73
+ *                                                          .btn:hover{border-color:#2d3d5f}
  *   --animate-vt-pulse             voleytrack.css:62        .live-dot pulse 1.2s @keyframes pulse
  *   --animate-vt-toast-in          voleytrack.css:116-117  .toast -> .toast.show translate/opacity .25s
  */
@@ -36,6 +38,7 @@
   --color-vt-raised: #1e293b;
   --color-vt-border: #243249;
   --color-vt-border-2: #1e293b;
+  --color-vt-border-hover: #2d3d5f;
   --color-vt-raised-border: #334155;
   --color-vt-text: #f8fafc;
   --color-vt-label: #e2e8f0;

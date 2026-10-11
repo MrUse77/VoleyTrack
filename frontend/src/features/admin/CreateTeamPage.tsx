@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { FormField } from "../../components/primitives/FormField";
+import { Field, fieldControlClasses } from "../../components/primitives/FormField";
 import { Modal } from "../../components/primitives/Modal";
 import { PUBLIC_PLAYERS } from "../../fixtures";
 
@@ -142,22 +142,22 @@ export function CreateTeamPage() {
           event.preventDefault();
         }}
       >
-        <FormField
-          className="h-12"
-          id="team-club-name"
-          label="Nombre del Club"
-          onChange={(event) => updateField("clubName", event.target.value)}
-          placeholder="Ej: Club Atlético River Plate"
-          value={form.clubName}
-        />
-        <FormField
-          className="h-12"
-          id="team-coach"
-          label="Entrenador (Coach)"
-          onChange={(event) => updateField("coach", event.target.value)}
-          placeholder="Nombre del director técnico"
-          value={form.coach}
-        />
+        <Field id="team-club-name" label="Nombre del Club">
+          <input
+            className={fieldControlClasses}
+            onChange={(event) => updateField("clubName", event.target.value)}
+            placeholder="Ej: Club Atlético River Plate"
+            value={form.clubName}
+          />
+        </Field>
+        <Field id="team-coach" label="Entrenador (Coach)">
+          <input
+            className={fieldControlClasses}
+            onChange={(event) => updateField("coach", event.target.value)}
+            placeholder="Nombre del director técnico"
+            value={form.coach}
+          />
+        </Field>
         <div className="mt-4 rounded-lg border border-vt-border bg-vt-panel px-4 py-6 text-center text-sm text-vt-muted">
           {rosterPlayers.length === 0 ? (
             <>Aún no hay jugadores. Haz clic en &quot;Agregar Jugador&quot;.</>
@@ -208,39 +208,36 @@ export function CreateTeamPage() {
       <Modal isOpen={activeModal === "player"} onClose={closeModal} title="Agregar Jugador al Equipo">
         <p className="mb-5 text-sm text-vt-muted">Registra un nuevo jugador y sumalo directamente al plantel.</p>
         <form className="grid gap-4" onSubmit={handleAddPlayer}>
-          <FormField
-            aria-invalid={Boolean(newPlayerErrors.fullName)}
-            aria-required="true"
-            id={newPlayerFieldIds.fullName}
-            label="Nombre Completo"
-            onChange={(event) => updateNewPlayerField("fullName", event.target.value)}
-            placeholder="Ej: Sofía Fernández"
-            value={newPlayerForm.fullName}
-            helperText={newPlayerErrors.fullName}
-          />
-          <FormField
-            aria-invalid={Boolean(newPlayerErrors.number)}
-            aria-required="true"
-            id={newPlayerFieldIds.number}
-            label="Dorsal"
-            max="99"
-            min="1"
-            onChange={(event) => updateNewPlayerField("number", event.target.value)}
-            placeholder="Ej: 18"
-            type="number"
-            value={newPlayerForm.number}
-            helperText={newPlayerErrors.number}
-          />
-          <FormField
-            aria-invalid={Boolean(newPlayerErrors.position)}
-            aria-required="true"
-            id={newPlayerFieldIds.position}
-            label="Posición"
-            onChange={(event) => updateNewPlayerField("position", event.target.value)}
-            placeholder="Ej: Central"
-            value={newPlayerForm.position}
-            helperText={newPlayerErrors.position}
-          />
+          <Field error={newPlayerErrors.fullName} id={newPlayerFieldIds.fullName} label="Nombre Completo">
+            <input
+              aria-required="true"
+              className={fieldControlClasses}
+              onChange={(event) => updateNewPlayerField("fullName", event.target.value)}
+              placeholder="Ej: Sofía Fernández"
+              value={newPlayerForm.fullName}
+            />
+          </Field>
+          <Field error={newPlayerErrors.number} id={newPlayerFieldIds.number} label="Dorsal">
+            <input
+              aria-required="true"
+              className={fieldControlClasses}
+              max="99"
+              min="1"
+              onChange={(event) => updateNewPlayerField("number", event.target.value)}
+              placeholder="Ej: 18"
+              type="number"
+              value={newPlayerForm.number}
+            />
+          </Field>
+          <Field error={newPlayerErrors.position} id={newPlayerFieldIds.position} label="Posición">
+            <input
+              aria-required="true"
+              className={fieldControlClasses}
+              onChange={(event) => updateNewPlayerField("position", event.target.value)}
+              placeholder="Ej: Central"
+              value={newPlayerForm.position}
+            />
+          </Field>
           {Object.keys(newPlayerErrors).length > 0 ? (
             <p aria-live="assertive" className="text-sm text-vt-danger" role="alert">
               Completá los campos obligatorios antes de agregar el jugador.

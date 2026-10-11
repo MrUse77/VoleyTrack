@@ -1,35 +1,4 @@
-import { cloneElement, type InputHTMLAttributes, type ReactElement, type ReactNode } from "react";
-
-type FormFieldProps = InputHTMLAttributes<HTMLInputElement> & {
-  id: string;
-  label: ReactNode;
-  helperText?: ReactNode;
-};
-
-/**
- * Legacy single-input field. Kept byte-for-byte compatible for the admin screens
- * that already consume it; the design-accurate field is `Field` below. Screens
- * migrate to `Field`, and `FormField` goes away once none are left, so the two
- * do not fork into competing field concepts.
- */
-export function FormField({ className = "", helperText, id, label, ...props }: FormFieldProps) {
-  const helperTextId = helperText ? `${id}-helper` : undefined;
-
-  return (
-    <div className="grid gap-2">
-      <label className="text-sm font-medium text-vt-text" htmlFor={id}>
-        {label}
-      </label>
-      <input
-        aria-describedby={helperTextId}
-        className={`h-10 rounded-lg border border-vt-border bg-vt-panel px-3 text-sm text-vt-text placeholder:text-vt-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent ${className}`.trim()}
-        id={id}
-        {...props}
-      />
-      {helperText ? <p className="text-sm text-vt-muted" id={helperTextId}>{helperText}</p> : null}
-    </div>
-  );
-}
+import { cloneElement, type ReactElement, type ReactNode } from "react";
 
 // Design source: frontend/design/html/voleytrack-admin.css:177-190
 // (input, select, textarea, focus-visible, disabled, placeholder).
@@ -63,6 +32,10 @@ type FieldProps = {
  * Design-accurate form field: `.field` wraps a label, one control, an optional
  * hint and an optional error (.field / .field.full / .field label / .hint /
  * .field-error).
+ *
+ * This is the only form-field concept in the app: the older wrapper that rendered its
+ * own single `<input>` was retired once its last consumer moved here, so hint/error/
+ * described-by wiring has one owner instead of two.
  *
  * `Field` owns the accessibility wiring instead of trusting every call site:
  * it clones the control to set `id`, `aria-describedby` (error first, then hint)

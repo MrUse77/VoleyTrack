@@ -352,9 +352,35 @@ const PROBE_SOURCE = `(() => {
       color: cs.color,
       backgroundColor: cs.backgroundColor,
       accentPresent: cs.backgroundColor === "rgb(255, 140, 66)",
+      // Computed geometry of the accent element, so a rendered-level style change (for
+      // example the .btn pill radius) is machine-readable even when images are not.
+      borderRadius: cs.borderRadius,
+      height: cs.height,
+      fontSize: cs.fontSize,
     };
     break;
   }
+
+  // Additive only: no existing strategy above is reordered or redefined. The Button
+  // primitive renders the design's pill (rounded-full, .btn at voleytrack.css:69) on a
+  // bg-vt-accent button, while the screens that still hand-roll their own accent
+  // control use rounded-lg. Reporting the computed geometry of every accent-filled
+  // button on the page makes that difference machine-readable even when the accent probe
+  // above lands on a sidebar nav item, which it does on every shelled route.
+  const accentControls = Array.from(document.querySelectorAll('button[class*="bg-vt-accent"]'))
+    .slice(0, 8)
+    .map((el) => {
+      const cs = getComputedStyle(el);
+
+      return {
+        text: (el.innerText || el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40),
+        backgroundColor: cs.backgroundColor,
+        borderRadius: cs.borderRadius,
+        height: cs.height,
+        fontSize: cs.fontSize,
+        fontWeight: cs.fontWeight,
+      };
+    });
 
   const expected = __EXPECTED__;
   const innerText = document.body.innerText || "";
@@ -392,6 +418,7 @@ const PROBE_SOURCE = `(() => {
           }
         : { present: false, expectedWidth: 248, matchesDesign: false },
       accent,
+      accentControls,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "../../components/primitives/Button";
-import { FormField } from "../../components/primitives/FormField";
+import { Field, fieldControlClasses } from "../../components/primitives/FormField";
 import { SectionShell } from "../../components/ui/SectionShell";
 
 type PlayerPosition = "setter" | "outside-hitter" | "opposite" | "middle-blocker" | "libero";
@@ -71,8 +71,14 @@ function validatePlayerForm(form: PlayerForm): PlayerErrors {
   return errors;
 }
 
-function fieldMessage(error: string | undefined, hint: string) {
-  return error ? <span role="alert">{error}</span> : hint;
+/**
+ * `Field` renders an optional hint and an optional error as two separate slots, so the
+ * old single-message field has to choose one: passing both would put two ids in
+ * `aria-describedby`. The error keeps its `role="alert"` wrapper, and `Field` derives
+ * `aria-invalid` from `error` being present.
+ */
+function feedbackProps(error: string | undefined, hint: string): { error?: ReactNode; hint?: ReactNode } {
+  return error ? { error: <span role="alert">{error}</span> } : { hint };
 }
 
 export function CreatePlayerPage() {
@@ -135,61 +141,57 @@ export function CreatePlayerPage() {
 
         <fieldset className="grid gap-5 rounded-xl border border-vt-border p-4">
           <legend className="px-2 text-sm font-bold text-vt-text">Datos personales</legend>
-          <FormField
-            autoComplete="given-name"
-            id={fieldIds.firstName}
-            label="Nombre"
-            aria-invalid={Boolean(errors.firstName)}
-            helperText={fieldMessage(errors.firstName, "Nombre de pila")}
-            name="firstName"
-            onChange={(event) => updateField("firstName", event.target.value)}
-            placeholder="Nombre del jugador"
-            required
-            value={form.firstName}
-          />
-          <FormField
-            autoComplete="family-name"
-            id={fieldIds.lastName}
-            label="Apellido"
-            aria-invalid={Boolean(errors.lastName)}
-            helperText={fieldMessage(errors.lastName, "Apellido del jugador")}
-            name="lastName"
-            onChange={(event) => updateField("lastName", event.target.value)}
-            placeholder="Apellido del jugador"
-            required
-            value={form.lastName}
-          />
-          <FormField
-            id={fieldIds.birthDate}
-            label="Fecha de nacimiento"
-            aria-invalid={Boolean(errors.birthDate)}
-            helperText={fieldMessage(errors.birthDate, "Formato de fecha local")}
-            name="birthDate"
-            onChange={(event) => updateField("birthDate", event.target.value)}
-            required
-            type="date"
-            value={form.birthDate}
-          />
+          <Field id={fieldIds.firstName} label="Nombre" {...feedbackProps(errors.firstName, "Nombre de pila")}>
+            <input
+              autoComplete="given-name"
+              className={fieldControlClasses}
+              name="firstName"
+              onChange={(event) => updateField("firstName", event.target.value)}
+              placeholder="Nombre del jugador"
+              required
+              value={form.firstName}
+            />
+          </Field>
+          <Field id={fieldIds.lastName} label="Apellido" {...feedbackProps(errors.lastName, "Apellido del jugador")}>
+            <input
+              autoComplete="family-name"
+              className={fieldControlClasses}
+              name="lastName"
+              onChange={(event) => updateField("lastName", event.target.value)}
+              placeholder="Apellido del jugador"
+              required
+              value={form.lastName}
+            />
+          </Field>
+          <Field id={fieldIds.birthDate} label="Fecha de nacimiento" {...feedbackProps(errors.birthDate, "Formato de fecha local")}>
+            <input
+              className={fieldControlClasses}
+              name="birthDate"
+              onChange={(event) => updateField("birthDate", event.target.value)}
+              required
+              type="date"
+              value={form.birthDate}
+            />
+          </Field>
         </fieldset>
 
         <fieldset className="mt-5 grid gap-5 rounded-xl border border-vt-border p-4">
           <legend className="px-2 text-sm font-bold text-vt-text">Datos deportivos</legend>
-          <FormField
-            id={fieldIds.number}
-            inputMode="numeric"
-            label="Dorsal"
-            aria-invalid={Boolean(errors.number)}
-            helperText={fieldMessage(errors.number, "Número de camiseta (ej. 10)")}
-            max="99"
-            min="0"
-            name="number"
-            onChange={(event) => updateField("number", event.target.value)}
-            placeholder="10"
-            required
-            step="1"
-            type="number"
-            value={form.number}
-          />
+          <Field id={fieldIds.number} label="Dorsal" {...feedbackProps(errors.number, "Número de camiseta (ej. 10)")}>
+            <input
+              className={fieldControlClasses}
+              inputMode="numeric"
+              max="99"
+              min="0"
+              name="number"
+              onChange={(event) => updateField("number", event.target.value)}
+              placeholder="10"
+              required
+              step="1"
+              type="number"
+              value={form.number}
+            />
+          </Field>
           <div className="grid gap-2">
             <label className="text-sm font-medium text-vt-text" htmlFor={fieldIds.position}>Posición</label>
             <select

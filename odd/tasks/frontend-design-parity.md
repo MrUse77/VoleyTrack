@@ -371,39 +371,94 @@ not 20.)
     was added rather than reusing `--shadow-vt` since the values differ.
   - Verified independently by the parent: the new tests render markup rather than grepping source,
     and the accessibility attributes are present in the components, not merely claimed.
-- [ ] **T06b — Retire `FormField` in favour of `Field`.** Raised by the T06 worker as the one thing
-  worth reviewing. `FormField` and the new `Field` now coexist in
-  `frontend/src/components/primitives/FormField.tsx`. Restyling `FormField` to the design's
-  46px/`--bg` control would silently restyle every admin form, which is why the worker added `Field`
-  alongside it instead of converting in place — correct for an additive slice, but two coexisting
-  form-field concepts is precisely the duplication this feature exists to remove.
-  Deliverable: label `FormField` as transitional in code with its migration owner named, and add its
-  usage count to the debt ratchet so it cannot be adopted by new code. The consumer migration itself
-  belongs in slice 3 with the admin forms, which already touch those ~20 call sites.
-  Should land together with T07, which is the same area, to avoid a separate round trip.
-- [ ] **T07 — Align `Card`, `Button` and the `Badge` base with the design spec.**
-  - `Card` per the design is a container with **no padding of its own**: `.card` is background,
-    1px border, radius 16 and `overflow:hidden`, while the spacing lives in `.card-h`
-    (`18px 20px 0`) and `.card-b` (`18px 20px`). The React `Card` is `rounded-2xl border p-6`, a box
-    with uniform padding, which is visually close for a plain card but structurally wrong for a card
-    with a header.
-    **Decision taken, and it is not the easy one:** add `CardHeader`/`CardBody` sub-parts and migrate
-    consumers **one screen at a time** inside slices 2 to 4, rather than migrating all 52 cards in a
-    single commit. Condition that keeps it honest: the uniform-padding form is explicitly labelled
-    in code as transitional, the same way the app-only colour tokens are labelled. A legacy shape
-    that keeps living without a label is exactly how duplicate systems are born, and this feature is
-    removing one of those already.
-  - `Button` must move from `rounded-lg` to the design's pill radius, and its variants need remapping:
-    the design has a default `.btn` (surface fill), `.btn.accent` and `.btn.ghost`, with height 40,
-    padding 0 16, 13px weight 700 and a 16px icon. `Card`'s `raised` variant is app-only debt under
-    T05b and belongs in this migration.
-  - The design's `.btn:hover` uses **`#2d3d5f`**, another colour the design hardcodes outside its
-    `:root`, so it needs a token with the design line cited rather than a raw literal.
-  - The `Badge` **base** is the parity gap T06 could not close: the design is mono 10px/800,
-    tracking `.06em`, padding `5px 8px`; the app uses `px-3 py-1 tracking-[0.2em]`. Aligning it moves
-    the pinned test and possibly consuming screens, so it must be done deliberately with the
-    consumers in view.
-  Guard against regressions in the existing primitive tests.
+- [x] **T06b — Retire `FormField` in favour of `Field`.** Done. All 19 call sites migrated across the
+  five admin files (`CreateTournamentPage` 3, `CreateMatchPage` 2, `StaffRegisterPage` 5,
+  `CreateTeamPage` 5, `CreatePlayerPage` 4), and `FormField` is gone as a concept. `Field` was
+  missing nothing, so no capability had to be added. Deleting the duplication outright is stronger
+  than ratcheting it, which is why it was pulled forward once the measurement showed only five
+  files. Admin tests stayed green: `49 files / 292 passed` before, `294 passed` after.
+  - One limitation: the module keeps the filename `FormField.tsx` because deleting files was not
+    permitted by the worker's tool safety. It now exports only `Field` and the control class
+    constants. The filename is therefore misleading and is worth renaming in a later pass.
+  - Incidental parity fixes that came with the migration, reported rather than smuggled:
+    `CreateTeamPage` inputs move from the legacy `h-12` (48px) to the design's 46px, and error text
+    in `CreatePlayer`/`StaffRegister` now renders in `text-vt-danger`. `aria-invalid="false"` is no
+    longer emitted when the field is valid, per `Field`'s pinned contract.
+- [x] **T07 — Align `Button`, the `Badge` base and `Card` with the design spec.** Done, and it
+  surfaced the most consequential defect found so far (see T07b).
+  - `Button` is now the design's pill: `rounded-full`, 40px tall, `px-4`, `gap-2`,
+    `whitespace-nowrap`, 13px bold, 16px icons. Variants were **mapped** rather than renamed, so no
+    call site broke: `primary` becomes `.btn.accent` with the dark ink and
+    `hover:brightness-[1.06]`, the new `surface` becomes `.btn`, `ghost` becomes `.btn.ghost`, and
+    `icon` survives as a legacy alias. The prop default is unchanged.
+  - `Badge`'s **base** was the parity gap T06 flagged and is now the design's: mono, 10px,
+    extrabold, tracking `.06em`, `px-2 py-[5px]`, with the default fill moved off `vt-panel` onto
+    `vt-background`. This changes **40 call sites across 26 files**, which is intended, and it also
+    lowered the `vt-panel` debt (see the ratchet below).
+  - `Card` gained `CardHeader` (`.card-h`) and `CardBody` (`.card-b`) plus a `padded?: boolean`
+    prop. The mechanism that resolves the problem described in this document's plan: `padded`
+    defaults to `true` and renders exactly today's `p-6` with no clipping, while `padded={false}`
+    renders the design's structural form with no padding and `overflow:hidden`. One padding value is
+    chosen per card, so the structural spacer can never double up with `card-h`/`card-b`. All 66
+    production `<Card>` tags are untouched.
+  - **A reliable ratchet for the legacy card form was possible**, contrary to the concern raised
+    when planning. The worker built a brace-aware tag scanner after establishing that a naive
+    `<Card[^>]*>` regex silently truncates at the `>` inside an `onClick={() => …}` and would stop
+    seeing `padded` — a trap that would have produced a guard that passes while measuring nothing.
+    It also strips comments, and asserts no spread and no aliased import, with a floor of 66 tags in
+    21 files and a ceiling of 66 legacy usages. Liveness was proven: adding a 67th card failed with
+    `expected 67 to be less than or equal to 66`.
+  - **Verified at the rendered level**, which is the point of T10b: the primitive `Button` on
+    `/admin/tournaments/create` computes `border-radius: 3.35544e+07px`, i.e. Chromium's clamped
+    999px on a 40px box, at `height: 40px`. So the pill radius genuinely reached the browser.
+    Worth knowing for later tasks: the accent element on `/login` and on `/` is **not** the `Button`
+    primitive at all (it measures 8px and 10px radius, 48px and 44px tall), so the harness's
+    existing accent probe cannot see this component. The worker therefore added an additive
+    `probes.accentControls` field rather than changing the existing probe's behaviour. Design
+    disagreements it reported: `.card-h`/`.card-b` padding differs between `voleytrack.css:76,78`
+    (`18px 20px 0` / `18px 20px`) and `voleytrack-admin.css:96-98` (`16px 18px` with a bottom border,
+    and `18px`), so the shared-file values were implemented; `.btn` also carries `transition:.15s`
+    (`voleytrack-admin.css:72`) which the prompt omitted.
+  - Its correction to this document's call-site arithmetic: `Button` is **27 tags across 10 files**
+    (22 of them `ghost`), not the 31 across 13 written earlier. `Card` (66/21) and `FormField` (19)
+    were correct.
+  - The ratchet was **lowered** as required: `vt-panel` went from 97 occurrences in 51 files to
+    **94 in 48**, with the ceiling reduced to match, so the freed budget cannot be re-spent.
+    `vt-raised` (48/28) and `vt-raised-border` (9/7) are unchanged and still at their ceilings.
+  - Suite `49 files / 294 passed`, lint exit 0, build exit 0.
+- [ ] **T07b — Fix the unlayered base rule that silently defeats every typography utility on
+  buttons and links.** Found by T07, outside that task's surfaces, and it is the most consequential
+  defect discovered in this feature so far.
+  `frontend/src/index.css:58-60` contains, at top level and **outside any `@layer`**:
+
+  ```css
+  a,
+  button {
+    font: inherit;
+  }
+  ```
+
+  In CSS, unlayered declarations always beat layered ones regardless of source order. Every Tailwind
+  utility lives in a layer, so this rule defeats **all** of them for `font-size`, `font-weight`,
+  `font-family`, `letter-spacing` and `line-height` on every `<button>` and every `<a>` in the app.
+  Confirmed two ways: the rule sits at column 0 outside any layer in the source, and in the built
+  stylesheet the `@layer` blocks occupy the low byte offsets while `font:inherit` appears at 8523,
+  8707 and 87505 — after them. Measured consequence: the primitive `Button` computes **16px/400**
+  while its own classes say `text-[13px] font-bold`, whereas `height` and the pill radius do apply,
+  because `font: inherit` does not touch them.
+  This is why the design's typography could never take effect: `.btn` is 13px/700 and the public
+  sidebar's `.nav-item` is 13px/600, and nav items are `<a>` elements. It compounds with the
+  separate discovery that Inter was never loaded, so two independent silent failures were flattening
+  typography at once.
+  Deliverable: bring the rule into the correct cascade position so utilities win again — wrapping it
+  in `@layer base` is the conservative fix, and removing it is defensible since Tailwind's preflight
+  already sets font inheritance for form controls inside `@layer base`, but whichever is chosen must
+  be justified. Note that `a { font: inherit }` is effectively a no-op in CSS, since anchors carry no
+  user-agent font style.
+  Consequence to expect and verify: this is an **app-wide visible change** to every button and link.
+  Evidence: after the fix, the primitive `Button` must compute 13px/700 (not 16px/400) and a sidebar
+  nav link must compute 13px/600, measured through the harness. This must land before slice 2, since
+  every screen's typography depends on it.
 - [ ] **T08 — Add the mono tabular numeric treatment.** Introduce the design's `.num`
   equivalent (mono family, `tabular-nums`, right alignment) and apply it to the numeric columns
   of the shared table primitive.
