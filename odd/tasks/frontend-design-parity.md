@@ -892,10 +892,54 @@ readable against the completed record above; the carried-over items it lists wer
     what those ratchets were for, and the counts are falling for the right reason.
   - Suite `44 files / 297 passed`, lint exit 0, build exit 0. Dev servers were stopped with single-PID
     kills, both ports released, and another session's process left untouched.
-- [ ] **T14 — Teams parity.** New `/teams` list (currently a placeholder) and a team detail with
-  the design's four tabs plus the "Rendimiento Últimos 5" badges.
-- [ ] **T15 — Players parity.** New `/players` list (currently a placeholder) and a player detail
-  with the design's KPI grid.
+- [x] **T14 — Teams parity.** Done. `/teams` and its detail are real screens now, and the **Equipos**
+  destination was added to the public nav in the same change, so the nav only grows as a destination
+  becomes real.
+  - List: `PageHeader`, a labelled `FilterGroup`, a count line, and a structural `Card` wrapping the
+    shared `DataTable`, with `EmptyState` for the empty case.
+  - Detail: the design's four tabs implemented over the routes that already existed. `Resumen` was
+    renamed to the design's `Detalle`, the roster tab gained its count (`Plantel (5)`), and `Partidos`
+    and `Estadísticas` were kept unchanged; nothing was removed. The design's inverted active pill was
+    adopted for the tab strip.
+  - `Rendimiento ÚLTIMOS 5` was added, and its cards were moved onto structural `Card`/`CardHeader`/
+    `CardBody` with `vt-panel` replaced by `vt-surface-2`.
+- [x] **T15 — Players parity.** Done. `/players` and its detail are real screens, and the **Jugadores**
+  destination was added to the nav.
+  - List: the same composition as teams, with six columns including a per-row link to the player's file.
+  - Detail: moved onto the aligned `KpiGrid`/`Kpi`, with two cards converted to the structural form and
+    `vt-raised` replaced by design-backed border tokens.
+  - **En vivo was deliberately left out of the nav**, because it still has no route or screen; adding it
+    would put a link in the main navigation that leads nowhere. It arrives with T16.
+  - The placeholder wiring those two routes left behind was removed, while `PlaceholderPage` itself
+    survives because `/admin/settings` still uses it.
+  - **Measured before and after.** Before, both routes were `placeholderRoute` instances, and the
+    placeholder copy was proven live by capturing `/admin/settings` and finding its "screen is not
+    implemented" text. After: the nav renders five destinations (`Dashboard, Partidos, Torneos,
+    Equipos, Jugadores`) with no `En vivo`; the teams table has four `th[scope=col]` headers and the
+    players table six; the team tabs render `Detalle` (active) / `Plantel (5)` / `Partidos` /
+    `Estadísticas` with the active pill measured at `rgb(248,250,252)` fill and `rgb(11,18,32)` ink at
+    11px/700; the KPI grid measures four 264px tracks with a 16px gap and a KPI value at 32px/900 with
+    32px line-height and -0.64px tracking; and `CardBody` applies 18px 20px. Every capture returned
+    exit 0 with `problems: []`.
+  - **Design disagreements, each with its reasoning.** The design's collapsible `Filtros` select panels
+    again became pill groups, and the numeric `mínimos` selects remain unbuilt. Its prototype row
+    figures (`data-players="14" data-wins="8"`) were **not** copied: the screens derive those numbers
+    from `PUBLIC_TEAM_DETAILS` and the league standings, rendering an honest em dash where the data does
+    not exist. Its player KPI values and labels were adopted but labelled as prototype data in the
+    fixture, superseding the previous canonical pairs. Its `Rendimiento` rows were replaced by real
+    per-match averages, because the prototype's per-set metrics have no counterpart in our data, and
+    the block was placed full-width above the app's own grid.
+  - Ratchets lowered again: `vt-panel` 61/31 → **52/27**, `vt-raised` 36/21 → **29/18**, the legacy-`Card`
+    ceiling 41/13 → **35/12** with the all-`Card` floor rising 55/19 → 59/21 as new structural cards
+    appeared. `vt-raised-border` unchanged at 9/7.
+  - Suite `46 files / 309 passed`, lint exit 0, build exit 0. Dev server stopped with a single-PID kill,
+    port released, another session's process untouched.
+  - **Carried into the polish pass:** the two list screens render an honest em dash where fixtures hold
+    no tournament, record or height; the design's filter panels and per-set `Rendimiento` metrics remain
+    unbuilt; and `PlayerDetailPage.tsx` still carries the app's own artboard hero, breakdown and
+    recent-matches blocks with pre-existing raw colour usage (`text-white`, `bg-vt-panel`). That last
+    one is real debt, not a design decision, and it is not covered by the raw-colour guard because that
+    guard only covers the auth, layout and dashboard surfaces.
 - [ ] **T16 — Live match parity.** Timeline, court with positions, scoreboard.
 
 ### Slice 3 — Admin screens

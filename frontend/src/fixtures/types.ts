@@ -213,8 +213,12 @@ export type PlayerFixture = Readonly<{
 }>;
 
 export type PlayerKpiFixture = Readonly<{
-  label: "Puntos Totales" | "Eficacia Ataque" | "Aces (Saques)" | "Bloqueos";
+  label: "Puntos" | "Ataque" | "Bloqueo" | "Saque ace";
   value: string;
+  /**
+   * The design's `.kpi-sub` line (voleytrack-jugadores.html, the player view's `.kpi` tiles).
+   */
+  sub: string;
 }>;
 
 export type PlayerStatBreakdownFixture = Readonly<{

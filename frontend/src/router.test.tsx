@@ -24,9 +24,11 @@ import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsP
 import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
 import { ADMIN, PUBLIC_DASHBOARD, PUBLIC_MATCHES, PUBLIC_PLAYERS, PUBLIC_TEAMS, PUBLIC_TOURNAMENTS } from "./fixtures";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
+import { PlayersPage } from "./features/public/PlayersPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
 import { TeamStatsPage } from "./features/public/TeamStatsPage";
+import { TeamsPage } from "./features/public/TeamsPage";
 import { routeTree } from "./router";
 
 // Each test owns a fresh router. A mounted RouterProvider overwrites the
@@ -113,15 +115,23 @@ describe("router", () => {
     expect(publicPaths).toContain("players");
     expect(publicPaths).toContain("teams");
     expect(allPaths).not.toContain("/stats");
-    // The design defines /teams and /players, so they stay as PlaceholderPage routes until
-    // the tasks that build their real screens (T14/T15) land; only /stats had no design
-    // counterpart and no working screen, so it is the one that was removed.
+    // `/teams` and `/players` stopped being PlaceholderPage routes when their real screens
+    // landed (T14/T15): the routes stay, and these assertions now pin the real components
+    // rather than deleting the protection the placeholder assertions used to give them.
     expect(allPaths).toContain("/teams");
     expect(allPaths).toContain("/players");
     expect(publicPaths).not.toContain("matches/$id/live");
     expect(publicPaths).toContain("teams/$id");
     expect(publicPaths).toContain("teams/$id/roster");
     expect(publicPaths).toContain("teams/$id/stats");
+    const teamsRoute = publicChildren?.find(
+      (route) => route.fullPath === "/teams",
+    );
+    const playersRoute = publicChildren?.find(
+      (route) => route.fullPath === "/players",
+    );
+    expect(teamsRoute?.options?.component).toBe(TeamsPage);
+    expect(playersRoute?.options?.component).toBe(PlayersPage);
     const rosterRoute = publicChildren?.find(
       (route) => route.fullPath === "/teams/$id/roster",
     );
@@ -720,6 +730,8 @@ describe("router", () => {
     { route: "/tournaments?status=en-curso", content: "En curso", activeHref: "/tournaments", activeLabel: "Torneos" },
     { route: "/tournaments?status=proximos", content: "Próximos", activeHref: "/tournaments", activeLabel: "Torneos" },
     { route: "/tournaments?status=finalizados", content: "Finalizados", activeHref: "/tournaments", activeLabel: "Torneos" },
+    { route: "/teams", content: "PG / PP", activeHref: "/teams", activeLabel: "Equipos" },
+    { route: "/players", content: "Ver ficha →", activeHref: "/players", activeLabel: "Jugadores" },
   ])("renders public artboard route $route with its active sidebar navigation", async ({ route, content, activeHref, activeLabel }) => {
     const container = document.createElement("div");
     document.body.append(container);
@@ -735,6 +747,30 @@ describe("router", () => {
     expect(`${window.location.pathname}${window.location.search}`).toBe(route);
     expect(container.textContent).toContain(content);
     expect(container.querySelector(`a[aria-current="page"][href="${activeHref}"]`)?.textContent).toContain(activeLabel);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("exposes the design's public destinations except the unbuilt En vivo link", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    // Design: frontend/design/html/voleytrack.html, `sidebar-public-nav` is Dashboard /
+    // Partidos / Torneos / Equipos / Jugadores / En vivo. Equipos and Jugadores joined it
+    // with their real screens; `En vivo` stays out until its own screen lands.
+    const labels = [...container.querySelectorAll("aside nav a")].map(
+      (link) => link.querySelector("span:last-child")?.textContent,
+    );
+    expect(labels).toEqual(["Dashboard", "Partidos", "Torneos", "Equipos", "Jugadores"]);
+    expect(labels).not.toContain("En vivo");
+    expect(container.querySelector('aside nav a[href="/live"]')).toBeNull();
 
     await act(async () => root.unmount());
     container.remove();
