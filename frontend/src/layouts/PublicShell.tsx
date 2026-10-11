@@ -81,7 +81,7 @@ function PublicHeader({ currentPath }: { currentPath: string }) {
       </form>
 
       <Link
-        className="inline-flex h-9 shrink-0 items-center justify-center rounded-[10px] bg-vt-accent px-5 text-xs font-bold text-vt-background transition hover:bg-[#ff9b59] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
+        className="inline-flex h-9 shrink-0 items-center justify-center rounded-[10px] bg-vt-accent px-5 text-xs font-bold text-vt-background transition hover:brightness-[1.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
         search={{ status: "live" }}
         to="/matches"
       >

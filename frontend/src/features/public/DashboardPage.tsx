@@ -36,7 +36,7 @@ export function DashboardPage() {
                       {metric.detail}
                     </p>
                   ) : (
-                    <span aria-hidden="true" className="mr-5 size-2.5 rounded-full bg-vt-success shadow-[0_0_0_12px_rgba(76,175,80,0.18)]" />
+                    <span aria-hidden="true" className="mr-5 size-2.5 rounded-full bg-vt-success shadow-[0_0_0_12px_color-mix(in_oklch,var(--color-vt-success)_18%,transparent)]" />
                   )}
                 </div>
               </Card>

@@ -197,13 +197,79 @@ not 20.)
     quoted literal does not satisfy) would cover the whole tree including the guard file.
   - The worker also reported one process deviation honestly: an intermediate test run wrote its
     log to `/tmp`, outside its allowed surfaces. No repository file was affected.
-- [ ] **T05 — Replace hardcoded colours with tokens.** Files: `features/auth/LoginPage.tsx`,
-  `features/auth/BrandingPanel.tsx`, `features/auth/ChangePasswordPage.tsx`,
-  `layouts/PublicShell.tsx`, and `features/public/DashboardPage.tsx:39` which hardcodes
-  `shadow-[0_0_0_12px_rgba(76,175,80,0.18)]` — the *old* `#4caf50` green as a literal rgba, which
-  is why the retired value still appears in the built stylesheet. `ChangePasswordPage.tsx:80`
-  also hardcodes `border-[#334155]`, `hover:bg-[#111a2b]`, `text-white` and `outline-[#ff8c42]`.
-  Test-first: assert absence of raw hex and raw colour literals in these files.
+- [x] **T05 — Replace hardcoded colours with tokens.** Done for the auth, layout and dashboard
+  surfaces: 20 offending lines converted.
+  - Decisions, each read from the design rather than inferred: `#111a2b` to `bg-vt-surface`,
+    `#0b1220` to `bg-vt-background`, `#ff8c42` to `bg-vt-accent`, `#94a3b8` to `text-vt-muted`,
+    `#64748b` to `placeholder:text-vt-muted-2`, `#334155` to `border-vt-raised-border`, and
+    `text-white` to `text-vt-text` (the design's `--fg`).
+  - Two tokens were added because the design defines values React did not have:
+    `--color-vt-border-2: #1e293b` (the design's `--border-2`, `voleytrack.css:14`; React's only
+    `#1e293b` was `--color-vt-raised`, used as a surface, which would have been a semantic
+    mismatch as a border) and `--color-vt-label: #e2e8f0`. The label token was flagged as a
+    judgement call; it is justified, because that value appears in **5** design files
+    (`voleytrack-jugadores.css`, `-partidos.css`, `-torneos.css`, `-equipos.css`,
+    `voleytrack-login.html`), so it is a recurring label colour, not a one-off.
+  - The accent hover was **not** converted mechanically. `PublicShell.tsx:84` had
+    `hover:bg-[#ff9b59]`, a colour the design does not define; the element is a `.btn.accent`, and
+    the design implements accent hover as `.btn.accent:hover{filter:brightness(1.06)}`, so it
+    became `hover:brightness-[1.06]`. The auth buttons map to the design's `.btn-primary`
+    (`brightness(1.05)`), so they use `hover:brightness-105`. No second accent hex was invented.
+  - The green halo at `DashboardPage.tsx:39` was the retired `#4caf50` as
+    `rgba(76,175,80,0.18)`, the indicator of the `EN VIVO` metric. The design has no green-halo
+    dot; its soft-ring idiom is `color-mix`. It was converted to
+    `shadow-[0_0_0_12px_color-mix(in_oklch,var(--color-vt-success)_18%,transparent)]`. Flagged as a
+    judgement call: it is a synthesis of the design's idiom with the success token, not a design
+    equivalent, and it was kept colour-only.
+  - Test-first: a new guard in `tokens.test.ts` covers `features/auth/*.tsx`, `layouts/*.tsx` and
+    `DashboardPage.tsx`, asserts it found files so it cannot pass vacuously, and fails on raw hex,
+    `rgb(`/`rgba(`, `text/bg/border-white`, `bg-black` and `slate-`. Observed RED naming all 20
+    offenders, then `12 passed`.
+  - Evidence at the CSS level: the built stylesheet now contains **zero** `#4caf50`, **zero**
+    `rgba(76,175,80` and **zero** `vt-canvas`, and every in-scope arbitrary-value class is gone.
+    The retired green is eliminated.
+  - Suite `49 files / 280 passed`, lint exit 0, build exit 0.
+  - **Measured inventory of what remains**, which is larger than the seven spots originally known:
+    raw hex across 9 values, 11 `rgba()` occurrences, **54 `text-white`**, 1 `bg-white`, 1
+    `bg-black` and 8 `slate-` utilities. Most of it sits in files that T10 deletes
+    (`pages/LoginPage.tsx` 13, `pages/PlanilleroPage.tsx` 8, `ShellTopbar.tsx` 4,
+    `ShellFooter.tsx` 3, `NavItem.tsx` 2, `Surface.tsx`, `SectionShell.tsx`, `ShellUtilityBar.tsx`,
+    `pages/AdminPage.tsx`, `pages/MatchesPage.tsx`). The rest is genuine screen work for slices 2
+    to 4: `features/public/PlayerDetailPage.tsx` 8, `DashboardHero.tsx` 7, `LiveMatchPage.tsx` 3,
+    `MatchesBrowser.tsx` 3, `DashboardRail.tsx` 3, `MatchSetupPage.tsx` 2, `DashboardLive.tsx` 2,
+    and one each in `TeamStatsPage.tsx`, `TeamDetailPage.tsx`, `features/public/MatchesPage.tsx`,
+    `Modal.tsx`.
+- [ ] **T05c — Stop Tailwind from scanning build output.** A real build-correctness defect found
+  while doing T05, not a cosmetic one. `frontend/src/index.css:1` is a bare
+  `@import "tailwindcss";` with **no `@source` directive**, so Tailwind v4 uses automatic source
+  detection over the project, and `frontend/dist/` is **not in `.gitignore`**.
+  Consequence, observed: the first build after T05 re-emitted the retired `#4caf50` — not from any
+  source file, but because Tailwind scanned the **stale pre-change bundle inside `dist/`**, which
+  still contains the old class strings as text. A clean rebuild cleared it. The stylesheet a
+  developer gets therefore depends on whether an old `dist/` happens to be lying around.
+  This also taints verification: any built-CSS assertion can be satisfied or broken by stale
+  artifacts rather than by source.
+  Deliverable: gitignore build output, and exclude it explicitly in CSS so the build is correct
+  regardless of what is on disk. Evidence: a build performed **without** cleaning `dist/` first
+  must still contain zero `vt-canvas` and zero `#4caf50`, and the test suite must stay green.
+- [ ] **T05b — Reconcile the surface and border token model with the design.** Raised while
+  planning T05, and it must land before slice 2 so screens are not touched twice.
+  The problem: the app's token model does not match the design's, and two tokens carry heavy usage
+  while the design defines neither.
+  - `--color-vt-panel` is `#0f1726` and is used in **53 files, 106 occurrences**. The design has no
+    such colour and no such layer; it builds on `--bg`, `--surface` and `--surface-2`.
+  - `--color-vt-raised-border` is `#334155` and is used in 10 places, including
+    `components/primitives/Card.tsx` and `Modal.tsx`. The design does not define it.
+  - The design has **two** border tones, `--border: #243249` and `--border-2: #1e293b`. React has a
+    counterpart for the first only, reusing `--color-vt-raised` (`#1e293b`) as a *surface* colour,
+    which is a semantic mismatch.
+  Deliverable: a written mapping of design layer to app token, a decision on whether `panel` is
+  retired in favour of `surface-2` or kept as a deliberate app-only layer, and the token changes
+  that follow. Because this is a modelling decision with a 100-plus-use blast radius, it needs an
+  explicit decision rather than being folded silently into screen work.
+  Evidence: the mapping table, the updated token file, and the guard tests still green.
+  Optimisation-shaped but not optional: every later screen task depends on knowing which token
+  means which surface.
 - [ ] **T06 — Add the primitives the design defines but the app lacks.** New:
   `Chip`, `StatePill` (programado / en vivo / finalizado), `LivePill` with the pulse dot,
   a filter group, and a toast surface. Test-first: one test per primitive covering its variants

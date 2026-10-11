@@ -234,6 +234,39 @@ describe("design tokens", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("keeps the auth, layout and dashboard surfaces free of raw colour literals", () => {
+    const authDir = fileURLToPath(new URL("../features/auth", import.meta.url));
+    const layoutsDir = fileURLToPath(new URL("../layouts", import.meta.url));
+    const dashboardPagePath = fileURLToPath(new URL("../features/public/DashboardPage.tsx", import.meta.url));
+
+    const tsxIn = (directory: string): string[] =>
+      readdirSync(directory)
+        .filter((name) => name.endsWith(".tsx"))
+        .map((name) => `${directory}/${name}`);
+
+    const guarded = [...tsxIn(authDir), ...tsxIn(layoutsDir), dashboardPagePath];
+
+    // A guard that matches zero files is a broken guard, not a passing one.
+    expect(guarded.length).toBeGreaterThan(0);
+
+    // Raw hex (3 to 8 digits), rgb()/rgba(), and the disallowed Tailwind utility families.
+    const forbidden = /#[0-9a-fA-F]{3,8}\b|rgba?\(|\b(?:text|bg|border)-white\b|\bbg-black\b|\bslate-/;
+
+    const offenders: string[] = [];
+
+    for (const filePath of guarded) {
+      readFileSync(filePath, "utf8")
+        .split("\n")
+        .forEach((line, index) => {
+          if (forbidden.test(line)) {
+            offenders.push(`${filePath.slice(srcRootPath.length)}:${index + 1} ${line.trim()}`);
+          }
+        });
+    }
+
+    expect(offenders).toEqual([]);
+  });
+
   it("keeps scoring fixtures as pure immutable data without color leaks", () => {
     const source = readFileSync(scoringFixturePath, "utf8");
     expect(source).not.toContain("bg-white");
