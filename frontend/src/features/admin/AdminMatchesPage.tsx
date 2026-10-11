@@ -131,7 +131,7 @@ export function AdminMatchesPage() {
       <PageHeader
         actions={
           <Link
-            className="inline-flex h-12 w-[200px] max-w-full items-center justify-center rounded-lg bg-vt-accent px-4 text-sm font-semibold text-vt-canvas transition-colors hover:bg-vt-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
+            className="inline-flex h-12 w-[200px] max-w-full items-center justify-center rounded-lg bg-vt-accent px-4 text-sm font-semibold text-vt-background transition-colors hover:bg-vt-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
             to={"/admin/matches/create" as string}
           >
             + Programar Partido

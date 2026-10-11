@@ -80,7 +80,7 @@ export function TournamentStandingsPage() {
           {tournamentTabs.map((tab, index) => (
             <Link
               aria-current={index === 2 ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${index === 2 ? "bg-vt-accent text-vt-canvas" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold ${index === 2 ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
               key={tab.label}
               to={`/tournaments/${tournament.id}${tab.suffix}` as string}
             >

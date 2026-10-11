@@ -1,6 +1,24 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+
+const srcRootPath = fileURLToPath(new URL("..", import.meta.url));
+
+function collectSourceFiles(directory: string, collected: string[] = []): string[] {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const entryPath = `${directory}/${entry.name}`;
+
+    if (entry.isDirectory()) {
+      collectSourceFiles(entryPath, collected);
+      continue;
+    }
+
+    collected.push(entryPath);
+  }
+
+  return collected;
+}
 
 const tokensPath = fileURLToPath(new URL("./tokens.css", import.meta.url));
 const indexPath = fileURLToPath(new URL("../index.css", import.meta.url));
@@ -193,6 +211,27 @@ describe("design tokens", () => {
     expect(source).not.toContain("border-slate-");
     expect(source).not.toContain("slate-");
     expect(source).not.toContain("vt-canvas");
+  });
+
+  it("keeps the whole source tree free of the undefined vt-canvas colour utility", () => {
+    const guardPath = resolve(fileURLToPath(import.meta.url));
+    const sourceFiles = collectSourceFiles(srcRootPath).filter((filePath) => resolve(filePath) !== guardPath);
+
+    expect(sourceFiles.length).toBeGreaterThan(0);
+
+    const offenders: string[] = [];
+
+    for (const filePath of sourceFiles) {
+      readFileSync(filePath, "utf8")
+        .split("\n")
+        .forEach((line, index) => {
+          if (line.includes("vt-canvas")) {
+            offenders.push(`${filePath.slice(srcRootPath.length)}:${index + 1}`);
+          }
+        });
+    }
+
+    expect(offenders).toEqual([]);
   });
 
   it("keeps scoring fixtures as pure immutable data without color leaks", () => {

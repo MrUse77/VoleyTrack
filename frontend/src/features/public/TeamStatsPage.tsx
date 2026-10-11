@@ -50,7 +50,7 @@ export function TeamStatsPage() {
                 <li key={category.id}>
                   <span
                     aria-current={index === 0 ? "true" : undefined}
-                    className={`inline-flex min-h-[34px] w-[132px] items-center justify-center rounded-full px-4 text-[11px] font-bold ${index === 0 ? "bg-vt-accent font-black text-vt-canvas" : "bg-vt-panel text-vt-muted"}`}
+                    className={`inline-flex min-h-[34px] w-[132px] items-center justify-center rounded-full px-4 text-[11px] font-bold ${index === 0 ? "bg-vt-accent font-black text-vt-background" : "bg-vt-panel text-vt-muted"}`}
                   >
                     {category.label}
                   </span>

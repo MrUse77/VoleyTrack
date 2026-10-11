@@ -186,7 +186,7 @@ export function TeamJourney({ activeTab, children, detail, team }: TeamJourneyPr
                 {initials}
               </div>
               <div className="min-w-0 min-[1416px]:absolute min-[1416px]:left-32 min-[1416px]:top-7">
-                <p className="inline-flex min-h-6 items-center rounded-full bg-vt-accent/15 px-3 text-[11px] font-black tracking-[0.08em] text-vt-accent min-[1416px]:h-6 min-[1416px]:bg-vt-accent min-[1416px]:text-[9px] min-[1416px]:text-vt-canvas">
+                <p className="inline-flex min-h-6 items-center rounded-full bg-vt-accent/15 px-3 text-[11px] font-black tracking-[0.08em] text-vt-accent min-[1416px]:h-6 min-[1416px]:bg-vt-accent min-[1416px]:text-[9px] min-[1416px]:text-vt-background">
                   {detail?.standingLabel ?? "EQUIPO"}
                 </p>
                 <h1 className="mt-2 text-3xl font-black leading-tight text-vt-text min-[1416px]:mt-3 min-[1416px]:text-[30px] min-[1416px]:leading-9 min-[1416px]:tracking-[-0.8px]" id="team-name">
@@ -218,7 +218,7 @@ export function TeamJourney({ activeTab, children, detail, team }: TeamJourneyPr
               return (
                 <Link
                   aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex h-7 items-center justify-center rounded-full px-4 text-[11px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent ${tab.widthClass} ${isActive ? "bg-vt-accent text-vt-canvas" : "bg-vt-panel text-vt-muted hover:text-vt-text"}`}
+                  className={`inline-flex h-7 items-center justify-center rounded-full px-4 text-[11px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent ${tab.widthClass} ${isActive ? "bg-vt-accent text-vt-background" : "bg-vt-panel text-vt-muted hover:text-vt-text"}`}
                   key={tab.id}
                   to={`/teams/${team.id}${tab.suffix}` as string}
                 >

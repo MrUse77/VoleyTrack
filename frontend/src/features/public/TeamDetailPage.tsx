@@ -115,7 +115,7 @@ function RosterPreviewRow({ index, row }: { index: number; row: TeamRosterRow })
           className="font-bold text-vt-text"
           player={row.player}
         >
-          <span className="mr-[10px] inline-flex size-8 items-center justify-center rounded-full bg-vt-accent text-xs font-bold text-vt-canvas">
+          <span className="mr-[10px] inline-flex size-8 items-center justify-center rounded-full bg-vt-accent text-xs font-bold text-vt-background">
             {row.player.number}
           </span>
           {row.player.fullName}

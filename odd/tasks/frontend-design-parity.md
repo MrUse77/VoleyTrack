@@ -27,12 +27,17 @@ Measured gap (evidence: read-only exploration of `frontend/design/html/**` vs `f
 
 ### Confirmed defect found during exploration
 
-`text-vt-canvas` is used in 20 places across 17 files, but `--color-vt-canvas` does not exist in
+`text-vt-canvas` is used in 19 places across 17 files, but `--color-vt-canvas` does not exist in
 `frontend/src/styles/tokens.css`, so Tailwind never generates the utility. Verified against the
 compiled stylesheet: `dist/assets/index-DWyM9xV2.css` contains `text-vt-background` but no
 `vt-canvas`. Text on accent-filled buttons and tabs therefore falls back to inherited colour
 instead of the design's `#0b1220` (`.btn.accent{color:#0b1220}`). `styles/tokens.test.ts:173`
 guards only one file against this token, so the migration was left half-applied.
+
+(An earlier version of this document said 20 occurrences. That was wrong: a `grep` for
+`vt-canvas` returns 20 lines, but one of them is the guard test's own assertion literal rather
+than a usage. The count is 19, and 17 files with two files using it twice is consistent with 19,
+not 20.)
 
 ## Decisions (locked by the user)
 
@@ -168,10 +173,30 @@ guards only one file against this token, so the migration was left half-applied.
   block that keeps only `.woff2`, or leaving it as is. Report the real byte trade-off with the
   installed packages' actual contents, then decide. Optimisation only: the current state works
   and is verified, so this is not a correctness task and must not regress the fonts.
-- [ ] **T04 — Repair the broken accent-contrast utility.** Replace the 20 `text-vt-canvas`
-  occurrences across 17 files with `text-vt-background`, and widen the guard in
-  `styles/tokens.test.ts` so no source file can introduce the undefined token again. Test-first:
-  a whole-`src` guard fails RED while any occurrence remains.
+- [x] **T04 — Repair the broken accent-contrast utility.** Done. Replaced **19** occurrences
+  across 17 files with `text-vt-background`.
+  - The guard was widened from one file to the whole source tree: `tokens.test.ts` now walks
+    `src` recursively with `readdirSync(..., { withFileTypes: true })`, asserts
+    `sourceFiles.length > 0` so it cannot pass vacuously, deliberately has no `try/catch` so read
+    errors fail the test, and reports offenders as a `file:line` list. Test-first with observed
+    RED: the widened guard failed with `expected [ …(19) ] to deeply equal []`, naming all 19
+    offenders, before any replacement was made.
+  - Diff audit of the fix: 19 lines removed, 19 lines added, every added line containing
+    `text-vt-background`, and zero other added lines. No non-`text-` usage of the token existed;
+    the one prefixed variant is `min-[1416px]:text-vt-canvas`, which is still a text-colour use.
+  - Evidence that the replacement reached CSS, which matters because the original failure was
+    silent: the built stylesheet contains **3** `text-vt-background` occurrences
+    (`.text-vt-background`, `.focus\:text-vt-background`, `.min-\[1416px\]\:text-vt-background`),
+    **zero** `vt-canvas`, and resolves to `color:var(--color-vt-background)` with
+    `--color-vt-background:#0b1220` — the design's dark ink on accent surfaces.
+  - Suite `49 files / 279 passed` (278 plus the new guard test), exit 0; lint exit 0 with zero
+    diagnostics; build exit 0.
+  - Known limitation carried into T10: the guard skips `tokens.test.ts` itself, because that
+    file's own assertion literal contains the banned substring. A smarter guard that matches a
+    class-like occurrence (for example a `text-vt-canvas` / `bg-vt-canvas` shape, which the bare
+    quoted literal does not satisfy) would cover the whole tree including the guard file.
+  - The worker also reported one process deviation honestly: an intermediate test run wrote its
+    log to `/tmp`, outside its allowed surfaces. No repository file was affected.
 - [ ] **T05 — Replace hardcoded colours with tokens.** Files: `features/auth/LoginPage.tsx`,
   `features/auth/BrandingPanel.tsx`, `features/auth/ChangePasswordPage.tsx`,
   `layouts/PublicShell.tsx`, and `features/public/DashboardPage.tsx:39` which hardcodes
@@ -203,9 +228,27 @@ guards only one file against this token, so the migration was left half-applied.
   - dispose each per-test router with the public `router.history.destroy()` API in an `afterEach`,
     so the file stops accumulating chained `pushState` patches and popstate listeners;
   - strengthen the smoke test in `use-match-center-filter.test.tsx` that would pass even without
-    the render-phase sync, or relabel it so its weaker guarantee is not mistaken for a pin.
+    the render-phase sync, or relabel it so its weaker guarantee is not mistaken for a pin;
+  - make the `vt-canvas` guard cover the whole tree, including the guard file itself, by matching
+    a class-like occurrence instead of the bare substring that its own literal contains.
   Note: `src/styles/tokens.test.ts` also references the legacy modules (`shellUtilityBarPath`,
   `navItemPath`, `shellTopbarPath`, `loginPagePath`), so it must be updated in the same commit.
+- [ ] **T10b — Establish a reproducible visual verification path.** Requirement discovered while
+  preparing the slice close: this feature's acceptance criterion is visual parity, and there is
+  currently **no way to render a screen and look at it**. Tests, lint and build prove the code is
+  sound, never that it matches the design. Available tooling as measured: **Firefox** is the only
+  browser installed (`/usr/bin/firefox`); no Chromium, no Playwright, no Puppeteer.
+  Firefox's `--headless --screenshot` is usable but races a client-rendered React app, because it
+  fires after the load event while React mounts afterwards.
+  Deliverable: one reliable way to capture a screen at a fixed viewport (target 1440px wide, the
+  design's canvas), deterministic enough to compare two runs. Candidate approaches, cheapest
+  first: drive Firefox headless with an explicit settle step; capture through an Electron
+  `webContents.capturePage()` harness (Electron is already installed and local to the sibling
+  open-design checkout, so it adds no dependency to this repo); or add a real browser-automation
+  dependency if neither is reliable, accepting that as an explicit dependency decision.
+  Evidence: a captured image of one real route, plus proof the same route captured twice is
+  stable. This unblocks visual verification for every screen in slices 2 to 4, so it must land
+  before slice 2 begins.
 
 ### Slice 2 — Public (spectator) screens
 
