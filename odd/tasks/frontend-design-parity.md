@@ -543,25 +543,63 @@ not 20.)
   - Server hygiene: two Vite servers were already running before the worker started (5173 pid 215105,
     5174 pid 217688). It started and stopped nothing, used 5173, and confirmed both ports still
     listen under the same pids.
-- [ ] **T09 — Align the shell with the design.** `layouts/PublicShell.tsx`,
-  `layouts/AdminShell.tsx`, `components/navigation/Sidebar.tsx`,
-  `components/primitives/PageHeader.tsx`. Already measured correct, so do not touch: the topbar is
-  **72px** and the sidebar **248px**, both confirmed by the harness.
-  - **Nav typography is wrong and now visible**: the nav renders `text-sm font-semibold`, i.e.
-    14px/600, while the design's `.nav-item` is **13px/600**. The discrepancy was hidden until T07b
-    put the base rules into a layer; before that every link was forced to 16px by the unlayered rule.
-  - Admin active state does not follow the design. The design's `.nav-item.active` is the accent
-    fill with dark ink; the admin variant currently uses a raised background instead.
-  - The design's page heading is **28px**; the app's is currently 32px in one place and 26px in
-    another.
-  - **The missing nav destinations need a sequencing decision, and the obvious move is wrong.** The
-    design's public sidebar is Dashboard / Partidos / Torneos / Equipos / Jugadores / En vivo, while
-    the app shows Dashboard / Partidos / Torneos / Estadísticas. Adding Equipos, Jugadores and En
-    vivo to the nav **now** would link to `PlaceholderPage` routes, which is worse for a user than a
-    shorter nav. So T09 aligns the nav's *styling* and its active state, and each destination is
-    added by the task that builds its real screen: Equipos in T14, Jugadores in T15, En vivo in T16.
-    Recorded here so the gap is not silently dropped. The app's extra "Estadísticas" entry has no
-    counterpart in the design and needs its own decision in this task.
+- [x] **T09 — Align the shell and navigation with the design.** Done, and every target was measured
+  against the design at the rendered level rather than inferred.
+  - Nav links: **14px/600 → 13px/600**, and padding, gap, radius and border aligned to the design's
+    `.nav-item` (10px / 10px / 10px / 1px). Admin active state: was `rgb(248,250,252)` on
+    `rgb(30,41,59)`; now `rgb(11,18,32)` ink on `rgb(255,140,66)` accent, **identical to the public
+    shell**, with one active rule shared by both instead of an admin-only raised background.
+  - `PageHeader`: 26px/700 → **28px/900** with `-0.02em` tracking, `line-height: 1` and the
+    description at 13px, `margin-top: 6px`, `max-width: 60ch`. The smaller `compact` variant was
+    collapsed into the single design `.page-head` and its `variant` prop is deprecated and no longer
+    forwarded to the DOM.
+  - Sidebar container padding closed to the design's `20px 14px`; topbar still **72px** and sidebar
+    still **248px** on all three captured routes.
+  - **Kept as a deliberate improvement over the design, and documented in code:** the nav's
+    `min-h-11` 44px target. The design's nav item is roughly 36-40px, and 44px is the minimum
+    accessible touch target, so this is a justified deviation rather than a missed value. The comment
+    exists so a future reader does not "fix" it back to the design.
+  - **The Estadísticas decision was resolved with evidence and went a step past the link.** `/stats`
+    was a `placeholderRoute` whose rendered copy said the screen was not implemented, while the real
+    statistics screens live at `/tournaments/$id/stats` and `/teams/$id/stats` and remain reachable
+    from their own pages — so removing the dead global entry removed no working path. The nav item,
+    the route itself, the `PublicShell` page-meta branch and the associated test rows were all
+    removed, and a capture of `/stats` now returns TanStack's default not-found with no shell, so the
+    route is genuinely gone rather than merely unlinked. `/teams` and `/players` are also placeholders
+    and were **deliberately retained**, annotated in `router.tsx` as such, because they are real
+    design destinations that T14 and T15 will build; `router.test.tsx` now asserts both survive and
+    that `stats` no longer appears anywhere in the public subtree.
+  - The missing destinations (Equipos, Jugadores, En vivo) were **not** added, as instructed: they
+    would have linked to placeholders. `router.tsx` carries a comment naming the design's six public
+    destinations and which task adds each one, so the gap cannot be silently dropped. T14, T15 and
+    T16 must each add their destination when their real screen lands.
+  - The ratchet was tightened to the measured counts: `vt-panel` 94 → **93** in 48 files, `vt-raised`
+    48 → **46** in 26 files, `vt-raised-border` unchanged at 9. Ceilings now equal the real numbers,
+    so there is no slack to re-spend.
+  - Suite `49 files / 299 passed`, exit 0 (299 rather than 300 because the removed `/stats` row was a
+    `test.each` case), lint exit 0, build exit 0.
+  - **Transient red the user was told about, and its resolution:** an assertion in
+    `DashboardPage.test.tsx` pinned `text-[26px] font-bold`, i.e. the **pre-design** value, so it
+    contradicted the design rather than the component. The worker stopped and asked instead of
+    weakening the component to satisfy it. The assertion was corrected to the design's values. Worth
+    noting as a pattern: this is a case where the test encoded the old world and the component was
+    right.
+  - **Incident, self-reported and self-attributed:** its server cleanup used a broad
+    `pkill -f` pattern that matched two other Vite servers in addition to its own, and its own shell
+    was signalled too. It disclosed the exact command, did not restart third-party processes without
+    authorization, and asked. The parent left them down deliberately — no other Pi session is active
+    in this directory, so those servers were most likely orphaned leftovers from earlier worker
+    rounds in this same feature rather than anyone's live work. Environment verified clean: no `vite`
+    process remains and nothing listens on any 51xx port. The correct pattern for future cleanups is
+    a single-pid kill, never a broad `-f` match.
+- [ ] **T09b — Align the sidebar's surface and border with the design.** Noticed by T09 but left
+  outside its scope. Both design stylesheets give `.sidebar` `background: var(--surface)` and
+  `border-right: 1px solid var(--border-2)`, whereas the app's admin shell renders
+  `bg-vt-background` with `border-vt-border`. Those are different values, so the shell's surface and
+  separator do not match the design even though its geometry now does. Small, but it is exactly the
+  kind of leftover that makes a shell feel almost-right. Also note the legacy
+  `src/shared/app-shell.content.ts` still links a "Stats" entry to the now-removed `/stats`, so that
+  link is dead until T10 deletes the file.
 - [ ] **T10 — Remove the legacy duplicate component system.** Delete `components/ui/*`,
   `ShellTopbar`/`ShellUtilityBar`/`ShellFooter`, the dead routes `/results`, `/gallery` and
   `/fantasy`, and the orphaned `pages/LoginPage.tsx` / `pages/MatchesPage.tsx`, after migrating

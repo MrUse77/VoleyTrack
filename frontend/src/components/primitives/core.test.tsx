@@ -891,26 +891,46 @@ describe("core primitives", () => {
     expect(html).not.toContain("bg-white");
     expect(html).not.toContain("bg-black");
     expect(html).toContain("Matches");
-    expect(html).toMatch(/<h1 class="[^"]*text-\[32px\][^"]*font-black[^"]*">Matches<\/h1>/);
+    // Design source: frontend/design/html/voleytrack.css:66
+    //   .page-head h1{font-size:28px;font-weight:900;letter-spacing:-0.02em;margin:0;line-height:1}
+    expect(html).toMatch(/<h1 class="[^"]*text-\[28px\][^"]*font-black[^"]*tracking-\[-0\.02em\][^"]*">Matches<\/h1>/);
     expect(html).toContain("Season overview");
-    expect(html).toContain("text-sm");
-    expect(html).toContain("leading-6");
+    // Design source: voleytrack.css:67
+    //   .page-head p{color:var(--muted);font-size:13px;margin:6px 0 0;max-width:60ch}
+    expect(html).toMatch(
+      /<p class="[^"]*mt-1\.5[^"]*max-w-\[60ch\][^"]*text-\[13px\][^"]*text-vt-muted[^"]*">Season overview<\/p>/,
+    );
     expect(html).toContain("Add match");
     expect(html).toMatch(/<header class="[^"]*flex-col[^"]*items-stretch[^"]*sm:flex-row[^"]*sm:items-start[^"]*sm:justify-between/);
     expect(html).toMatch(/<div class="[^"]*w-full[^"]*min-w-0[^"]*flex-wrap[^"]*sm:w-auto[^"]*sm:justify-end">.*Add match/);
   });
 
-  it("renders the compact page header with dashboard typography", () => {
-    const html = renderToStaticMarkup(
+  it("renders one design page-head treatment for both header variants", () => {
+    const compact = renderToStaticMarkup(
       <PageHeader
         description="Live matches and tournament summaries."
         title="Public dashboard"
         variant="compact"
       />,
     );
+    const standard = renderToStaticMarkup(
+      <PageHeader
+        description="Live matches and tournament summaries."
+        title="Public dashboard"
+      />,
+    );
 
-    expect(html).toMatch(/<h1 class="[^"]*text-\[26px\][^"]*font-bold[^"]*">Public dashboard<\/h1>/);
-    expect(html).toMatch(/<p class="[^"]*text-\[13px\][^"]*">Live matches and tournament summaries.<\/p>/);
-    expect(html).not.toContain('variant="compact"');
+    // Design source: frontend/design/html/voleytrack.css:66-67. The design defines exactly
+    // one `.page-head` heading (28px / 900 / -0.02em) and one description (13px, --muted,
+    // 6px above, 60ch measure) across frontend/design/html/*.html, so `compact` must not
+    // render a 26px heading any more.
+    expect(compact).toMatch(/<h1 class="[^"]*text-\[28px\][^"]*font-black[^"]*tracking-\[-0\.02em\][^"]*">Public dashboard<\/h1>/);
+    expect(compact).toMatch(
+      /<p class="[^"]*mt-1\.5[^"]*max-w-\[60ch\][^"]*text-\[13px\][^"]*text-vt-muted[^"]*">Live matches and tournament summaries.<\/p>/,
+    );
+    expect(compact).not.toContain("text-[26px]");
+    expect(compact).not.toContain("text-[32px]");
+    expect(compact).not.toContain('variant="compact"');
+    expect(compact).toBe(standard);
   });
 });

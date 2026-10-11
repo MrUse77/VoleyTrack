@@ -406,11 +406,15 @@ describe("design tokens", () => {
     // usages in 51 files, 48 vt-raised usages in 28 files and 9 vt-raised-border usages in
     // 7 files. Retiring the duplicated form-field wrapper, moving the Badge base onto the
     // design's --bg fill and dropping the retired-wrapper assertion from core.test.tsx
-    // took vt-panel down to 94 usages in 48 files, so that ceiling is lowered here in the
-    // same change (a slack ceiling is a broken ratchet).
+    // took vt-panel down to 94 usages in 48 files, and aligning the shell with the design
+    // (T09) took vt-panel to 93 in 48 files and vt-raised to 46 in 26 files: the sidebar
+    // nav's hover moved to the design's --surface-2, its admin active fill moved to
+    // --accent, and the admin-active assertion in layouts/shells.test.tsx moved off
+    // bg-vt-raised. Both ceilings are lowered here in the same change (a slack ceiling is
+    // a broken ratchet). vt-raised-border is unchanged at its measured 9 in 7 files.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 94, baselineFiles: 48 },
-      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 48, baselineFiles: 28 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 93, baselineFiles: 48 },
+      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 46, baselineFiles: 26 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 9, baselineFiles: 7 },
     ];
 

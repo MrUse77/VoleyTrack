@@ -101,9 +101,18 @@ describe("router", () => {
 
     expect(publicPaths).toContain("/");
     expect(publicPaths).toContain("matches");
-    expect(publicPaths).toContain("stats");
+    // /stats was a PlaceholderPage with no design counterpart and no working screen; its
+    // route and its single nav entry were removed, so the public subtree must not expose it.
+    // `/teams/:id/stats` and `/tournaments/:id/stats` below are real screens and stay.
+    expect(publicPaths).not.toContain("stats");
     expect(publicPaths).toContain("players");
     expect(publicPaths).toContain("teams");
+    expect(allPaths).not.toContain("/stats");
+    // The design defines /teams and /players, so they stay as PlaceholderPage routes until
+    // the tasks that build their real screens (T14/T15) land; only /stats had no design
+    // counterpart and no working screen, so it is the one that was removed.
+    expect(allPaths).toContain("/teams");
+    expect(allPaths).toContain("/players");
     expect(publicPaths).not.toContain("matches/$id/live");
     expect(publicPaths).toContain("teams/$id");
     expect(publicPaths).toContain("teams/$id/roster");
@@ -706,7 +715,6 @@ describe("router", () => {
     { route: "/tournaments?status=en-curso", content: "En curso", activeHref: "/tournaments", activeLabel: "Torneos" },
     { route: "/tournaments?status=proximos", content: "Próximos", activeHref: "/tournaments", activeLabel: "Torneos" },
     { route: "/tournaments?status=finalizados", content: "Finalizados", activeHref: "/tournaments", activeLabel: "Torneos" },
-        { route: "/stats", content: "Estadísticas", activeHref: "/stats", activeLabel: "Estadísticas" },
   ])("renders public artboard route $route with its active sidebar navigation", async ({ route, content, activeHref, activeLabel }) => {
     const container = document.createElement("div");
     document.body.append(container);

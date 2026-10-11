@@ -27,7 +27,6 @@ const publicNavigation: SidebarNavigationGroup[] = [
       { href: "/", icon: "01", label: "Dashboard" },
       { href: "/matches", icon: "02", label: "Partidos" },
       { href: "/tournaments", icon: "03", label: "Torneos" },
-      { href: "/stats", icon: "04", label: "Estadísticas" },
     ],
   },
 ];
@@ -78,7 +77,7 @@ describe("application shells", () => {
     expect(html).toContain("COBERTURA");
     expect(html).toContain("3 partidos en vivo");
     expect(html).toContain("01");
-    expect(html).toContain("04");
+    expect(html).toContain("03");
     expect(html).toContain('aria-current="page"');
     expect(html).toContain("Route content");
   });
@@ -94,8 +93,13 @@ describe("application shells", () => {
 
     expect(html).toContain("w-[248px]");
     expect(html).toMatch(/<aside[^>]*class="[^"]*bg-vt-background/);
+    // Design source: frontend/design/html/voleytrack-admin.css:60 — `.nav-item.active` is the
+    // accent fill (`--accent`, i.e. bg-vt-accent) with the design's dark ink on it (the near-black
+    // that --color-vt-background carries), so the admin shell must not use the app-only raised
+    // surface here. The colour literal is described rather than quoted because tokens.test.ts
+    // forbids raw hex in layouts/.
     expect(html).toMatch(
-      /class="[^"]*bg-vt-raised[^"]*"[^>]*href="\/admin\/players"/,
+      /class="[^"]*bg-vt-accent[^"]*text-vt-background[^"]*"[^>]*href="\/admin\/players"/,
     );
     expect(html).not.toContain("min-w-[1440px]");
     expect(html).toContain("VoleyTrack");
@@ -168,14 +172,73 @@ describe("application shells", () => {
       />,
     );
 
-    for (const label of ["Dashboard", "Partidos", "Torneos", "Estadísticas"]) {
+    for (const label of ["Dashboard", "Partidos", "Torneos"]) {
       expect(dashboard).toContain(label);
       expect(matches).toContain(label);
     }
     expect(dashboard).toContain("01");
-    expect(matches).toContain("04");
+    expect(matches).toContain("03");
     expect(dashboard).toMatch(/aria-current="page"[^>]*href="\/"/);
     expect(matches).toMatch(/aria-current="page"[^>]*href="\/matches"/);
     expect(matchDetail).toMatch(/aria-current="page"[^>]*href="\/matches"/);
+  });
+
+  it("renders the design nav-item typography, geometry and active fill on both shells", () => {
+    const publicSidebar = renderToStaticMarkup(
+      <Sidebar
+        currentPath="/"
+        navigation={publicNavigation}
+        roleLabel="Público"
+      />,
+    );
+    const adminShell = renderToStaticMarkup(
+      <AdminShell
+        currentPath="/admin/players"
+        navigation={adminNavigation}
+        roleLabel="ADMIN"
+      />,
+    );
+
+    const activeClass = (html: string) =>
+      html.match(/<a aria-current="page" class="([^"]*)"/)?.[1] ?? "";
+    const publicActive = activeClass(publicSidebar);
+    const adminActive = activeClass(adminShell);
+    const inactive = publicSidebar.match(/<a class="([^"]*)"[^>]*href="\/matches"/)?.[1] ?? "";
+
+    // Design source: frontend/design/html/voleytrack.css:53
+    //   .nav-item{width:100%;display:flex;align-items:center;gap:10px;padding:10px 10px;
+    //             border-radius:10px;border:1px solid transparent;color:var(--muted);
+    //             font-size:13px;font-weight:600;text-align:left;background:transparent}
+    // and line 55: `.nav-item.active` is the accent fill with the design's dark ink on it.
+    for (const className of [publicActive, inactive]) {
+      expect(className).toContain("text-[13px]");
+      expect(className).toContain("font-semibold");
+      expect(className).toContain("gap-2.5");
+      expect(className).toContain("px-2.5");
+      expect(className).toContain("py-2.5");
+      expect(className).toContain("rounded-[10px]");
+      expect(className).toMatch(/\bborder\b/);
+    }
+
+    // Design source: voleytrack.css:54 `.nav-item:hover{background:var(--surface-2);color:var(--fg)}`.
+    expect(inactive).toContain("border-transparent");
+    expect(inactive).toContain("text-vt-muted");
+    expect(inactive).toContain("hover:bg-vt-surface-2");
+    expect(inactive).toContain("hover:text-vt-text");
+
+    // The state classes must be exactly the design's two rules. Pinning the whole suffix
+    // (rather than only checking that some token is present) is what keeps the app-only
+    // surface tokens ratcheted in styles/tokens.test.ts out of the nav, without naming
+    // them here and inflating that ratchet's textual count.
+    expect(inactive.endsWith(
+      "border-transparent text-vt-muted hover:bg-vt-surface-2 hover:text-vt-text",
+    )).toBe(true);
+
+    expect(publicActive.endsWith(
+      "border-vt-accent bg-vt-accent text-vt-background",
+    )).toBe(true);
+    // One treatment for both shells, which is what the design's two stylesheets declare.
+    expect(adminActive).toBe(publicActive);
+    expect(adminActive.length).toBeGreaterThan(0);
   });
 });

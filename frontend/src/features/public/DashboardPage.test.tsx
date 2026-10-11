@@ -19,7 +19,6 @@ const publicNavigation: SidebarNavigationGroup[] = [
       { href: "/", icon: "01", label: "Dashboard" },
       { href: "/matches", icon: "02", label: "Partidos" },
       { href: "/tournaments", icon: "03", label: "Torneos" },
-      { href: "/stats", icon: "04", label: "Estadísticas" },
     ],
   },
 ];
@@ -30,8 +29,12 @@ describe("public dashboard", () => {
 
     expect(html).toContain("Dashboard público");
     expect(html).toContain("Seguí partidos en vivo, próximos encuentros, torneos activos y estadísticas generales.");
-    expect(html).toMatch(/<h1 class="[^"]*text-\[26px\][^"]*font-bold[^"]*">Dashboard público<\/h1>/);
-    expect(html).toMatch(/<p class="[^"]*text-\[13px\][^"]*">Seguí partidos en vivo, próximos encuentros, torneos activos y estadísticas generales.<\/p>/);
+    // Design source: frontend/design/html/voleytrack.css:66-67 — the design defines one
+    // .page-head for every screen: h1 28px/900/-0.02em at line-height 1, description 13px
+    // in --muted with a 6px top margin and a 60ch measure. The previous expectation here
+    // (26px/700) encoded the pre-design value.
+    expect(html).toMatch(/<h1 class="[^"]*text-\[28px\][^"]*font-black[^"]*leading-none[^"]*tracking-\[-0\.02em\][^"]*">Dashboard público<\/h1>/);
+    expect(html).toMatch(/<p class="[^"]*mt-1\.5[^"]*max-w-\[60ch\][^"]*text-\[13px\][^"]*text-vt-muted[^"]*">Seguí partidos en vivo, próximos encuentros, torneos activos y estadísticas generales.<\/p>/);
     expect(html.match(/data-testid="dashboard-metric-card"/g)).toHaveLength(4);
     expect(html).toContain("EN VIVO");
     expect(html).toContain("PRÓXIMOS");

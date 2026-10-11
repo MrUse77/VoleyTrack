@@ -56,13 +56,20 @@ const shellRoute = createRoute({
 	component: AppShell,
 });
 
+// The design's public sidebar (frontend/design/html/voleytrack.html) is Dashboard / Partidos /
+// Torneos / Equipos / Jugadores / En vivo. Equipos, Jugadores and En vivo are deliberately
+// absent until the tasks that build their real screens land (T14/T15/T16 in
+// odd/tasks/frontend-design-parity.md): linking them now would point at PlaceholderPage routes.
+// The app-only "Estadísticas" entry was removed because it was the only entry point of
+// `placeholderRoute(publicShellRoute, "/stats")`, which rendered no screen — the real
+// statistics views live at /tournaments/$id/stats and /teams/$id/stats and stay reachable
+// from their own pages. `/stats` joins the dead-route list that T10 removes.
 const publicNavigation: SidebarNavigationGroup[] = [
 	{
 		items: [
 			{ href: "/", icon: "01", label: "Dashboard" },
 			{ href: "/matches", icon: "02", label: "Partidos" },
 			{ href: "/tournaments", icon: "03", label: "Torneos" },
-			{ href: "/stats", icon: "04", label: "Estadísticas" },
 		],
 	},
 ];
@@ -165,7 +172,6 @@ const changePasswordRoute = createRoute({
 });
 
 const resultsRoute = placeholderRoute(shellRoute, "/results", "Results");
-const statsRoute = placeholderRoute(publicShellRoute, "/stats", "Estadísticas");
 const galleryRoute = placeholderRoute(shellRoute, "/gallery", "Gallery");
 const fantasyRoute = placeholderRoute(shellRoute, "/fantasy", "Fantasy");
 const playersRoute = placeholderRoute(publicShellRoute, "/players", "Jugadores");
@@ -348,7 +354,9 @@ export const routeTree = rootRoute.addChildren([
 	]),
 	publicShellRoute.addChildren([
 		publicDashboardRoute,
-		statsRoute,
+		// These two are PlaceholderPage routes on purpose: the design defines `/teams` and
+		// `/players` as real destinations, so T14/T15 replace their screens rather than
+		// removing the routes, unlike the removed `/stats` which had no design counterpart.
 		playersRoute,
 		teamsRoute,
 		matchesRoute,

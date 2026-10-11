@@ -382,6 +382,70 @@ const PROBE_SOURCE = `(() => {
       };
     });
 
+  // Additive only: no existing strategy above is reordered or redefined. The design's
+  // .nav-item (voleytrack.css:53) is 13px/600 with a 10px gap and padding, a 10px radius,
+  // a transparent 1px border and --muted ink, and .nav-item.active (line 55) is the
+  // accent fill with #0b1220 ink on it. Reporting the resolved typography, ink and geometry
+  // of the first and the active sidebar link makes the nav parity claim machine-readable
+  // instead of a class-name assertion; isActive proves the accessible hook is still the
+  // aria-current that the accent strategy above depends on.
+  const describeNavItem = (el) => {
+    if (!el) return null;
+
+    const cs = getComputedStyle(el);
+
+    return {
+      tag: el.tagName.toLowerCase(),
+      text: (el.innerText || el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40),
+      isActive: el.getAttribute("aria-current") === "page",
+      fontSize: cs.fontSize,
+      fontWeight: cs.fontWeight,
+      color: cs.color,
+      backgroundColor: cs.backgroundColor,
+      paddingTop: cs.paddingTop,
+      paddingRight: cs.paddingRight,
+      paddingBottom: cs.paddingBottom,
+      paddingLeft: cs.paddingLeft,
+      columnGap: cs.columnGap,
+      borderRadius: cs.borderRadius,
+      borderWidth: cs.borderTopWidth,
+      borderColor: cs.borderTopColor,
+    };
+  };
+  const navItem = {
+    first: describeNavItem(document.querySelector("aside nav a")),
+    active: describeNavItem(document.querySelector("aside nav a[aria-current]")),
+  };
+
+  // Additive only. The design's .page-head h1 (voleytrack.css:66) is 28px/900 with
+  // -0.02em letter-spacing and .page-head p (line 67) is 13px in --muted with a 6px top
+  // margin and a 60ch measure. The shell's own h1 lives in the header, so the first
+  // main h1 is the page heading on every shelled route.
+  const describeHeadingPart = (el) => {
+    if (!el) return null;
+
+    const cs = getComputedStyle(el);
+
+    return {
+      tag: el.tagName.toLowerCase(),
+      text: (el.innerText || el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40),
+      fontSize: cs.fontSize,
+      fontWeight: cs.fontWeight,
+      lineHeight: cs.lineHeight,
+      letterSpacing: cs.letterSpacing,
+      color: cs.color,
+      marginTop: cs.marginTop,
+      maxWidth: cs.maxWidth,
+    };
+  };
+  const pageHeadingElement = document.querySelector("main h1");
+  const pageHeading = pageHeadingElement
+    ? {
+        h1: describeHeadingPart(pageHeadingElement),
+        description: describeHeadingPart(pageHeadingElement.parentElement?.querySelector("p") ?? null),
+      }
+    : null;
+
   // Additive only. The design's numeric table treatment (.num, voleytrack.css:100:
   // mono family, tabular figures, right alignment) is a property of the shared table
   // primitive, so this probe reports the resolved typography of the first treated header
@@ -441,10 +505,18 @@ const PROBE_SOURCE = `(() => {
             ...rect(sidebar.el),
             expectedWidth: 248,
             matchesDesign: rect(sidebar.el).width === 248,
+            // Additive: the design sidebar's own padding of 20px by 14px (.sidebar,
+            // voleytrack.css:50), so the padding is machine-readable next to the width.
+            paddingTop: getComputedStyle(sidebar.el).paddingTop,
+            paddingRight: getComputedStyle(sidebar.el).paddingRight,
+            paddingBottom: getComputedStyle(sidebar.el).paddingBottom,
+            paddingLeft: getComputedStyle(sidebar.el).paddingLeft,
           }
         : { present: false, expectedWidth: 248, matchesDesign: false },
       accent,
       accentControls,
+      navItem,
+      pageHeading,
       numericTreatment,
       content: {
         innerTextLength: innerText.trim().length,
@@ -740,6 +812,12 @@ async function captureInElectron({ app, BrowserWindow }, opts, url, output) {
         sidebarWidth: 248,
         accent: "#ff8c42 / rgb(255, 140, 66)",
         bodyFont: "Inter",
+        navItemFontSize: "13px",
+        navItemFontWeight: 600,
+        sidebarPadding: "20px 14px",
+        pageHeadingFontSize: "28px",
+        pageHeadingFontWeight: 900,
+        pageHeadingLineHeight: "28px",
       },
       probes: probes ?? null,
       problems,

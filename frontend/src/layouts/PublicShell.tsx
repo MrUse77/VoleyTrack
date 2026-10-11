@@ -22,13 +22,6 @@ function getPublicPageMeta(currentPath: string) {
     };
   }
 
-  if (currentPath.startsWith("/stats")) {
-    return {
-      title: "Estadísticas",
-      subtitle: "Rendimiento de la competición",
-    };
-  }
-
   if (currentPath.startsWith("/teams")) {
     return {
       title: "Equipos",
