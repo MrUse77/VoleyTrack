@@ -24,6 +24,7 @@ import { TeamRosterPage } from "./features/public/TeamRosterPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamStatsPage } from "./features/public/TeamStatsPage";
 import { LiveMatchPage } from "./features/public/LiveMatchPage";
+import { LiveNowPage } from "./features/public/LiveNowPage";
 import { PlayersPage } from "./features/public/PlayersPage";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { AdminPage } from "./pages/AdminPage";
@@ -52,12 +53,14 @@ const rootRoute = createRootRoute({
 });
 
 // The design's public sidebar is Dashboard / Partidos / Torneos / Equipos / Jugadores /
-// En vivo (frontend/design/html/voleytrack.html, `sidebar-public-nav`). Equipos and
+// En vivo (frontend/design/html/voleytrack-live.html, `sidebar-public-nav`). Equipos and
 // Jugadores joined this list in the same change that replaced their PlaceholderPage
 // routes with the real screens, so the nav only ever points at destinations that render.
-// `En vivo` is still withheld: it arrives with its own screen in a later task (T16 in
-// odd/tasks/frontend-design-parity.md) and has no route yet, so adding it now would be a
-// link to nothing rather than a shorter nav.
+// `En vivo` was the last one withheld because it had no destination; it now points at
+// `/live`, which resolves the match that is live right now inside this same public shell.
+// It deliberately does NOT point at `/matches/$id/live`: that route is a focused,
+// standalone view (no public sidebar), so linking the nav to it would remove the very
+// navigation the user just clicked — the live presentation is shared instead.
 // The app-only "Estadísticas" entry was removed because it was the only entry point of
 // `placeholderRoute(publicShellRoute, "/stats")`, which rendered no screen — the real
 // statistics views live at /tournaments/$id/stats and /teams/$id/stats and stay reachable
@@ -72,6 +75,13 @@ const publicNavigation: SidebarNavigationGroup[] = [
 			{ href: "/tournaments", icon: "03", label: "Torneos" },
 			{ href: "/teams", icon: "04", label: "Equipos" },
 			{ href: "/players", icon: "05", label: "Jugadores" },
+			// Design: the `En vivo` entry is the only nav item whose mark is a live dot rather
+			// than an icon (`<span class="live-dot">`, voleytrack-live.html). This nav renders
+			// every public item's mark as the app's own two-digit glyph, and a nested element here
+			// would also land inside the `span:last-child` label read used by the nav probe and
+			// the router test, so `En vivo` follows the existing glyph convention and the label
+			// beside it carries the meaning.
+			{ href: "/live", icon: "06", label: "En vivo" },
 		],
 	},
 ];
@@ -250,6 +260,14 @@ const liveMatchRoute = createRoute({
 	path: "/matches/$id/live",
 	component: LiveMatchPage,
 });
+// The nav's `En vivo` destination: the same live presentation, inside the public shell, for
+// the match that is live right now. See `LiveNowPage` for why the nav does not point at
+// `/matches/$id/live`.
+const liveRoute = createRoute({
+	getParentRoute: () => publicShellRoute,
+	path: "/live",
+	component: LiveNowPage,
+});
 const playerDetailRoute = createRoute({
 	getParentRoute: () => publicShellRoute,
 	path: "/players/$id",
@@ -360,6 +378,7 @@ export const routeTree = rootRoute.addChildren([
 		teamsRoute,
 		matchesRoute,
 		tournamentsRoute,
+		liveRoute,
 		tournamentDetailRoute,
 		tournamentMatchesRoute,
 		tournamentStandingsRoute,

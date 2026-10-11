@@ -330,9 +330,14 @@ describe("core primitives", () => {
     // the two new list screens and the design's `Rendimiento ÚLTIMOS 5` card, all structural,
     // and converted the player detail's stat-breakdown and recent-matches cards onto the
     // structural form, which took the measured total to 59 across 21 production files, so the
-    // floor moves to those values.
-    expect(cards.length).toBeGreaterThanOrEqual(59);
-    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(21);
+    // floor moves to those values. T16 then aligned the public live screen, converting its
+    // three legacy uniform-padding Cards (unknown-match, scheduled-match and metadata) to the
+    // structural form and adding the design's own structural set (set history, court, event
+    // timeline, team statistics, top scorers, the two roster panels and the shared metadata
+    // panel), which took the measured total to 66 across 23 production files, so the floor
+    // moves to those values.
+    expect(cards.length).toBeGreaterThanOrEqual(66);
+    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(23);
 
     // A JSX spread could inject `padded={false}` (or a shadowing prop) behind the
     // guard's back and the count would silently drift. Fail loudly instead of
@@ -363,9 +368,11 @@ describe("core primitives", () => {
     // `Rendimiento ÚLTIMOS 5` card and replaced the player detail's KPI cards with
     // `KpiGrid`/`Kpi` while moving its two lower cards onto the structural form, which took
     // the legacy form to 35 call sites in 12 files, so both ceilings were lowered to the
-    // measured values.
-    expect(legacyCount).toBeLessThanOrEqual(35);
-    expect(legacyFiles.length).toBeLessThanOrEqual(12);
+    // measured values. T16 converted the live screen's three legacy Cards to the structural
+    // form (its new cards already are structural), which took the legacy form to 32 call
+    // sites in 11 files, so both ceilings were lowered to the measured values again.
+    expect(legacyCount).toBeLessThanOrEqual(32);
+    expect(legacyFiles.length).toBeLessThanOrEqual(11);
   });
 
   it("keeps a single form-field concept in the primitives layer", () => {

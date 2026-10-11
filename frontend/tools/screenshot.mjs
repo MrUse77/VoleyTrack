@@ -790,6 +790,126 @@ const PROBE_SOURCE = `(() => {
       })()
     : null;
 
+  // Additive only: no key, strategy, order or shape above is renamed, reordered or
+  // redefined. The live match screen is the one screen whose whole content is a scoreboard,
+  // a court and a timeline, and the existing tabularSamples/cardBodies keys only see it
+  // through treatments it may or may not use. This key reports what the screen itself
+  // renders: the resolved box and fill of each region that survives on both sides of the
+  // live alignment, the typography actually applied to the current-set score, the court's
+  // structure and its per-position accessible names, and the timeline's element and item
+  // count. Every selector here exists on the pre-alignment screen too, so the same probe can
+  // measure before and after.
+  const describeLiveBox = (el) => {
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return {
+      testId: el.getAttribute("data-testid"),
+      tag: el.tagName.toLowerCase(),
+      paddingTop: cs.paddingTop,
+      paddingRight: cs.paddingRight,
+      paddingBottom: cs.paddingBottom,
+      paddingLeft: cs.paddingLeft,
+      borderRadius: cs.borderTopLeftRadius,
+      backgroundColor: cs.backgroundColor,
+      backgroundImage: cs.backgroundImage === "none" ? null : cs.backgroundImage,
+      gridTemplateColumns: cs.gridTemplateColumns,
+    };
+  };
+  const describeLiveText = (el) => {
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return {
+      tag: el.tagName.toLowerCase(),
+      text: (el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 48),
+      fontFamily: cs.fontFamily,
+      fontSize: cs.fontSize,
+      fontWeight: cs.fontWeight,
+      letterSpacing: cs.letterSpacing,
+      fontVariantNumeric: cs.fontVariantNumeric,
+    };
+  };
+  const liveRegionIds = [
+    "live-match-scoreboard",
+    "set-history-card",
+    "court-rotations",
+    "court-graphic",
+    "live-events",
+    "team-statistics",
+    "top-scorers",
+    "roster-grid",
+    "individual-stats",
+    "match-metadata",
+  ];
+  const liveCourtElement = document.querySelector('[data-testid="court-graphic"]');
+  const liveTimelineElement =
+    document.querySelector('[data-testid="live-event-list"]') ??
+    document.querySelector('[data-testid="live-events"] ol');
+  const liveEventItems = Array.from(document.querySelectorAll('[data-testid="live-event"]'));
+  const liveCourtPositions = Array.from(document.querySelectorAll('[data-testid="court-position"]'));
+  const liveScoreElement = document.querySelector('[data-testid="current-score-home"]');
+  const liveScoreboardElement = document.querySelector('[data-testid="live-match-scoreboard"]');
+  const liveScreen =
+    liveScoreboardElement || liveCourtElement || liveTimelineElement
+      ? {
+          scoreboard: describeLiveBox(liveScoreboardElement),
+          currentScore: describeLiveText(liveScoreElement),
+          currentScoreParent: describeLiveText(liveScoreElement?.parentElement ?? null),
+          court: liveCourtElement
+            ? (() => {
+                const courtRect = liveCourtElement.getBoundingClientRect();
+                const boxes = liveCourtPositions.map((el) => {
+                  const r = el.getBoundingClientRect();
+                  return {
+                    position: el.getAttribute("data-position"),
+                    left: round(r.left - courtRect.left),
+                    top: round(r.top - courtRect.top),
+                    width: round(r.width),
+                    height: round(r.height),
+                  };
+                });
+                const overflowing = boxes.filter(
+                  (box) =>
+                    box.left < 0 ||
+                    box.top < 0 ||
+                    box.left + box.width > round(courtRect.width) ||
+                    box.top + box.height > round(courtRect.height),
+                );
+
+                return {
+                  ...describeLiveBox(liveCourtElement),
+                  role: liveCourtElement.getAttribute("role"),
+                  ariaDescribedBy: liveCourtElement.getAttribute("aria-describedby"),
+                  netCount: liveCourtElement.querySelectorAll('[data-testid="volleyball-net"]').length,
+                  attackLineCount: liveCourtElement.querySelectorAll('[data-testid="attack-line"]').length,
+                  positionCount: document.querySelectorAll('[data-testid="court-position"]').length,
+                  positionLabels: liveCourtPositions
+                    .slice(0, 3)
+                    .map((el) => el.getAttribute("aria-label")),
+                  positionTexts: liveCourtPositions
+                    .slice(0, 3)
+                    .map((el) => (el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40)),
+                  boxWidth: round(courtRect.width),
+                  boxHeight: round(courtRect.height),
+                  positionBoxes: boxes.slice(0, 4),
+                  overflowingPositionCount: overflowing.length,
+                };
+              })()
+            : null,
+          timeline: liveTimelineElement
+            ? {
+                tag: liveTimelineElement.tagName.toLowerCase(),
+                testId: liveTimelineElement.getAttribute("data-testid"),
+                itemCount: liveEventItems.length,
+                listItemTags: [...new Set(liveEventItems.map((el) => el.tagName.toLowerCase()))],
+              }
+            : null,
+          regions: liveRegionIds
+            .map((id) => document.querySelector('[data-testid="' + id + '"]'))
+            .filter(Boolean)
+            .map(describeLiveBox),
+        }
+      : null;
+
   const expected = __EXPECTED__;
   const innerText = document.body.innerText || "";
   const expectedStrings = expected.map((value) => ({ value, found: innerText.includes(value) }));
@@ -879,6 +999,7 @@ const PROBE_SOURCE = `(() => {
       // semantics of every table, teamTabs the team detail's tab set and active treatment,
       // and kpiGrid the KPI grid's resolved columns and value typography.
       navDestinations,
+      liveScreen,
       tableHeaders,
       teamTabs,
       kpiGrid,
