@@ -257,6 +257,14 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   public ConfirmacionDTO confirmarInicioPartido(UUID partidoId, UUID setId) {
     Partido partido = buscarPartido(partidoId);
     SetPartido set = buscarSet(setId);
+
+    // El set tiene que pertenecer al partido indicado; si no, se reporta como no encontrado
+    // para no mover silenciosamente un set de otro partido.
+    UUID setPartidoId = buscarPartidoIdDeSet(setId);
+    if (!setPartidoId.equals(partidoId)) {
+      throw new RecursoNoEncontradoException("Set no encontrado: " + setId);
+    }
+
     try {
       if (partido.getEstado() == EstadoPartido.PROGRAMADO) {
         partido.iniciar();

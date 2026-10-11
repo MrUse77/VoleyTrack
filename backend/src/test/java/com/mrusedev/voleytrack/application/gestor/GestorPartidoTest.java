@@ -431,6 +431,7 @@ class GestorPartidoTest {
         when(setRepo.guardar(any(), any())).thenReturn(set);
         when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
         when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(setRepo.buscarPartidoId(set.getId())).thenReturn(Optional.of(partido.getId()));
 
         ConfirmacionDTO result = gestor.confirmarInicioPartido(partido.getId(), set.getId());
 
@@ -445,12 +446,43 @@ class GestorPartidoTest {
         set.iniciar();
         when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
         when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(setRepo.buscarPartidoId(set.getId())).thenReturn(Optional.of(partido.getId()));
 
         assertThatThrownBy(() -> gestor.confirmarInicioPartido(partido.getId(), set.getId()))
                 .isInstanceOf(ReglaDeNegocioException.class)
                 .hasMessage("El set no está en estado PENDIENTE");
 
         verify(partidoRepo, never()).guardar(any());
+    }
+
+    @Test
+    void confirmarInicioPartidoConSetDeOtroPartidoLanzaRecursoNoEncontradoYSinPersistir() {
+        Partido otroPartido = new Partido(UUID.randomUUID(), equipoLocal, equipoVisitante, new CantSets(5));
+        SetPartido setDeOtroPartido = otroPartido.iniciarSet();
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+        when(setRepo.buscarPorId(setDeOtroPartido.getId())).thenReturn(Optional.of(setDeOtroPartido));
+        when(setRepo.buscarPartidoId(setDeOtroPartido.getId())).thenReturn(Optional.of(otroPartido.getId()));
+
+        assertThatThrownBy(() -> gestor.confirmarInicioPartido(partido.getId(), setDeOtroPartido.getId()))
+                .isInstanceOf(RecursoNoEncontradoException.class)
+                .hasMessage("Set no encontrado: " + setDeOtroPartido.getId());
+
+        verify(partidoRepo, never()).guardar(any());
+        verify(setRepo, never()).guardar(any(), any());
+    }
+
+    @Test
+    void confirmarInicioPartidoConSetInexistenteLanzaRecursoNoEncontradoYSinPersistir() {
+        UUID setId = UUID.randomUUID();
+        when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
+        when(setRepo.buscarPorId(setId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> gestor.confirmarInicioPartido(partido.getId(), setId))
+                .isInstanceOf(RecursoNoEncontradoException.class)
+                .hasMessage("Set no encontrado: " + setId);
+
+        verify(partidoRepo, never()).guardar(any());
+        verify(setRepo, never()).guardar(any(), any());
     }
 
     // ── iniciarAnotacion ──
@@ -529,6 +561,7 @@ class GestorPartidoTest {
                 .thenThrow(new RuntimeException("DB failure"));
         when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
         when(setRepo.buscarPorId(set.getId())).thenReturn(Optional.of(set));
+        when(setRepo.buscarPartidoId(set.getId())).thenReturn(Optional.of(partido.getId()));
 
         assertThatThrownBy(() -> gestor.confirmarInicioPartido(partido.getId(), set.getId()))
                 .isInstanceOf(RuntimeException.class)
