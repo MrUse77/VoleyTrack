@@ -58,6 +58,30 @@ adapter/in/web → application/port/in → application/gestor → domain
 | Identity | `Usuario`, `Admin`, `Planillero` |
 | Projection | `Estadistica` |
 
+## Error taxonomy
+
+Error handling is split across layers on purpose:
+
+| Layer | Declares | Examples |
+|---|---|---|
+| `domain/` | **No exception types of its own.** Uses JDK exceptions: `IllegalStateException` for state invariants, `IllegalArgumentException` for invalid input or identity mismatches | `Partido.iniciarSet()`, `Alineacion.agregarJugador()`, `CantSets` |
+| `application/exception/` | The taxonomy the use cases speak | `RecursoNoEncontradoException` (missing resource), `ReglaDeNegocioException` (business rule violated) |
+| `adapter/in/web/` | The HTTP translation, in one place: `ApiExceptionHandler` | `RecursoNoEncontradoException` → 404, `ReglaDeNegocioException` → 409, `IllegalArgumentException` → 400 |
+
+Rules:
+
+- The domain never declares its own exception types, and never imports
+  `application` or a framework.
+- Use cases translate at the boundary when the JDK type is too coarse: a state
+  invariant violated by the request becomes `ReglaDeNegocioException` (409), an
+  invalid input stays `IllegalArgumentException` (400).
+- Catch narrowly — `catch (IllegalStateException e)`, never
+  `catch (RuntimeException e)`: a broad catch turns a legitimate 404 into a 409.
+- Ownership guards run **before** the `try` that translates domain exceptions,
+  and persistence stays **outside** it.
+- A message a use case returns is part of the HTTP contract: if it is built, it
+  has to reach the client.
+
 ## Checklist
 
 - [ ] New code lives inside `domain/`, `application/`, or `adapter/`.

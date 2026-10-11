@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# commit-msg hook — enforces the Conventional Commits rules declared in
+# .github/commitlint.config.mjs, without requiring Node or commitlint.
+#
+# Enable it once per clone:
+#   git config core.hooksPath .githooks
+#
+# Bypass it for a single commit with: git commit --no-verify
+set -euo pipefail
+
+msg_file="${1:?falta el path del archivo con el mensaje de commit}"
+subject="$(head -n 1 "$msg_file")"
+
+# Merge, revert y los fixup/squash de un rebase no se validan
+case "$subject" in
+  "Merge "* | "Revert "* | "fixup!"* | "squash!"*) exit 0 ;;
+esac
+
+types='feat|fix|docs|style|refactor|test|chore'
+max=72
+
+fail() {
+  printf '\n%s\n' "✗ commit-msg: $1" >&2
+  printf '%s\n' "  asunto:  $subject" >&2
+  printf '%s\n' "  formato: <tipo>(<scope>): <descripción imperativa>" >&2
+  printf '%s\n' "  tipos:   ${types//|/, }" >&2
+  printf '%s\n' "  reglas:  .github/commitlint.config.mjs — o usá --no-verify para saltearlo" >&2
+  printf '\n' >&2
+  exit 1
+}
+
+[ -n "$subject" ] || fail "el asunto está vacío"
+[ "${#subject}" -le "$max" ] || fail "el asunto tiene ${#subject} caracteres y el máximo es $max"
+
+if ! printf '%s' "$subject" | grep -qE "^(${types})(\([a-z0-9._-]+\))?!?: .+"; then
+  fail "el asunto no sigue Conventional Commits"
+fi
+
+case "$subject" in
+  *.) fail "el asunto no puede terminar en punto" ;;
+esac
+
+exit 0
