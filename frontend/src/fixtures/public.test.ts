@@ -328,6 +328,26 @@ describe("public fixtures", () => {
       expect(detail.rotations).toHaveLength(2);
       expect(detail.rotations[0].positions).toHaveLength(6);
       expect(detail.rotations[1].positions).toHaveLength(6);
+      // The live screen's "Estadísticas individuales" roster prints one line per player on
+      // court (design: voleytrack-live.html, the `.roster-player` rows), so the roster is
+      // the same six players as the rotation, index-aligned, with the per-player match line.
+      expect(detail.rosters).toHaveLength(2);
+      for (const [index, roster] of detail.rosters.entries()) {
+        expect(roster.teamId).toBe(detail.rotations[index].teamId);
+        expect(roster.teamName).toBe(detail.rotations[index].teamName);
+        expect(roster.players.map(({ playerName }) => playerName)).toEqual(
+          detail.rotations[index].positions.map(({ playerName }) => playerName),
+        );
+        expect(roster.players.map(({ number }) => number)).toEqual(
+          detail.rotations[index].positions.map(({ number }) => number),
+        );
+        expect(Object.isFrozen(roster)).toBe(true);
+        expect(Object.isFrozen(roster.players)).toBe(true);
+        for (const player of roster.players) {
+          expect(Object.isFrozen(player)).toBe(true);
+          expect(player.role).not.toHaveLength(0);
+        }
+      }
       expect(detail.events).not.toHaveLength(0);
       expect(detail.playerLeaders).not.toHaveLength(0);
       expect(detail.teamStats).toHaveLength(4);
@@ -335,6 +355,7 @@ describe("public fixtures", () => {
       expect(Object.isFrozen(detail.sets)).toBe(true);
       expect(Object.isFrozen(detail.rotations)).toBe(true);
       expect(Object.isFrozen(detail.rotations[0].positions)).toBe(true);
+      expect(Object.isFrozen(detail.rosters)).toBe(true);
       expect(Object.isFrozen(detail.events)).toBe(true);
       expect(Object.isFrozen(detail.playerLeaders)).toBe(true);
       expect(Object.isFrozen(detail.teamStats)).toBe(true);

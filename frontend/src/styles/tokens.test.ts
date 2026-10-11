@@ -447,10 +447,18 @@ describe("design tokens", () => {
     // --bg layers and dropped the player KPI cards' raised borders. Measured with this
     // guard's own patterns and exclusions: vt-panel 52/27, vt-raised 29/18, and
     // vt-raised-border unchanged at 9/7 (so its ceiling stays).
+    // T16 then aligned the public live screen: its own hand-rolled status chip and its six
+    // app-only `bg-vt-panel` stat/event rows moved onto the design's state pill and --surface
+    // layers, the court's `border-vt-raised bg-vt-surface` card and
+    // `border-vt-raised-border bg-vt-raised` graphic became the design's --surface card over
+    // a --surface-2 court, and the three legacy uniform-padding Cards on the screen became
+    // structural ones. Measured with this guard's own patterns and exclusions: vt-panel
+    // 45/26, vt-raised 25/16, vt-raised-border 7/5, so every ceiling drops to its measured
+    // value.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 52, baselineFiles: 27 },
-      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 29, baselineFiles: 18 },
-      { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 9, baselineFiles: 7 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 45, baselineFiles: 26 },
+      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 25, baselineFiles: 16 },
+      { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 7, baselineFiles: 5 },
     ];
 
     for (const { token, pattern, ceiling, baselineFiles } of ratchets) {

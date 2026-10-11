@@ -940,7 +940,55 @@ readable against the completed record above; the carried-over items it lists wer
     recent-matches blocks with pre-existing raw colour usage (`text-white`, `bg-vt-panel`). That last
     one is real debt, not a design decision, and it is not covered by the raw-colour guard because that
     guard only covers the auth, layout and dashboard surfaces.
-- [ ] **T16 — Live match parity.** Timeline, court with positions, scoreboard.
+- [x] **T16 — Live match parity and the sixth nav destination.** Done, and **slice 2 is now complete**:
+  all six public screens are aligned.
+  - `LiveMatchPresentation.tsx` is new and holds the shared presentation — scoreboard, set history,
+    court, timeline, team stats, top scorers, two rosters and a metadata panel. `LiveMatchPage` became a
+    focused shell over it, and a new `/live` route renders the same presentation inside the public shell.
+  - **The navigation tension was resolved with evidence, exactly as asked.** The design's live HTML
+    carries the same public sidebar group as every other screen, so the design does put live inside the
+    shell — but it is a one-page prototype whose nav click only toggles which section is visible, so it
+    **models no routing and cannot settle an href**. That was stated explicitly rather than assumed.
+    Resolution: `/live` inside `publicShellRoute` sharing the presentation, while `/matches/$id/live`
+    keeps its standalone focused behaviour and its test, measured as sidebar-absent before and after.
+    Rejected alternatives, each with its reason: pointing the nav at `/matches/$id/live` would delete the
+    navigation the user just clicked; pointing it at `/matches?status=live` would duplicate the matches
+    filter and leave the live screen unnavigable; and shelling the detail route would break a deliberate
+    tested decision. Flagged for the owner as a product call.
+  - **All six nav destinations now exist** (`Dashboard`, `Partidos`, `Torneos`, `Equipos`, `Jugadores`,
+    `En vivo`), where `/live` before had no route at all, and `router.test.tsx` asserts every nav href
+    resolves to a real route rather than merely counting labels.
+  - **Measured before and after.** Scoreboard padding 0 → 22px and a flat fill → the surface gradient,
+    grid none → `399px 220px 399px`. The set score went from Inter 56px/900 with normal numeric variant
+    to **JetBrains Mono 42px/900 plus a 13px/700 tabular sub-line**, which is the font and numeric work
+    from slice 1 finally paying off on a real score. The court went from `rgb(30,41,59)` with a two-column
+    grid and no role to `rgb(22,32,50)` at 14px with `role="group"` and an `aria-describedby`, markers
+    from 32×32 to 58×56 carrying visible `1 · SOSA #11` chips and **zero overflowing positions**. Card
+    padding went from 24px and 20–30px to the card system's `CardBody` 18px 20px.
+  - **The court reads for assistive technology.** A labelled group whose description names the net, each
+    side's formation (three in front of the three-metre line, three behind) and which side serves; twelve
+    list items each named `"{team}, posición n: name, número n"`; discs, chips, lines and the `RED` and
+    `3M` marks hidden as decorative; and team identity carried by side, ring tone and badges **restated in
+    words** rather than by colour alone.
+  - **Eleven design-over-prompt decisions**, each with a design line. The most consequential: the live
+    stylesheet does **not** use the design's KPI classes, so `Kpi`/`KpiGrid` were correctly not used — the
+    worker corrected this document's instruction. Prototype-only colours with no token were mapped onto
+    the system's own tokens (the scoreboard's `#1a2740` became the `surface-2 → surface` gradient, and the
+    court's literals became `label` variants, `background` and `accent-soft`). A "Ver historial completo"
+    modal was **not** rendered because no history fixture exists and it would have been a no-op. The
+    design's serving player is unknowable from our data, so the serving **team** is shown instead of an
+    invented name. And the design's own inconsistency about tinting the unforced-errors row was resolved
+    by dropping the app's danger tint rather than inventing a rule.
+  - Ratchets lowered again: `vt-panel` 52/27 → **45/26**, `vt-raised` 29/18 → **25/16**, `vt-raised-border`
+    9/7 → **7/5**, legacy `Card` 35/12 → **32/11**, with the all-`Card` floor rising 59/21 → 66/23.
+  - Suite `46 files / 313 passed`, lint exit 0, build exit 0. Both dev servers stopped with single-PID
+    kills, both ports free, the other session's process untouched.
+  - **Carried into the polish pass:** the screen renders **three `role="status"` regions** (two static
+    pills plus the score), which is design-faithful but arguably noisy for a screen reader and worth a
+    decision; the roster's points, attack, block and ace values are prototype data; and the `/live` versus
+    `/matches/$id/live` split remains an owner decision. The court's visual quality rests on measured
+    geometry (a 583.6×291.8 box, ~58×56 markers, zero overflow) rather than on anyone's eyes, because
+    image reading is disabled for the orchestrator.
 
 ### Slice 3 — Admin screens
 

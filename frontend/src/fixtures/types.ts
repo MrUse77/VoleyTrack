@@ -46,6 +46,28 @@ export type LiveTeamRotationFixture = Readonly<{
   positions: readonly LiveRotationPositionFixture[];
 }>;
 
+/**
+ * One player's per-match line in the design's "Estadísticas individuales" roster
+ * (frontend/design/html/voleytrack-live.html, the `.roster-player` rows: photo, name and
+ * shirt number, role, then PTS / ATA / BLQ / ACE). `role` is the volleyball position the
+ * design prints under the name ("Punta", "Central", "Opuesto", "Líbero", "Armador").
+ */
+export type LiveRosterPlayerFixture = Readonly<{
+  playerName: string;
+  number: number;
+  role: string;
+  points: number;
+  attackPercent: number;
+  blocks: number;
+  aces: number;
+}>;
+
+export type LiveTeamRosterFixture = Readonly<{
+  teamId: string;
+  teamName: string;
+  players: readonly LiveRosterPlayerFixture[];
+}>;
+
 export type LiveMatchEventFixture = Readonly<{
   id: string;
   time: string;
@@ -88,6 +110,7 @@ export type LiveMatchDetailFixture = Readonly<{
   awaySetsWon: number;
   sets: readonly LiveSetFixture[];
   rotations: readonly [LiveTeamRotationFixture, LiveTeamRotationFixture];
+  rosters: readonly [LiveTeamRosterFixture, LiveTeamRosterFixture];
   events: readonly LiveMatchEventFixture[];
   playerLeaders: readonly LivePlayerStatFixture[];
   teamStats: readonly LiveTeamStatFixture[];
