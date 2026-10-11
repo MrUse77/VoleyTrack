@@ -161,7 +161,6 @@ export function AdminShell({ currentPath, navigation, roleLabel }: AdminShellPro
         currentPath={currentPath}
         navigation={navigation}
         roleLabel={roleLabel}
-        variant="admin"
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminHeader currentPath={currentPath} />

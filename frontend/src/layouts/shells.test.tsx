@@ -61,6 +61,7 @@ describe("application shells", () => {
 
     expect(html).toContain("w-[248px]");
     expect(html).toMatch(/<aside[^>]*class="[^"]*bg-vt-surface/);
+    expect(html).toMatch(/<aside[^>]*class="[^"]*border-vt-border-2/);
     expect(html).toMatch(/class="[^"]*bg-vt-accent[^"]*"[^>]*href="\/"/);
     expect(html).not.toContain("min-w-[1440px]");
     expect(html).toContain("VoleyTrack");
@@ -92,7 +93,8 @@ describe("application shells", () => {
     );
 
     expect(html).toContain("w-[248px]");
-    expect(html).toMatch(/<aside[^>]*class="[^"]*bg-vt-background/);
+    expect(html).toMatch(/<aside[^>]*class="[^"]*bg-vt-surface/);
+    expect(html).toMatch(/<aside[^>]*class="[^"]*border-vt-border-2/);
     // Design source: frontend/design/html/voleytrack-admin.css:60 — `.nav-item.active` is the
     // accent fill (`--accent`, i.e. bg-vt-accent) with the design's dark ink on it (the near-black
     // that --color-vt-background carries), so the admin shell must not use the app-only raised
@@ -240,5 +242,53 @@ describe("application shells", () => {
     // One treatment for both shells, which is what the design's two stylesheets declare.
     expect(adminActive).toBe(publicActive);
     expect(adminActive.length).toBeGreaterThan(0);
+  });
+
+  it("keeps one design sidebar surface and divider across both shells", () => {
+    const publicHtml = renderToStaticMarkup(
+      <PublicShell
+        currentPath="/"
+        navigation={publicNavigation}
+        roleLabel="Público"
+      />,
+    );
+    const adminHtml = renderToStaticMarkup(
+      <AdminShell
+        currentPath="/admin/tournaments"
+        navigation={adminNavigation}
+        roleLabel="ADMIN"
+      />,
+    );
+
+    const sidebarClass = (html: string) =>
+      html.match(/<aside[^>]*class="([^"]*)"/)?.[1] ?? "";
+    const publicSidebar = sidebarClass(publicHtml);
+    const adminSidebar = sidebarClass(adminHtml);
+
+    // A guard that reads an empty class list is a broken guard, not a passing one.
+    expect(publicSidebar.length).toBeGreaterThan(0);
+    expect(adminSidebar.length).toBeGreaterThan(0);
+
+    // Design source: frontend/design/html/voleytrack.css:50 and
+    // frontend/design/html/voleytrack-admin.css:55 declare the same rule:
+    //   .sidebar{background:var(--surface);border-right:1px solid var(--border-2);...}
+    // so the elevated --surface fill with the subtler --border-2 divider is the sidebar
+    // treatment on BOTH shells. (The hex literals those tokens carry are deliberately not
+    // quoted here: tokens.test.ts forbids raw hex in layouts/.)
+    for (const className of [publicSidebar, adminSidebar]) {
+      expect(className).toContain("bg-vt-surface");
+      expect(className).toContain("border-r");
+      expect(className).toContain("border-vt-border-2");
+
+      // The two tokens this drifted to: the canvas fill the admin shell used to paint
+      // the sidebar with, and the heavier --border divider both shells used. Both are
+      // matched as whole class names so `border-vt-border-2` cannot satisfy the ban.
+      expect(className).not.toMatch(/(?:^|\s)bg-vt-background(?:\s|$)/);
+      expect(className).not.toMatch(/(?:^|\s)border-vt-border(?:\s|$)/);
+    }
+
+    // The shells diverging is exactly how this drifted, so pin them together: the
+    // sidebar surface is a shell-independent decision, not a per-variant one.
+    expect(adminSidebar).toBe(publicSidebar);
   });
 });

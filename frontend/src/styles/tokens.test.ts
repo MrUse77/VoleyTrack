@@ -94,6 +94,7 @@ const playerSelectionModalPath = fileURLToPath(new URL("../features/scoring/Play
 const matchSetupPath = fileURLToPath(new URL("../features/scoring/MatchSetupPage.tsx", import.meta.url));
 const pointEntryPath = fileURLToPath(new URL("../features/scoring/PointEntryPage.tsx", import.meta.url));
 const postMatchSummaryPath = fileURLToPath(new URL("../features/scoring/PostMatchSummaryPage.tsx", import.meta.url));
+const sidebarPath = fileURLToPath(new URL("../components/navigation/Sidebar.tsx", import.meta.url));
 const scoringFixturePath = fileURLToPath(new URL("../fixtures/scoring.ts", import.meta.url));
 
 describe("design tokens", () => {
@@ -325,6 +326,28 @@ describe("design tokens", () => {
     expect(source).not.toContain("slate-");
     expect(source).not.toContain("white");
     expect(source).toContain("Object.freeze");
+  });
+
+  it("pins the sidebar surface and divider to the design on both shells", () => {
+    const source = readFileSync(sidebarPath, "utf8");
+
+    // Design source: frontend/design/html/voleytrack.css:50 and
+    // frontend/design/html/voleytrack-admin.css:55 both declare
+    //   .sidebar{background:var(--surface);border-right:1px solid var(--border-2);...}
+    // The design maps --surface to #111a2b (--color-vt-surface) and --border-2 to
+    // #1e293b (--color-vt-border-2). The sidebar's own class list must carry exactly
+    // those two, pinned as one contiguous fragment so a reorder or a partial swap
+    // cannot slip through.
+    expect(source).toContain("border-r border-vt-border-2 bg-vt-surface");
+    expect(source).toContain("voleytrack.css:50");
+    expect(source).toContain("voleytrack-admin.css:55");
+
+    // The two drifts this guards: the canvas fill (--bg, which the admin shell used to
+    // paint the sidebar with) and the heavier --border divider. `text-vt-background` is
+    // the active nav item's ink, not the sidebar surface, so only `bg-` is banned.
+    expect(source).not.toContain("bg-vt-background");
+    // The divergence root cause: the sidebar surface must not branch per shell.
+    expect(source).not.toContain('variant === "admin"');
   });
 
   // Design-layer debt ratchet. `vt-panel`, `vt-raised` and `vt-raised-border` are

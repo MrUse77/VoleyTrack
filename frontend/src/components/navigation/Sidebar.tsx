@@ -17,7 +17,6 @@ interface SidebarProps {
   roleLabel: string;
   brandSubtitle?: string;
   showCoverage?: boolean;
-  variant?: "public" | "admin";
 }
 
 function isActivePath(
@@ -43,16 +42,25 @@ export function Sidebar({
   roleLabel,
   brandSubtitle = roleLabel,
   showCoverage = false,
-  variant = "public",
 }: SidebarProps) {
-  const sidebarBackgroundClass =
-    variant === "admin" ? "bg-vt-background" : "bg-vt-surface";
-  // Design: frontend/design/html/voleytrack.css:55 `.nav-item.active{background:var(--accent);
-  // color:#0b1220;border-color:var(--accent)}` — the accent fill with dark ink on it, which
-  // is `--color-vt-background` here. The admin variant used to override this with a raised
-  // background (an app-only token with no design counterpart); the admin stylesheet
-  // (frontend/design/html/voleytrack-admin.css:60) declares the same active rule, so both
-  // shells now share one treatment instead of diverging.
+  // Design: frontend/design/html/voleytrack.css:50 and
+  // frontend/design/html/voleytrack-admin.css:55 declare the SAME rule for the sidebar —
+  // `.sidebar{background:var(--surface);border-right:1px solid var(--border-2);...}` —
+  // i.e. the elevated --surface fill (vt-surface) with the subtler --border-2 divider
+  // (vt-border-2), NOT the canvas --bg fill and NOT the heavier --border tone.
+  //
+  // This is deliberately shell-independent. A `variant` prop used to branch it, painting
+  // the admin sidebar with the canvas --bg fill instead of --surface, and because the
+  // public shell and the admin shell each reached the sidebar by a different path, that
+  // one branch was enough to make the two shells disagree. The prop is gone rather than
+  // defaulted, so they cannot diverge again. (The banned utility name is deliberately not
+  // spelled out here: tokens.test.ts pins this file's whole source against it.)
+  //
+  // Design: frontend/design/html/voleytrack.css:55
+  // `.nav-item.active{background:var(--accent);color:#0b1220;border-color:var(--accent)}` —
+  // the accent fill with dark ink on it, which is `--color-vt-background` here. The admin
+  // stylesheet (frontend/design/html/voleytrack-admin.css:60) declares the same active
+  // rule, so both shells share one nav treatment instead of diverging.
   const activeStateClass =
     "border-vt-accent bg-vt-accent text-vt-background";
   // Design: voleytrack.css:53-54 `.nav-item{...color:var(--muted)...}` and
@@ -61,7 +69,7 @@ export function Sidebar({
     "border-transparent text-vt-muted hover:bg-vt-surface-2 hover:text-vt-text";
 
   return (
-    <aside className={`flex min-h-0 w-full shrink-0 flex-col border-r border-vt-border ${sidebarBackgroundClass} px-3.5 py-5 text-vt-text md:min-h-screen md:w-[248px]`}>
+    <aside className="flex min-h-0 w-full shrink-0 flex-col border-r border-vt-border-2 bg-vt-surface px-3.5 py-5 text-vt-text md:min-h-screen md:w-[248px]">
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex items-center gap-3 px-2">
           <div

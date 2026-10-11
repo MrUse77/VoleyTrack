@@ -479,6 +479,10 @@ const PROBE_SOURCE = `(() => {
   const root = document.getElementById("root");
   const overlay = document.querySelector("vite-error-overlay, #vite-error-overlay, .vite-error-overlay");
 
+  // Additive only: a dedicated computed-style handle for the sidebar's surface and divider,
+  // so the new keys below can read them without touching the calls the existing keys use.
+  const sidebarStyle = sidebar.el ? getComputedStyle(sidebar.el) : null;
+
   return {
     title: document.title,
     readyState: document.readyState,
@@ -511,6 +515,25 @@ const PROBE_SOURCE = `(() => {
             paddingRight: getComputedStyle(sidebar.el).paddingRight,
             paddingBottom: getComputedStyle(sidebar.el).paddingBottom,
             paddingLeft: getComputedStyle(sidebar.el).paddingLeft,
+            // Additive only: no existing key above is renamed, reordered or redefined. The
+            // design's .sidebar rule is background:var(--surface) plus
+            // border-right:1px solid var(--border-2) (voleytrack.css:50 and
+            // voleytrack-admin.css:55), i.e. the
+            // elevated #111a2b fill and the subtler #1e293b divider, on BOTH shells. Those
+            // two declarations were applied nowhere the old probe could see, so the surface
+            // could silently drift to the canvas fill or the heavier --border tone. These
+            // keys make the rendered values machine-readable.
+            backgroundColor: sidebarStyle.backgroundColor,
+            expectedBackgroundColor: "rgb(17, 26, 43)",
+            matchesSurface: sidebarStyle.backgroundColor === "rgb(17, 26, 43)",
+            borderRightWidth: sidebarStyle.borderRightWidth,
+            borderRightStyle: sidebarStyle.borderRightStyle,
+            borderRightColor: sidebarStyle.borderRightColor,
+            expectedBorderRight: "1px solid rgb(30, 41, 59)",
+            matchesBorderRight:
+              sidebarStyle.borderRightWidth === "1px" &&
+              sidebarStyle.borderRightStyle === "solid" &&
+              sidebarStyle.borderRightColor === "rgb(30, 41, 59)",
           }
         : { present: false, expectedWidth: 248, matchesDesign: false },
       accent,
