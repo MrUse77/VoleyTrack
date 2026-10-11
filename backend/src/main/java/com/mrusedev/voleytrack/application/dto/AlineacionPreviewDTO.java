@@ -14,7 +14,7 @@ public record AlineacionPreviewDTO(
             String nombre,
             String apellido,
             int dorsal,
-            int posicion,
+            int posicionEnCancha,
             boolean esTitular
     ) {}
 }
