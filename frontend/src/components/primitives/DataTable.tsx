@@ -22,6 +22,16 @@ type DataTableProps<Row extends object> = {
   columns: DataTableColumn<Row>[];
   getRowKey: (row: Row, index: number) => Key;
   rows: Row[];
+  /**
+   * Classes for the table's own box (`overflow-x-auto rounded-2xl border border-vt-border`).
+   *
+   * The design flattens that box whenever the table already sits inside a card: its
+   * standings panel renders `.table-wrap` with `style="border:0;border-radius:0;
+   * background:transparent"` inside the tournament card
+   * (frontend/design/html/voleytrack-torneos.html), so the card's own border is the only
+   * one painted. Appended after the defaults, so a caller can flatten without a fork.
+   */
+  wrapperClassName?: string;
 };
 
 const sortMetadata = {
@@ -56,11 +66,11 @@ function isNumericColumn<Row extends object>(
   return rows.length > 0 && rows.every((row) => typeof row[column.key] === "number");
 }
 
-export function DataTable<Row extends object>({ columns, getRowKey, rows }: DataTableProps<Row>) {
+export function DataTable<Row extends object>({ columns, getRowKey, rows, wrapperClassName = "" }: DataTableProps<Row>) {
   const numericColumns = columns.map((column, index) => isNumericColumn(column, rows, index));
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-vt-border">
+    <div className={`overflow-x-auto rounded-2xl border border-vt-border ${wrapperClassName}`.trim()}>
       <table className="w-full border-collapse text-left text-sm">
         <thead className="bg-vt-panel text-vt-muted">
           <tr>

@@ -1,7 +1,10 @@
-import { useState } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Badge } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
+import { EmptyState } from "../../components/primitives/EmptyState";
+import { Filter, FilterGroup } from "../../components/primitives/FilterGroup";
+import { Num } from "../../components/primitives/Num";
+import { PageHeader } from "../../components/primitives/PageHeader";
+import { StatePill, type MatchStatus as PillStatus } from "../../components/primitives/StatePill";
 import { StateBoundary } from "../../components/states/StateBoundary";
 import {
   PUBLIC_MATCHES,
@@ -12,27 +15,47 @@ import {
 
 type MatchesFilter = "all" | MatchStatus;
 
-const filterCards = [
-  { detail: "Jugándose", label: "EN VIVO", status: "live", value: "12" },
-  { detail: "Partidos de hoy", label: "HOY", status: "today", value: "24" },
-  { detail: "Por empezar", label: "PRÓXIMOS", status: "upcoming", value: "8" },
-  { detail: "Terminados", label: "FINALIZ.", status: "finished", value: "32" },
-] as const;
+/**
+ * The screen's pill group, in the design's order: its `.filters` row is the time window
+ * (Todos / Hoy / Próximos, frontend/design/html/voleytrack-partidos.html) and the design's
+ * status vocabulary adds the live and finished states it exposes in the filter panel
+ * (`matches-status-filter`, same file: En vivo / Programado / Finalizado). The app's
+ * fixture statuses are the union of both dimensions, and each one is a real button with
+ * `aria-pressed` inside a labelled group.
+ */
+const filterTabs = [
+  { label: "Todos", value: "all" },
+  { label: "En vivo", value: "live" },
+  { label: "Hoy", value: "today" },
+  { label: "Próximos", value: "upcoming" },
+  { label: "Finalizados", value: "finished" },
+] as const satisfies readonly { label: string; value: MatchesFilter }[];
 
-const filterLabels: Record<MatchesFilter, string> = {
-  all: "Todos",
-  finished: "Finalizados",
-  live: "En vivo",
-  today: "Hoy",
-  upcoming: "Próximos",
+/**
+ * The fixture's match status and the design's pill states are different vocabularies.
+ * The fixture distinguishes a scheduled match that is already confirmed today ("today"),
+ * which the design's visual language does not have — the design's `.state-pill` set is
+ * programado / en vivo / finalizado (frontend/design/html/voleytrack.css:84-87) — so both
+ * scheduled states render the design's "Programado" treatment instead of a fourth pill.
+ */
+const pillStatusByFixtureStatus: Record<MatchStatus, PillStatus> = {
+  live: "envivo",
+  today: "programado",
+  upcoming: "programado",
+  finished: "finalizado",
 };
 
-const badgeVariants = {
-  finished: "default",
-  live: "success",
-  today: "accent",
-  upcoming: "default",
-} as const;
+/**
+ * The design's `.mcard-top small` carries the competition and the status word
+ * ("LIGA A1 · EN VIVO", voleytrack-partidos.html:69), so the card needs the tournament's
+ * name next to a status word the fixture already labels in Spanish.
+ */
+const statusWordByFixtureStatus: Record<MatchStatus, string> = {
+  live: "En vivo",
+  today: "Programado",
+  upcoming: "Programado",
+  finished: "Finalizado",
+};
 
 function matchFilter(value: unknown): MatchesFilter {
   return value === "live" || value === "today" || value === "upcoming" || value === "finished"
@@ -51,8 +74,23 @@ function tournamentName(match: MatchFixture): string {
     ?? "Torneo no disponible";
 }
 
+/**
+ * The design's `.mcard-score` is a mono `2:1` for a match in progress and an em dash for a
+ * scheduled one (`—`, voleytrack-partidos.html:70-73), never a `0 - 0`.
+ */
 function scoreLabel(match: MatchFixture): string {
-  return match.score ? `${match.score.home} - ${match.score.away}` : "Sin marcador";
+  return match.score ? `${match.score.home}:${match.score.away}` : "—";
+}
+
+/**
+ * The design gives the finished card's pill the set score (`3-0`) and the live card's the
+ * current set and score (`Set 3 · 18-21`); the fixture's `scheduledLabel` already carries
+ * exactly that shape for every live or scheduled match.
+ */
+function statePillLabel(match: MatchFixture): string {
+  return match.status === "finished" && match.score
+    ? `${match.score.home}-${match.score.away}`
+    : match.scheduledLabel;
 }
 
 export function MatchesPage() {
@@ -70,163 +108,137 @@ export function MatchesPage() {
 
   return (
     <StateBoundary>
-      <div
-        className="w-full max-w-[1104px] min-[1416px]:ml-1 min-[1416px]:mt-2"
-        data-testid="matches-page-content"
-      >
-        <section
-          aria-label="Resumen de estados"
-          className="grid gap-6 sm:grid-cols-2 min-[1416px]:grid-cols-[repeat(4,258px)]"
-          data-testid="matches-status-summary"
-        >
-          <p className="sr-only">Filtro actual: {filterLabels[status]}</p>
-          {filterCards.map((filter) => {
-            const active = status === filter.status;
-            return (
-              <button
-                aria-pressed={active}
-                className={`h-[86px] rounded-[14px] text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent ${active ? "ring-1 ring-vt-accent" : ""}`}
-                key={filter.status}
-                onClick={() => setStatus(active ? "all" : filter.status)}
-                type="button"
-              >
-                <Card className="h-full p-[18px]">
-                  <div className="flex items-end justify-between gap-3">
-                    <div>
-                      <p className={`text-xs font-bold tracking-[0.08em] ${active ? "text-vt-accent" : "text-vt-muted"}`}>{filter.label}</p>
-                      <p className="mt-4 text-3xl font-black text-vt-text">{filter.value}</p>
-                    </div>
-                    <p className={filter.status === "live" ? "text-xs font-bold text-vt-success" : "text-xs font-bold text-vt-muted"}>{filter.detail}</p>
-                  </div>
-                </Card>
-              </button>
-            );
-          })}
-        </section>
+      <div className="mx-auto w-full max-w-[1104px]" data-testid="matches-page-content">
+        {/*
+         * Design: frontend/design/html/voleytrack.css:65-67 and
+         * voleytrack-partidos.html:45 — `.page-head{margin-bottom:22px}` above the h1
+         * "Partidos" and its single description line.
+         */}
+        <PageHeader
+          className="mb-[22px]"
+          description="Filtros, estados y acceso a detalle en vivo. Click en cualquier card abre el Live Detail (1.06)."
+          title="Partidos"
+        />
 
-        <MatchesMasterDetail key={status} matches={matches} />
+        {/*
+         * Design: frontend/design/html/voleytrack.css:88-89
+         *   .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+         *   .filter{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--border);
+         *           background:var(--surface);color:var(--muted);font-size:13px;font-weight:600}
+         *   .filter.active{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+         * The inverted light pill is the design's own active treatment, not a mistake: it is
+         * the same `.filter.active` rule the dashboard and the admin screens use.
+         * `FilterGroup`/`Filter` are that rule as primitives (labelled `role="group"`, real
+         * buttons, `aria-pressed`), so the group is not re-hand-rolled here.
+         */}
+        <FilterGroup aria-label="Filtrar partidos por estado">
+          {filterTabs.map((filter) => (
+            <Filter
+              isActive={status === filter.value}
+              key={filter.value}
+              onClick={() => setStatus(filter.value)}
+            >
+              {filter.label}
+            </Filter>
+          ))}
+        </FilterGroup>
+
+        {/*
+         * Design: voleytrack-partidos.css:18-19 (.match-results-count) — the panel footer's
+         * mono 11px result count with the number in --fg. It is the design's only result
+         * count, so it is kept as the design's own element; `aria-live="polite"` reports the
+         * count changing with the filter.
+         */}
+        <p
+          aria-live="polite"
+          className="mb-4 font-mono text-[11px] font-bold text-vt-muted"
+          data-testid="matches-results-count"
+        >
+          <strong className="text-vt-text">{matches.length}</strong>{" "}
+          {matches.length === 1 ? "partido" : "partidos"}
+        </p>
+
+        {matches.length === 0 ? (
+          /*
+           * Design: voleytrack-partidos.css:22-26 (.match-empty) — a bordered, centred
+           * status block reading "No hay partidos que coincidan" / "Prueba a reducir los
+           * filtros o límpialos para ver todos los partidos." (voleytrack-partidos.html:78).
+           * `EmptyState` is that block (role="status", h2 + p) inside the design's `.card`.
+           */
+          <Card padded={false}>
+            <EmptyState
+              description="Prueba a reducir los filtros o límpialos para ver todos los partidos."
+              title="No hay partidos que coincidan"
+            />
+          </Card>
+        ) : (
+          /*
+           * Design: frontend/design/html/voleytrack.css:91-93
+           *   .cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+           *   @media(max-width:1200px){.cards-grid{grid-template-columns:repeat(2,1fr)}}
+           *   @media(max-width:720px){.cards-grid{grid-template-columns:1fr}}
+           * `ul`/`li` because the grid is a list of matches, not a decorative layout; each
+           * card is the design's `.mcard`, which is an `<a>` to the live detail.
+           */
+          <ul
+            className="grid grid-cols-1 gap-4 min-[721px]:grid-cols-2 min-[1201px]:grid-cols-3"
+            data-testid="matches-grid"
+          >
+            {matches.map((match) => (
+              <li key={match.id}>
+                <Link
+                  className="block h-full rounded-2xl border border-vt-border bg-vt-surface p-4 transition hover:-translate-y-px hover:border-vt-border-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
+                  data-testid="public-match-card"
+                  to={`/matches/${match.id}/live` as string}
+                >
+                  {/* Design: voleytrack-partidos.css:3-4 (.mcard-top) — a flex row with the
+                      mono 10px/800 uppercase eyebrow and the state pill, 12px apart. */}
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <small className="font-mono text-[10px] font-extrabold uppercase tracking-[0.08em] text-vt-muted">
+                      {tournamentName(match)} · {statusWordByFixtureStatus[match.status]}
+                    </small>
+                    <StatePill
+                      label={statePillLabel(match)}
+                      status={pillStatusByFixtureStatus[match.status]}
+                    />
+                  </div>
+
+                  {/* Design: voleytrack-partidos.css:5-7 (.mcard-teams / .mcard-team /
+                      .mcard-score) — a 12px-gap row of two 14px bold team names with the
+                      18px/900 mono score between them, the away name right-aligned. */}
+                  <div className="flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[14px] font-bold text-vt-text">
+                        {match.homeTeamName}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-vt-muted">Local</p>
+                    </div>
+                    <Num className="shrink-0 text-[18px] font-black text-vt-text">
+                      {scoreLabel(match)}
+                    </Num>
+                    <div className="min-w-0 flex-1 text-right">
+                      <p className="truncate text-[14px] font-bold text-vt-text">
+                        {match.awayTeamName}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-vt-muted">Visitante</p>
+                    </div>
+                  </div>
+
+                  {/* Design: voleytrack-partidos.css:8 (.mcard-meta) — 12px above a 1px
+                      --border-2 rule, a wrapped 8px-gap row of 12px --muted metadata. */}
+                  <div className="mt-3 flex flex-wrap gap-2 border-t border-vt-border-2 pt-3 text-[12px] text-vt-muted">
+                    <span>{match.venue}</span>
+                    <span aria-hidden="true">·</span>
+                    <Num className="text-[12px]">{match.scheduledLabel}</Num>
+                    <span aria-hidden="true">·</span>
+                    <span>Ver detalle →</span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </StateBoundary>
-  );
-}
-
-function MatchesMasterDetail({ matches }: { matches: readonly MatchFixture[] }) {
-  const [selectedMatchId, setSelectedMatchId] = useState(matches[0]?.id ?? null);
-  const selectedMatch = matches.find((match) => match.id === selectedMatchId) ?? matches[0];
-
-  if (!selectedMatch) {
-    return (
-      <Card>
-        <p className="text-sm text-vt-muted">No hay partidos para este filtro.</p>
-      </Card>
-    );
-  }
-
-  return (
-    <section
-      className="mt-10 grid gap-6 min-[1416px]:grid-cols-[736px_340px] min-[1416px]:items-start min-[1416px]:gap-7"
-      data-testid="matches-master-detail"
-    >
-      <section aria-label="Calendario de partidos">
-        <Card
-          className="overflow-hidden p-0 min-[1416px]:max-h-[482px] min-[1416px]:overflow-y-auto"
-          data-testid="matches-list"
-        >
-          <header className="sticky top-0 z-10 flex min-h-[50px] items-center justify-between gap-4 border-b border-vt-border bg-vt-panel px-5">
-            <h2 className="text-sm font-bold text-vt-text">Calendario de partidos</h2>
-            <p className="text-[11px] text-vt-muted">
-              {matches.length} {matches.length === 1 ? "resultado" : "resultados"}
-            </p>
-          </header>
-
-          <ol className="space-y-3 p-5">
-            {matches.map((match) => {
-              const selected = match.id === selectedMatch.id;
-              return (
-                <li key={match.id}>
-                  <button
-                    aria-controls="selected-match-detail"
-                    aria-pressed={selected}
-                    className={`grid min-h-[74px] w-full gap-3 rounded-xl border px-4 py-3 text-left transition sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent ${selected ? "border-vt-accent bg-vt-accent/10" : "border-vt-border bg-vt-panel hover:border-vt-accent/70"}`}
-                    data-testid="public-match-row"
-                    onClick={() => setSelectedMatchId(match.id)}
-                    type="button"
-                  >
-                    <span className="flex min-w-[94px] flex-col items-start gap-2">
-                      <Badge variant={badgeVariants[match.status]}>{match.badgeLabel}</Badge>
-                      <span className="text-[11px] font-bold text-vt-muted">{match.scheduledLabel}</span>
-                    </span>
-
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold text-vt-text">
-                        {match.homeTeamName} vs {match.awayTeamName}
-                      </span>
-                      <span className="mt-1 block truncate text-[11px] text-vt-muted">
-                        {tournamentName(match)} · {match.venue}
-                      </span>
-                    </span>
-
-                    <span className={`text-base font-black sm:min-w-[86px] sm:text-right ${match.score ? "text-vt-accent" : "text-vt-muted"}`}>
-                      {scoreLabel(match)}
-                    </span>
-                    {selected ? <span className="sr-only">Seleccionado</span> : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-        </Card>
-      </section>
-
-      <section
-        aria-label="Detalle del partido seleccionado"
-        aria-live="polite"
-        className="min-[1416px]:sticky min-[1416px]:top-6"
-        id="selected-match-detail"
-      >
-        <Card className="p-5">
-          <h2 className="text-[15px] font-black text-vt-text">Detalle del partido</h2>
-
-          <div className="mt-4 rounded-[14px] border border-vt-border bg-vt-panel p-4">
-            <Badge variant={badgeVariants[selectedMatch.status]}>{selectedMatch.badgeLabel}</Badge>
-            <p className="mt-4 text-lg font-black text-vt-text">{selectedMatch.homeTeamName}</p>
-            <p className="mt-1 text-xs text-vt-muted">vs {selectedMatch.awayTeamName}</p>
-            {selectedMatch.score ? (
-              <p aria-label="Marcador" className="mt-4 text-2xl font-black text-vt-accent">
-                {scoreLabel(selectedMatch)}
-              </p>
-            ) : (
-              <p className="mt-4 text-sm font-semibold text-vt-muted">Marcador aún no disponible</p>
-            )}
-          </div>
-
-          <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2 min-[1416px]:grid-cols-1">
-            <div>
-              <dt className="text-[11px] font-bold uppercase tracking-[0.08em] text-vt-muted">Torneo</dt>
-              <dd className="mt-1 font-semibold text-vt-text">{tournamentName(selectedMatch)}</dd>
-            </div>
-            <div>
-              <dt className="text-[11px] font-bold uppercase tracking-[0.08em] text-vt-muted">Sede</dt>
-              <dd className="mt-1 font-semibold text-vt-text">{selectedMatch.venue}</dd>
-            </div>
-            <div>
-              <dt className="text-[11px] font-bold uppercase tracking-[0.08em] text-vt-muted">Horario</dt>
-              <dd className="mt-1 font-semibold text-vt-text">{selectedMatch.scheduledLabel}</dd>
-            </div>
-            <div>
-              <dt className="text-[11px] font-bold uppercase tracking-[0.08em] text-vt-muted">Estado</dt>
-              <dd className="mt-1 font-semibold text-vt-text">{selectedMatch.badgeLabel}</dd>
-            </div>
-          </dl>
-
-          <Link
-            className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-[10px] bg-vt-accent px-4 text-sm font-bold text-vt-background transition hover:bg-[#ff9b59] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
-            to={`/matches/${selectedMatch.id}/live` as string}
-          >
-            Ir al partido →
-          </Link>
-        </Card>
-      </section>
-    </section>
   );
 }

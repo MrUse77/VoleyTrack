@@ -434,9 +434,15 @@ describe("design tokens", () => {
     // which took vt-panel to 71 occurrences in 38 files, so the ceiling moves with the drop.
     // vt-raised (46/26) and vt-raised-border (9/7) were untouched again and keep their
     // measured values.
+    // T12/T13 then rebuilt the public matches screen, the tournaments list and the five
+    // tournament detail routes: the app-only `bg-vt-panel` tiles and rows those screens were
+    // built from moved onto the design's --surface / --surface-2 / --bg layers, and the
+    // `border-vt-border bg-vt-raised` detail heroes moved onto the shared shell's structural
+    // cards. Measured with this guard's own patterns and exclusions: vt-panel 61/31,
+    // vt-raised 36/21, vt-raised-border 9/7 (unchanged, so its ceiling stays).
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 71, baselineFiles: 38 },
-      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 46, baselineFiles: 26 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 61, baselineFiles: 31 },
+      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 36, baselineFiles: 21 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 9, baselineFiles: 7 },
     ];
 

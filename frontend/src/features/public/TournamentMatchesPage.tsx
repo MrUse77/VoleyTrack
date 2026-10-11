@@ -1,21 +1,21 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { Badge } from "../../components/primitives/Badge";
-import { Card } from "../../components/primitives/Card";
+import { DataTable, type DataTableColumn } from "../../components/primitives/DataTable";
 import { PUBLIC_MATCHES, PUBLIC_TOURNAMENTS, type MatchFixture, type TournamentFixture } from "../../fixtures";
-
-const tournamentTabs = [
-  { label: "Resumen", suffix: "" },
-  { label: "Partidos", suffix: "/matches" },
-  { label: "Tabla", suffix: "/standings" },
-  { label: "Estadísticas", suffix: "/stats" },
-  { label: "Cuadro", suffix: "/bracket" },
-] as const;
+import { TournamentDetailShell, TournamentNotFound, TournamentPanelHeader } from "./TournamentDetailShell";
 
 const statusVariants = {
   finished: "default",
-  live: "success",
+  live: "danger",
   today: "accent",
   upcoming: "default",
+} as const;
+
+const statusLabels = {
+  finished: "Finalizado",
+  live: "En vivo",
+  today: "Hoy",
+  upcoming: "Programado",
 } as const;
 
 function findTournament(id: string): TournamentFixture | undefined {
@@ -28,86 +28,70 @@ function findTournamentMatches(id: string): readonly MatchFixture[] {
     .filter((match) => match.tournamentId === id);
 }
 
+/**
+ * The design's matches card is a table with `Partido | Fecha | Hora | Estado`
+ * (frontend/design/html/voleytrack-torneos.html, the `matchesCard` table). The app's fixture
+ * keeps a match's date and time in one `scheduledLabel` and also carries its venue, so this
+ * table reports `Partido | Programación | Sede | Estado` rather than splitting a label the
+ * data does not split, and its rows link the match to the live detail.
+ */
+const columns: DataTableColumn<MatchFixture>[] = [
+  {
+    header: "Partido",
+    key: "homeTeamName",
+    render: (match) => (
+      <Link className="hover:underline" to={`/matches/${match.id}/live` as string}>
+        <b className="font-bold text-vt-text">{match.homeTeamName}</b>{" "}
+        <span className="text-vt-muted">vs</span>{" "}
+        <b className="font-bold text-vt-text">{match.awayTeamName}</b>
+      </Link>
+    ),
+  },
+  { header: "Programación", key: "scheduledLabel" },
+  { header: "Sede", key: "venue" },
+  {
+    header: "Estado",
+    key: "badgeLabel",
+    render: (match) => (
+      <span className="flex flex-wrap items-center gap-2">
+        <Badge variant={statusVariants[match.status]}>
+          {match.badgeLabel}
+        </Badge>
+        {match.score ? (
+          <span className="font-mono text-[12px] font-bold text-vt-muted tabular-nums">
+            {match.score.home}-{match.score.away}
+          </span>
+        ) : (
+          <span className="font-mono text-[12px] font-bold text-vt-muted">{statusLabels[match.status]}</span>
+        )}
+      </span>
+    ),
+  },
+];
+
 export function TournamentMatchesPage() {
   const { id } = useParams({ strict: false }) as { id: string };
   const tournament = findTournament(id);
 
-  if (!tournament) {
-    return (
-      <Card>
-        <h1 className="text-2xl font-bold text-vt-text">Torneo no encontrado</h1>
-        <Link className="mt-4 inline-block text-sm font-semibold text-vt-accent" to="/tournaments">
-          ← Volver a torneos
-        </Link>
-      </Card>
-    );
-  }
+  if (!tournament) return <TournamentNotFound />;
 
   const matches = findTournamentMatches(tournament.id);
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Link className="text-sm font-semibold text-vt-accent" to="/tournaments">
-            ← Torneos
-          </Link>
-          <p className="mt-5 text-sm text-vt-muted">Torneos / {tournament.name}</p>
-          <h1 className="mt-2 text-3xl font-black text-vt-text">{tournament.name}</h1>
-        </div>
-        <div className="rounded-xl border border-vt-border bg-vt-raised px-4 py-2 text-sm text-vt-muted">
-          {tournament.statusLabel} · {tournament.dateLabel}
-        </div>
-      </header>
-
-      <nav aria-label="Navegación del torneo" className="rounded-2xl border border-vt-border bg-vt-raised p-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {tournamentTabs.map((tab, index) => (
-            <Link
-              aria-current={index === 1 ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${index === 1 ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
-              key={tab.label}
-              to={`/tournaments/${tournament.id}${tab.suffix}` as string}
-            >
-              {tab.label}
-            </Link>
-          ))}
-          <span className="ml-auto px-3 text-sm text-vt-muted">Datos dentro de {tournament.name}</span>
-        </div>
-      </nav>
-
-      <Card className="border-vt-border p-5" variant="raised">
-        <h2 className="text-xl font-bold text-vt-accent">Partidos del Torneo</h2>
-        <div className="mt-5 space-y-3">
-          {matches.map((match) => (
-            <MatchRow key={match.id} match={match} />
-          ))}
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function MatchRow({ match }: { match: MatchFixture }) {
-  return (
-    <Link
-      className="block rounded-xl border border-vt-border bg-vt-panel p-4 transition hover:border-vt-accent"
-      data-testid="tournament-match-row"
-      to={`/matches/${match.id}/live` as string}
-    >
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="flex min-w-[130px] items-center gap-2">
-          <Badge variant={statusVariants[match.status]}>{match.badgeLabel}</Badge>
-          <span className="text-xs font-semibold text-vt-muted">{match.scheduledLabel}</span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-black text-vt-text">{match.homeTeamName} vs {match.awayTeamName}</p>
-          <p className="mt-1 text-xs text-vt-muted">{match.venue}</p>
-        </div>
-        <p className={`text-base font-black ${match.status === "live" ? "text-vt-danger" : match.score ? "text-vt-success" : "text-vt-text"}`}>
-          {match.score ? `${match.score.home} - ${match.score.away}` : "Programado"}
-        </p>
-      </div>
-    </Link>
+    <TournamentDetailShell activeTab="partidos" tournament={tournament}>
+      {/*
+       * Design: the detail's matches section — `card-h` "Próximos partidos <small>JORNADA
+       * 15</small>" over `.table-wrap` (frontend/design/html/voleytrack-torneos.html). The
+       * app has no matchday number in its fixtures, so the eyebrow reports the fixture count
+       * it does have instead of printing an invented matchday.
+       */}
+      <TournamentPanelHeader eyebrow={`${matches.length} PARTIDOS`}>Próximos partidos</TournamentPanelHeader>
+      <DataTable
+        columns={columns}
+        getRowKey={(match) => match.id}
+        rows={[...matches]}
+        wrapperClassName="rounded-none border-0 bg-transparent"
+      />
+    </TournamentDetailShell>
   );
 }

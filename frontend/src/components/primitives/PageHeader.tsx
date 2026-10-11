@@ -1,6 +1,13 @@
 import type { HTMLAttributes, ReactNode } from "react";
 
-type PageHeaderProps = HTMLAttributes<HTMLElement> & {
+/**
+ * `HTMLAttributes` already declares a `title?: string` (the tooltip attribute), which
+ * intersected with this component's `title: ReactNode` into `string & ReactNode` and made
+ * every non-string heading a type error — the tournaments detail needs the design's own
+ * `<h1>Name <span class="badge">En curso</span></h1>` (frontend/design/html/voleytrack-torneos.html),
+ * so the DOM attribute is omitted from the base props instead.
+ */
+type PageHeaderProps = Omit<HTMLAttributes<HTMLElement>, "title"> & {
   actions?: ReactNode;
   description?: ReactNode;
   title: ReactNode;
