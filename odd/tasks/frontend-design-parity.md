@@ -627,7 +627,7 @@ not 20.)
     grant the tool.
 - [~] **T10 — Remove the legacy duplicate component system.** **Partial, and correctly reported as
   such rather than forced to completion.** The removable half is gone; the half with live consumers
-  needs per-screen work and is tracked as T10b and T10c below.
+  needs per-screen work and is tracked as T10d and T10c below.
   - The map was built before anything was deleted, as required. Numbers: `ui/Badge` had 10 importers
     (6 live), `ui/SectionShell` 10 (9 live), `ui/Surface` 7 (2 live at the time), `ui/NavItem` 0 live,
     the three `Shell*` components and `layouts/AppShell` only each other, and
@@ -662,7 +662,7 @@ not 20.)
     `/planillero` all exit 0 with `problems: []`, no Vite overlay and expected content present.
   - Server hygiene done right this time: one PID started, killed by that same PID, port released,
     other sessions' processes untouched.
-- [x] **T10b — Delete the dead component cluster and the last dead legacy module.** Confirmed by the
+- [x] **T10d — Delete the dead component cluster and the last dead legacy module.** Confirmed by the
   parent after T10 reported the cluster: `DashboardHero`, `DashboardLive`, `DashboardRail` (all in
   `features/dashboard/`) and `MatchesBrowser` (`features/matches/components/`) are imported **only**
   by each other and by the barrels `features/dashboard/index.ts` and `features/matches/index.ts`, and
@@ -716,6 +716,8 @@ readable against the completed record above; the carried-over items it lists wer
   `navItemPath`, `shellTopbarPath`, `loginPagePath`), so it must be updated in the same commit.
 - [x] **T10b — Establish a reproducible visual verification path.** Done, and it immediately paid
   for itself; it does not need a Firefox or Playwright dependency.
+  (Numbering note: this task and T10d were both written as T10b at different times, a collision in the
+  parent's own bookkeeping. The harness keeps T10b and the deletion task is now T10d.)
   - Tool: `frontend/tools/screenshot.mjs`, exposed as `pnpm screenshot`, documented in
     `frontend/tools/README.md`. Drives a hidden Electron `BrowserWindow` and captures through
     `webContents.capturePage()` at a 1440x900 viewport. Electron is reused from the sibling
@@ -799,7 +801,7 @@ readable against the completed record above; the carried-over items it lists wer
 
 ## Slice 1 close
 
-**21 commits, 19 of 22 tasks.** The three that do not close here do so for deliberate reasons:
+**20 commits, 19 of 22 tasks.** The three that do not close here do so for deliberate reasons:
 `T10c` (retire `ui/SectionShell`) belongs to slices 3 and 4 because its nine live consumers are the
 very screens those slices redesign, and `T03c` (trim the font payload) is an optimisation that blocks
 nothing. That leaves T03c as the only genuinely open Slice 1 item.
