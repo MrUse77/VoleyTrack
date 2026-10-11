@@ -6,7 +6,11 @@ import com.mrusedev.voleytrack.application.dto.DatosInicioPartidoDTO;
 import com.mrusedev.voleytrack.application.dto.EquiposDTO;
 import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
 import com.mrusedev.voleytrack.application.dto.JugadorDTO;
+import com.mrusedev.voleytrack.application.dto.JugadorEnPosicion;
 import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
+import com.mrusedev.voleytrack.application.dto.PizarraEnVivoDTO;
+import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
+import com.mrusedev.voleytrack.application.exception.ReglaDeNegocioException;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import com.mrusedev.voleytrack.application.port.out.EquipoRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.EventoRepositoryPort;
@@ -26,6 +30,7 @@ import com.mrusedev.voleytrack.domain.Partido;
 import com.mrusedev.voleytrack.domain.SetPartido;
 import com.mrusedev.voleytrack.domain.TipoFundamento;
 import com.mrusedev.voleytrack.domain.TipoLado;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -83,12 +88,88 @@ public class GestorPartidoImpl implements GestorPartidoPort {
         partido.getEstado().name());
   }
 
+  // ── RF-11: Pizarra en vivo ──
+
+  @Override
+  public PizarraEnVivoDTO obtenerPizarra(UUID partidoId) {
+    Partido partido = buscarPartido(partidoId);
+
+    Lado ladoLocal =
+        partido.getLados().stream()
+            .filter(l -> l.getTipo() == TipoLado.LOCAL)
+            .findFirst()
+            .orElseThrow();
+    Lado ladoVisitante =
+        partido.getLados().stream()
+            .filter(l -> l.getTipo() == TipoLado.VISITANTE)
+            .findFirst()
+            .orElseThrow();
+
+    SetPartido setActual = partido.getSetActual();
+    PizarraEnVivoDTO.SetActualDTO setActualDTO =
+        setActual == null
+            ? null
+            : new PizarraEnVivoDTO.SetActualDTO(
+                setActual.getNumeroSet(),
+                setActual.isEsTieBreak(),
+                setActual.getMarcador().getLimitePuntos(),
+                setActual.getMarcador().getPuntos(setActual.getMarcador().getLadoLocal()),
+                setActual.getMarcador().getPuntos(setActual.getMarcador().getLadoVisitante()));
+
+    UUID equipoSaqueId =
+        setActual != null && setActual.getSaque() != null ? setActual.getSaque().getId() : null;
+
+    String estadoSet = setActual == null ? null : setActual.getEstado().name();
+
+    return new PizarraEnVivoDTO(
+        new PizarraEnVivoDTO.EquipoPizarraDTO(
+            ladoLocal.getEquipo().getId(), ladoLocal.getEquipo().getNombreClub()),
+        new PizarraEnVivoDTO.EquipoPizarraDTO(
+            ladoVisitante.getEquipo().getId(), ladoVisitante.getEquipo().getNombreClub()),
+        contarSetsGanados(partido, TipoLado.LOCAL),
+        contarSetsGanados(partido, TipoLado.VISITANTE),
+        setActualDTO,
+        equipoSaqueId,
+        partido.getEstado().name(),
+        estadoSet,
+        ultimosEventos(partido));
+  }
+
+  private int contarSetsGanados(Partido partido, TipoLado tipo) {
+    return (int)
+        partido.getSets().stream()
+            .filter(s -> s.getMarcador().getGanador() != null)
+            .filter(s -> s.getMarcador().getGanador().getTipo() == tipo)
+            .count();
+  }
+
+  private List<PizarraEnVivoDTO.EventoPizarraDTO> ultimosEventos(Partido partido) {
+    List<PizarraEnVivoDTO.EventoPizarraDTO> eventos = new ArrayList<>();
+    for (SetPartido set : partido.getSets()) {
+      if (set.getEventos() == null) {
+        continue;
+      }
+      for (Evento evento : set.getEventos()) {
+        Jugador jugador = evento.getJugador();
+        eventos.add(
+            new PizarraEnVivoDTO.EventoPizarraDTO(
+                jugador != null ? jugador.getId() : null,
+                jugador != null ? jugador.getNombre() + " " + jugador.getApellido() : null,
+                evento.getTipoFundamento().name()));
+      }
+    }
+    int desde = Math.max(0, eventos.size() - 10);
+    return List.copyOf(eventos.subList(desde, eventos.size()));
+  }
+
   // ── RF-9: Crear set ──
 
   @Override
+  @Transactional
   public InicioSetDTO crearSet(UUID partidoId) {
     Partido partido = buscarPartido(partidoId);
     SetPartido set = partido.iniciarSet();
+    setRepo.guardar(set, partidoId);
     return new InicioSetDTO(
         set.getId(), set.getNumeroSet(), set.isEsTieBreak(), set.getMarcador().getLimitePuntos());
   }
@@ -96,10 +177,12 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   // ── RF-8: Crear alineación ──
 
   @Override
+  @Transactional
   public AlineacionPreviewDTO crearAlineacion(UUID setId, UUID equipoId) {
     SetPartido set = buscarSet(setId);
     Equipo equipo = buscarEquipoDelSet(set, equipoId);
     Alineacion alineacion = set.crearAlineacion(equipo);
+    setRepo.guardar(set, buscarPartidoIdDeSet(setId));
     return toPreview(alineacion);
   }
 
@@ -113,6 +196,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   }
 
   @Override
+  @Transactional
   public AlineacionPreviewDTO agregarJugadorAAlineacion(
       UUID setId, UUID equipoId, UUID jugadorId, int posicion) {
     SetPartido set = buscarSet(setId);
@@ -124,16 +208,46 @@ public class GestorPartidoImpl implements GestorPartidoPort {
 
     Jugador jugador = buscarJugador(jugadorId);
     alineacion.agregarJugador(jugador, posicion, true);
+    setRepo.guardar(set, buscarPartidoIdDeSet(setId));
     return toPreview(alineacion);
   }
 
   // ── RF-12: Asignar saque inicial ──
 
   @Override
+  @Transactional
   public void seleccionarEquipoSaqueInicial(UUID setId, UUID equipoId) {
     SetPartido set = buscarSet(setId);
     Equipo equipo = buscarEquipoDelSet(set, equipoId);
     set.asignarSaqueInicial(equipo);
+    setRepo.guardar(set, buscarPartidoIdDeSet(setId));
+  }
+
+  // ── RF-8: Guardar alineación completa ──
+
+  @Override
+  @Transactional
+  public AlineacionPreviewDTO guardarAlineacion(
+      UUID partidoId, UUID setId, UUID equipoId, List<JugadorEnPosicion> titulares) {
+    buscarPartido(partidoId);
+    SetPartido set = buscarSet(setId);
+
+    // El set tiene que pertenecer al partido indicado; si no, se reporta como no encontrado
+    // para no operar silenciosamente sobre un set de otro partido.
+    UUID setPartidoId = buscarPartidoIdDeSet(setId);
+    if (!setPartidoId.equals(partidoId)) {
+      throw new RecursoNoEncontradoException("Set no encontrado: " + setId);
+    }
+
+    Equipo equipo = buscarEquipo(equipoId);
+    Alineacion alineacion = set.crearAlineacion(equipo);
+    for (JugadorEnPosicion titular : titulares) {
+      Jugador jugador = buscarJugador(titular.jugadorId());
+      alineacion.agregarJugador(jugador, titular.posicion(), true);
+    }
+
+    setRepo.guardar(set, partidoId);
+    return toPreview(alineacion);
   }
 
   // ── RF-9: Confirmar inicio de partido ──
@@ -149,7 +263,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
       }
       set.iniciar();
     } catch (RuntimeException e) {
-      return ConfirmacionDTO.error("Error al iniciar el partido: " + e.getMessage());
+      throw new ReglaDeNegocioException(e.getMessage());
     }
     // Persistence outside try-catch: any failure here rolls back the transaction
     partidoRepo.guardar(partido);
@@ -223,14 +337,15 @@ public class GestorPartidoImpl implements GestorPartidoPort {
     try {
       fundamento = TipoFundamento.valueOf(tipoFundamento);
     } catch (RuntimeException e) {
-      return ConfirmacionDTO.error("Error al registrar punto: " + e.getMessage());
+      // TODO: fundamento inválido es un error de entrada; aquí correspondería un 400.
+      throw new ReglaDeNegocioException("Fundamento inválido: " + tipoFundamento);
     }
 
     Evento evento;
     try {
       evento = partido.anotarPunto(equipo, jugador, fundamento);
     } catch (RuntimeException e) {
-      return ConfirmacionDTO.error("Error al registrar punto: " + e.getMessage());
+      throw new ReglaDeNegocioException(e.getMessage());
     }
 
     SetPartido set = partido.getSetActual();
@@ -256,25 +371,33 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   private Partido buscarPartido(UUID partidoId) {
     return partidoRepo
         .buscarPorId(partidoId)
-        .orElseThrow(() -> new IllegalArgumentException("Partido no encontrado: " + partidoId));
+        .orElseThrow(
+            () -> new RecursoNoEncontradoException("Partido no encontrado: " + partidoId));
   }
 
   private SetPartido buscarSet(UUID setId) {
     return setRepo
         .buscarPorId(setId)
-        .orElseThrow(() -> new IllegalArgumentException("Set no encontrado: " + setId));
+        .orElseThrow(() -> new RecursoNoEncontradoException("Set no encontrado: " + setId));
+  }
+
+  private UUID buscarPartidoIdDeSet(UUID setId) {
+    return setRepo
+        .buscarPartidoId(setId)
+        .orElseThrow(() -> new RecursoNoEncontradoException("Set no encontrado: " + setId));
   }
 
   private Equipo buscarEquipo(UUID equipoId) {
     return equipoRepo
         .buscarPorId(equipoId)
-        .orElseThrow(() -> new IllegalArgumentException("Equipo no encontrado: " + equipoId));
+        .orElseThrow(() -> new RecursoNoEncontradoException("Equipo no encontrado: " + equipoId));
   }
 
   private Jugador buscarJugador(UUID jugadorId) {
     return jugadorRepo
         .buscarPorId(jugadorId)
-        .orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado: " + jugadorId));
+        .orElseThrow(
+            () -> new RecursoNoEncontradoException("Jugador no encontrado: " + jugadorId));
   }
 
   private Equipo buscarEquipoDelSet(SetPartido set, UUID equipoId) {
@@ -297,11 +420,13 @@ public class GestorPartidoImpl implements GestorPartidoPort {
 
   private JugadorDTO toJugadorDTO(Jugador jugador) {
     return new JugadorDTO(
+        jugador.getId(),
         jugador.getNombre(),
         jugador.getApellido(),
         jugador.getFechaNacimiento() != null ? jugador.getFechaNacimiento().toString() : null,
         jugador.getDorsal(),
-        jugador.getPosicion() != null ? jugador.getPosicion().name() : null);
+        jugador.getPosicion() != null ? jugador.getPosicion().name() : null,
+        jugador.isActivo());
   }
 
   private AlineacionPreviewDTO toPreview(Alineacion alineacion) {

@@ -6,6 +6,7 @@ import com.mrusedev.voleytrack.application.dto.EquiposDTO;
 import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
 import com.mrusedev.voleytrack.application.dto.JugadorDTO;
 import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
+import com.mrusedev.voleytrack.application.dto.PizarraEnVivoDTO;
 import com.mrusedev.voleytrack.application.gestor.GestorPartidoImpl;
 import org.junit.jupiter.api.Test;
 
@@ -23,8 +24,14 @@ class GestorPartidoPortContractTest {
     void publicMethodsUseApplicationContractTypesOnly() {
         assertSignature("cargarDatosInicio", com.mrusedev.voleytrack.application.dto.DatosInicioPartidoDTO.class,
                 UUID.class);
+        assertSignature("obtenerPizarra", PizarraEnVivoDTO.class, UUID.class);
         assertSignature("crearSet", InicioSetDTO.class, UUID.class);
         assertSignature("crearAlineacion", AlineacionPreviewDTO.class, UUID.class, UUID.class);
+        Method guardarAlineacion = method("guardarAlineacion",
+                UUID.class, UUID.class, UUID.class, List.class);
+        assertThat(guardarAlineacion.getReturnType()).isEqualTo(AlineacionPreviewDTO.class);
+        assertThat(guardarAlineacion.getGenericParameterTypes()[3].getTypeName())
+                .isEqualTo("java.util.List<com.mrusedev.voleytrack.application.dto.JugadorEnPosicion>");
         Method jugadoresDisponibles = method("cargarJugadoresDisponibles", UUID.class);
         assertThat(jugadoresDisponibles.getReturnType()).isEqualTo(List.class);
         assertThat(jugadoresDisponibles.getGenericReturnType().getTypeName())

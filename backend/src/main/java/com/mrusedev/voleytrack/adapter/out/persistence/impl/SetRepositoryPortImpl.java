@@ -98,6 +98,11 @@ public class SetRepositoryPortImpl implements SetRepositoryPort {
     }
 
     @Override
+    public Optional<UUID> buscarPartidoId(UUID setId) {
+        return repo.findById(setId).map(SetEntity::getPartidoId);
+    }
+
+    @Override
     public List<SetPartido> buscarPorPartido(UUID partidoId) {
         return repo.findByPartidoId(partidoId).stream()
                 .map(this::toDomain)

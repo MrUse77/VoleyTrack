@@ -13,6 +13,8 @@ public interface SetRepositoryPort {
 
   Optional<SetPartido> buscarPorId(UUID id);
 
+  Optional<UUID> buscarPartidoId(UUID setId);
+
   List<SetPartido> buscarPorPartido(UUID partidoId);
 
   Map<UUID, List<SetPartido>> buscarPorPartidos(Map<UUID, Partido> partidos);

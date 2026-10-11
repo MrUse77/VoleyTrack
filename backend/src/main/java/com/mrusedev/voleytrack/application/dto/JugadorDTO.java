@@ -1,14 +1,13 @@
 package com.mrusedev.voleytrack.application.dto;
 
-import com.mrusedev.voleytrack.domain.Posicion;
-
 import java.util.UUID;
 
 public record JugadorDTO(
         UUID id,
         String nombre,
         String apellido,
+        String fechaNac,
         int dorsal,
-        Posicion posicion,
+        String pos,
         boolean activo
 ) {}
