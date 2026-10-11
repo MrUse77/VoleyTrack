@@ -255,7 +255,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
       alineacion = set.crearAlineacion(equipo);
       for (JugadorEnPosicion titular : titulares) {
         Jugador jugador = buscarJugador(titular.jugadorId());
-        alineacion.agregarJugador(jugador, titular.posicion(), true);
+        alineacion.agregarJugador(jugador, titular.posicionEnCancha(), true);
       }
 
     } catch (IllegalStateException e) {

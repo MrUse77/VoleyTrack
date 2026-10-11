@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public record JugadorEnPosicion(
         UUID jugadorId,
-        int posicion
+        int posicionEnCancha
 ) {}

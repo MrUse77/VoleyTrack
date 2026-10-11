@@ -280,7 +280,7 @@ class GestorPartidoTest {
 
         assertThat(preview.jugadores()).hasSize(1);
         assertThat(preview.jugadores().get(0).jugadorId()).isEqualTo(jugador.getId());
-        assertThat(preview.jugadores().get(0).posicion()).isEqualTo(1);
+        assertThat(preview.jugadores().get(0).posicionEnCancha()).isEqualTo(1);
         verify(setRepo).guardar(set, partido.getId());
     }
 
@@ -379,7 +379,7 @@ class GestorPartidoTest {
         assertThat(preview.equipoNombre()).isEqualTo("Club Local");
         assertThat(preview.jugadores()).hasSize(1);
         assertThat(preview.jugadores().get(0).jugadorId()).isEqualTo(jugador.getId());
-        assertThat(preview.jugadores().get(0).posicion()).isEqualTo(1);
+        assertThat(preview.jugadores().get(0).posicionEnCancha()).isEqualTo(1);
         assertThat(preview.jugadores().get(0).esTitular()).isTrue();
         verify(setRepo, times(1)).guardar(set, partido.getId());
     }
