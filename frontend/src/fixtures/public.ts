@@ -514,11 +514,11 @@ const canonicalPlayerKpis = Object.freeze([
 ] satisfies PlayerDetailFixture["kpis"]);
 
 const canonicalPlayerStatBreakdown = Object.freeze([
-  Object.freeze({ id: "attack", label: "Ataque", value: "140 pts", barPercent: 100, tone: "attack" }),
-  Object.freeze({ id: "block", label: "Bloqueo", value: "42 pts", barPercent: 32, tone: "block" }),
-  Object.freeze({ id: "serve", label: "Saque", value: "18 pts", barPercent: 16, tone: "serve" }),
-  Object.freeze({ id: "defense", label: "Defensa (Digs)", value: "85", barPercent: 60, tone: "defense" }),
-  Object.freeze({ id: "reception", label: "Recepción Perf.", value: "60%", barPercent: 80, tone: "reception" }),
+  Object.freeze({ id: "attack", label: "Ataque", value: "140 pts", barPercent: 100 }),
+  Object.freeze({ id: "block", label: "Bloqueo", value: "42 pts", barPercent: 32 }),
+  Object.freeze({ id: "serve", label: "Saque", value: "18 pts", barPercent: 16 }),
+  Object.freeze({ id: "defense", label: "Defensa (Digs)", value: "85", barPercent: 60 }),
+  Object.freeze({ id: "reception", label: "Recepción Perf.", value: "60%", barPercent: 80 }),
 ] satisfies PlayerDetailFixture["statBreakdown"]);
 
 function playerRecentMatches(

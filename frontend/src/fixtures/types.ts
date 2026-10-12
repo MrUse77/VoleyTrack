@@ -249,7 +249,6 @@ export type PlayerStatBreakdownFixture = Readonly<{
   label: "Ataque" | "Bloqueo" | "Saque" | "Defensa (Digs)" | "Recepción Perf.";
   value: string;
   barPercent: number;
-  tone: "attack" | "block" | "serve" | "defense" | "reception";
 }>;
 
 export type PlayerRecentMatchFixture = Readonly<{

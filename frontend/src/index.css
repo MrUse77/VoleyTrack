@@ -1,12 +1,32 @@
-@import "tailwindcss";
+/* Tailwind's automatic source detection is switched off (`source(none)`) and the
+   application's own sources are declared explicitly further down, so the stylesheet is
+   compiled from exactly those files. Nothing that merely lives under the project can
+   contribute a class any more: not the build output in `dist/`, not the vendored skill
+   docs in `.agents/`, not the design reference pack in `design/`, and not the test files
+   that pin forbidden class names as absence assertions. There is therefore no longer a
+   single `@source not "../dist"` exclusion here: with automatic detection off there is no
+   directory walk left to exclude from, and `dist/` is never scanned even though Vite only
+   empties it after Tailwind has read its sources.
+   Syntax verified against the installed tailwindcss 4.3.3, which parses `source(none)` on
+   the `@import` and `not` on `@source` (node_modules/tailwindcss/dist/lib.mjs), and
+   measured: the emitted rule set still covers every candidate the declared sources
+   produce, so no utility the application uses is dropped. */
+@import "tailwindcss" source(none);
 @import "./styles/tokens.css";
 /* Fonts are declared instead of imported from Fontsource's `latin-*.css` entries so the
    build ships only `.woff2`. See src/styles/fonts.css for the measurements and the
    behaviour-preservation notes. */
 @import "./styles/fonts.css";
-/* Keep build output out of Tailwind's automatic source detection. This follows
-   every @import deliberately: CSS requires @import rules to precede other rules. */
-@source not "../dist";
+/* The application's sources: the entry document, so a utility named only there (e.g. on
+   <body> or #root) is still generated, plus `src/` minus the test files. The negations
+   are inside the declared source set on purpose — a test file is not shipped UI, and its
+   absence assertions must not cause the very class they forbid to be emitted.
+   These rules follow every `@import` deliberately: CSS requires @import rules to precede
+   other rules. */
+@source "../index.html";
+@source "../src";
+@source not "../src/**/*.test.ts";
+@source not "../src/**/*.test.tsx";
 
 /* Every application base rule lives in `@layer base`, i.e. the same cascade layer as
    Tailwind's preflight, which the `@import "tailwindcss"` above orders as
