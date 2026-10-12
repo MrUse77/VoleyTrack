@@ -1184,6 +1184,28 @@ readable against the completed record above; the carried-over items it lists wer
   assigned-matches list → selected match → setup flow, on the shared primitives instead of the
   legacy system.
 
+#### Decision recorded: three scoring screens have no design spec, and that is now accepted
+
+The design pack contains **no scoring console, point-entry or post-match summary screen**. Its 21 HTML
+files are thirteen admin pages plus dashboard, equipos, jugadores, live, login, partidos, planillero and
+torneos. `planillero.html` models only two things: the assigned-matches list with its empty state, and
+the `Setup` view built from a `setup-grid` of two `setup-team` blocks around a `setup-versus` separator.
+
+So `ScoringConsolePage`, `PointEntryPage` and `PostMatchSummaryPage` exist, work and are tested, but
+the pack specifies nothing for them to be aligned against. They were built from the **retired** `.op`
+artboards (manifest indices 26 to 30), which the project owner discarded as design authority at the
+start of this feature.
+
+**Decision taken by the project owner: leave them as they are.** They function, they have tests, and
+they were built against a design source that existed at the time. They are recorded here as the only
+screens in the application **without a spec in the current design authority**, so nobody later mistakes
+their unaligned state for an oversight. Recovering the retired `.op` for them was considered and
+declined, as was commissioning new pack pages for the scoring flow.
+
+Consequence for the closing report: the claim at the end of this feature must be that every screen
+**the pack covers** is aligned, not that every screen in the application is. Those three are the
+exception, and the exception is documented rather than glossed.
+
 ## Slice 1 close
 
 **19 of 22 tasks closed across 17 feature commits**, excluding the record-keeping commits for this
