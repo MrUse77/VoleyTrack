@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Modal } from "../../components/primitives/Modal";
 import { Badge } from "../../components/primitives/Badge";
-import { SectionShell } from "../../components/ui/SectionShell";
+import { PageHeader } from "../../components/primitives/PageHeader";
 import { PUBLIC_TEAMS, SCORING, SCORING_ROSTER } from "../../fixtures";
 
 type TeamKey = "home" | "away";
@@ -117,12 +117,13 @@ export function ScoringConsolePage() {
   ];
 
   return (
-    <SectionShell
-      eyebrow="Planillero"
-      title={fixture.title}
-      description="Registrá los puntos del partido desde la planilla local. Los cambios se mantienen solo en esta consola."
-      actions={<Badge tone="success">{fixture.statusLabel}</Badge>}
-    >
+    <div className="space-y-6">
+      <PageHeader
+        actions={<Badge tone="success">{fixture.statusLabel}</Badge>}
+        description="Registrá los puntos del partido desde la planilla local. Los cambios se mantienen solo en esta consola."
+        eyebrow="Planillero"
+        title={fixture.title}
+      />
       <div className="space-y-6">
         <p aria-atomic="true" aria-live="polite" className="sr-only" role="status">
           {announcement}
@@ -414,6 +415,6 @@ export function ScoringConsolePage() {
           </button>
         </div>
       </Modal>
-    </SectionShell>
+    </div>
   );
 }

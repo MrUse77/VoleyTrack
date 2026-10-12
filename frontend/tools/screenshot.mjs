@@ -1681,6 +1681,86 @@ const PROBE_SOURCE = `(async () => {
       })()
     : null;
 
+  // Additive: the four scoring screens' own header treatment. New key only - every key above
+  // keeps its name, order and shape, no existing strategy is reordered or redefined, and the
+  // exit codes are untouched. The key is null off the four scoring routes, so every other
+  // capture is unchanged.
+  //
+  // Those four screens were the last consumers of the legacy SectionShell header, which is
+  // being migrated onto the shared PageHeader primitive. The key is gated on the route path
+  // (not on a class or a data attribute) so the SAME key reports the before and the after of
+  // the migration instead of appearing only once the code has changed: the first main header
+  // is the screen's own header on both implementations, and its parent is the wrapper element
+  // the screen chose (the legacy section.space-y-6 before, the replacement box after).
+  // Reading the resolved wrapper/header classes, the heading's level and computed size and
+  // tracking, the eyebrow's computed family and size and the actions container makes the
+  // header treatment machine-readable at the pixel level, which a static-markup test cannot do.
+  const scoringPathname = location.pathname;
+  const isScoringHeaderRoute =
+    scoringPathname === "/admin/matches/setup" ||
+    /\\/(?:scoring|point-entry|summary)$/.test(scoringPathname);
+  const scoringHeaderElement = isScoringHeaderRoute
+    ? document.querySelector("main header")
+    : null;
+  const scoringHeader = scoringHeaderElement
+    ? (() => {
+        const textOf = (el) =>
+          el ? (el.innerText || el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 80) : null;
+        const describe = (el, keys) => {
+          if (!el) return null;
+          const cs = getComputedStyle(el);
+          return {
+            tag: el.tagName.toLowerCase(),
+            text: textOf(el),
+            ...Object.fromEntries(keys.map((key) => [key, cs[key]])),
+          };
+        };
+        const wrapper = scoringHeaderElement.parentElement;
+        const column = scoringHeaderElement.firstElementChild;
+        const children = column ? Array.from(column.children) : [];
+        const paragraphs = children.filter((el) => el.tagName === "P");
+        const heading = column ? column.querySelector("h1, h2") : null;
+        const eyebrow = paragraphs.length > 1 ? paragraphs[0] : null;
+        const description = paragraphs.length > 0 ? paragraphs[paragraphs.length - 1] : null;
+        const actions = scoringHeaderElement.children[1] ?? null;
+        return {
+          route: scoringPathname,
+          wrapper: wrapper
+            ? { tag: wrapper.tagName.toLowerCase(), className: wrapper.className }
+            : null,
+          header: {
+            tag: scoringHeaderElement.tagName.toLowerCase(),
+            className: scoringHeaderElement.className,
+          },
+          heading: describe(heading, [
+            "fontSize",
+            "fontWeight",
+            "lineHeight",
+            "letterSpacing",
+            "textTransform",
+            "color",
+          ]),
+          eyebrow: describe(eyebrow, [
+            "fontFamily",
+            "fontSize",
+            "fontWeight",
+            "letterSpacing",
+            "textTransform",
+            "color",
+          ]),
+          description: describe(description, ["fontSize", "maxWidth"]),
+          actions: actions
+            ? { tag: actions.tagName.toLowerCase(), className: actions.className, text: textOf(actions) }
+            : null,
+          // The heading is the screens' h1 after the migration and was an h2 before, so the
+          // count is reported instead of assumed; mainHeadingCount distinguishes "the screen
+          // owns exactly one h1" from "the shell chrome's h1 leaked in".
+          mainHeadingCount: document.querySelectorAll("main h1").length,
+          tabIndex: heading ? heading.getAttribute("tabindex") : null,
+        };
+      })()
+    : null;
+
   // Additive: the accessibility-semantics census. New keys only - every key above keeps its
   // name, order and shape, no existing strategy is reordered or redefined, and the exit
   // codes are untouched. Two defects live in the accessible state of a page rather than in
@@ -1868,6 +1948,11 @@ const PROBE_SOURCE = `(async () => {
       // login route's own columns, branding panel, typography, controls and submit, and is
       // null on every other route.
       loginScreen,
+      // Additive key: new name only, every key above is unchanged. scoringHeader reports the
+      // four scoring screens' wrapper, header row, heading level and computed typography,
+      // eyebrow computed typography, description measure, actions container, the main h1 count
+      // and the heading's tabindex, and is null on every other route.
+      scoringHeader,
       // Additive keys: new names only, every key above is unchanged. currentPageCensus counts
       // the elements claiming aria-current="page" and lists every aria-current value with its
       // label, href and enclosing nav; liveRegionCensus lists every live region with its role,

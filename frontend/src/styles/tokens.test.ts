@@ -504,8 +504,14 @@ describe("design tokens", () => {
     // occurrences the screen carried left with it. Measured with this guard's own patterns and
     // exclusions: vt-panel 20/13, vt-raised 13/7 and vt-raised-border 5/3 (both unchanged, so their
     // ceilings stay).
+    // T26 migrated the four scoring screens' last legacy header (`SectionShell`) onto the shared
+    // `PageHeader` primitive. The migration moves no app-only surface or border token, so the
+    // measured counts are unchanged from T25. Re-measured with this guard's own patterns and
+    // exclusions: vt-panel 19/12, vt-raised 13/7, vt-raised-border 5/3. vt-panel is one occurrence
+    // and one file below its T25 ceiling, so the ceiling is tightened to the measured value; the
+    // other two already sit exactly on their measured values and stay.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 20, baselineFiles: 13 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 19, baselineFiles: 12 },
       { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 13, baselineFiles: 7 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 5, baselineFiles: 3 },
     ];

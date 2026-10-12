@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "../../components/primitives/Button";
 import { Card } from "../../components/primitives/Card";
 import { Badge } from "../../components/primitives/Badge";
-import { SectionShell } from "../../components/ui/SectionShell";
+import { PageHeader } from "../../components/primitives/PageHeader";
 import { SCORING } from "../../fixtures";
 
 export function PostMatchSummaryPage() {
@@ -34,11 +34,12 @@ export function PostMatchSummaryPage() {
   const mvp = summary.mvp ?? null;
 
   return (
-    <SectionShell
-      eyebrow="Planillero"
-      title={summary.title}
-      description="Resultado final, sets completados y resumen local del partido."
-    >
+    <div className="space-y-6">
+      <PageHeader
+        description="Resultado final, sets completados y resumen local del partido."
+        eyebrow="Planillero"
+        title={summary.title}
+      />
       <div className="space-y-6">
         <section aria-labelledby="final-score-heading">
           <Card className="border-vt-border p-6 sm:p-8" variant="raised">
@@ -234,6 +235,6 @@ export function PostMatchSummaryPage() {
           </Card>
         </section>
       </div>
-    </SectionShell>
+    </div>
   );
 }

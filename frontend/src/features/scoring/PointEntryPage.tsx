@@ -3,7 +3,7 @@ import { useLocation } from "@tanstack/react-router";
 import { Button } from "../../components/primitives/Button";
 import { Card } from "../../components/primitives/Card";
 import { Badge } from "../../components/primitives/Badge";
-import { SectionShell } from "../../components/ui/SectionShell";
+import { PageHeader } from "../../components/primitives/PageHeader";
 import { PUBLIC_PLAYERS, POINT_TYPES, SCORING } from "../../fixtures";
 
 export function PointEntryPage() {
@@ -72,7 +72,12 @@ export function PointEntryPage() {
   };
 
   return (
-    <SectionShell eyebrow="Planillero" title={fixture.title} description={step.description}>
+    <div className="space-y-6">
+      <PageHeader
+        description={step.description}
+        eyebrow="Planillero"
+        title={fixture.title}
+      />
       <nav aria-label="Progreso del registro de punto">
         <ol className="grid gap-2 sm:grid-cols-4">
           {fixture.steps.map((progressStep, index) => {
@@ -249,6 +254,6 @@ export function PointEntryPage() {
           Punto confirmado localmente. La persistencia se implementará en una fase posterior.
         </p>
       ) : null}
-    </SectionShell>
+    </div>
   );
 }
