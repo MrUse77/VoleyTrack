@@ -1839,6 +1839,51 @@ const PROBE_SOURCE = `(async () => {
     })),
   };
 
+  // Additive: new key only, every key above keeps its name, order and shape, and no existing
+  // strategy is reordered, redefined or removed. The player ficha's five .stat-bar rows.
+  // The design's bar treatment (frontend/design/html/voleytrack-admin.css:300-305) gives BOTH
+  // halves of a row one tone: ".stat-bar-val{...color:var(--accent)}" is the value ink and
+  // ".stat-bar i{...background:var(--accent)}" is the fill, with the accent resolving to
+  // #ff8c42 / rgb(255, 140, 66). Reporting each row's resolved fill and ink is what makes
+  // "all five bars use the design accent" a measured value rather than a claim; before this
+  // probe the route's bar colours were not machine-readable at all, which is how a raw
+  // Tailwind "purple-500" / "pink-500" could ship unmeasured.
+  const statBarBody = document.querySelector('[data-testid="player-stat-breakdown-card-body"]');
+  const statBarRows = statBarBody
+    ? Array.from(statBarBody.querySelectorAll('[role="progressbar"]')).map((bar) => {
+        const row = bar.parentElement;
+        const fill = bar.firstElementChild;
+        const value = row ? row.children[1] : null;
+        const fillStyle = fill ? getComputedStyle(fill) : null;
+        const valueStyle = value ? getComputedStyle(value) : null;
+        const designAccent = "rgb(255, 140, 66)";
+
+        return {
+          ariaLabel: bar.getAttribute("aria-label"),
+          fillBackgroundColor: fillStyle ? fillStyle.backgroundColor : null,
+          fillClassName: fill ? fill.className : null,
+          trackBackgroundColor: getComputedStyle(bar).backgroundColor,
+          valueColor: valueStyle ? valueStyle.color : null,
+          valueText: value ? (value.textContent || "").trim() : null,
+          // The design's own invariant: this row's fill and its value ink are the same tone,
+          // and that tone is the accent.
+          matchesDesign:
+            Boolean(fillStyle) &&
+            Boolean(valueStyle) &&
+            fillStyle.backgroundColor === designAccent &&
+            valueStyle.color === designAccent,
+        };
+      })
+    : null;
+  const statBars = statBarRows
+    ? {
+        count: statBarRows.length,
+        expectedFillColor: "rgb(255, 140, 66)",
+        allMatchDesign: statBarRows.length > 0 && statBarRows.every((row) => row.matchesDesign),
+        rows: statBarRows,
+      }
+    : null;
+
   return {
     title: document.title,
     readyState: document.readyState,
@@ -1967,6 +2012,10 @@ const PROBE_SOURCE = `(async () => {
       // politeness and text, and whether that text changed across a 2.6s window.
       currentPageCensus,
       liveRegionCensus,
+      // Additive key: new name only, every key above is unchanged. statBars reports each of the
+      // player ficha's five stat rows with its resolved fill, track and value ink, and is null
+      // on every other route.
+      statBars,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

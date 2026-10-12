@@ -137,6 +137,34 @@ describe("public player detail", () => {
 		}
 	});
 
+	it("paints all five stat bars with the design accent on both the fill and the value ink", () => {
+		const detail = PUBLIC_PLAYER_DETAILS.find(
+			(item) => item.playerId === PUBLIC_PLAYERS[0].id,
+		)!;
+		const html = renderPlayerDetail();
+
+		// The design's `.stat-bar i` (the fill) and `.stat-bar-val` (the value ink) are both
+		// `var(--accent)` (frontend/design/html/voleytrack-admin.css:300-305), and the owner
+		// decided every row uses it. All five rows therefore carry the same tone, deliberately:
+		// the rows are told apart by their label, not by their colour. The row contract is pinned
+		// too, so a later edit cannot quietly drop a row while the counts still match.
+		expect(html.match(/role="progressbar"/g) ?? []).toHaveLength(detail.statBreakdown.length);
+		expect(
+			html.match(/class="block h-full rounded-full bg-vt-accent"/g) ?? [],
+		).toHaveLength(detail.statBreakdown.length);
+		expect(
+			html.match(/class="ml-auto w-\[60px\] text-right text-vt-accent min-\[1416px\]:ml-1\.5"/g) ?? [],
+		).toHaveLength(detail.statBreakdown.length);
+
+		for (const stat of detail.statBreakdown) {
+			expect(html).toContain(`aria-label="${stat.label}: ${stat.value}"`);
+		}
+
+		// No per-stat tone survives, in any form the design does not own.
+		expect(html).not.toContain("bg-vt-blue");
+		expect(html).not.toContain("text-vt-pink");
+	});
+
 	it("renders every existing standalone public player coherently", () => {
 		const player = PUBLIC_PLAYERS[1];
 		const detail = PUBLIC_PLAYER_DETAILS.find((item) => item.playerId === player.id);

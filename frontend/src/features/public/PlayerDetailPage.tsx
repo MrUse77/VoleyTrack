@@ -9,36 +9,30 @@ import {
 	PUBLIC_PLAYERS,
 	PUBLIC_TEAMS,
 	type MatchFixture,
-	type PlayerStatBreakdownFixture,
 } from "../../fixtures";
 
 /**
  * The design this breakdown is modelled on is the vendored `.stat-bar`
  * (frontend/design/html/voleytrack-admin.css:300-305): its value ink (`.stat-bar-val`) and its
- * fill (`.stat-bar i`) are both `var(--accent)`.
+ * fill (`.stat-bar i`) are both `var(--accent)`, and the design declares no second bar tone -
+ * a purple and a pink literal appear nowhere under design/html.
  *
- * `block` and `serve` used to carry the raw Tailwind palette hues `blue-500` / `green-500`, which
- * are close to — but not the same colour as — the design's own `--blue` and `--success`
- * (frontend/design/html/voleytrack.css:17-18, already tokened here as `--color-vt-blue` and
- * `--color-vt-success`). Tailwind v4 declares its palette in oklch, so `blue-500` / `green-500`
- * resolve to a slightly different sRGB than the design's hexes; the harness capture measured the
- * shift on the two affected bars, so this is a real colour correction, not a no-op rename.
+ * Every bar therefore carries the accent on both halves. The project owner made this call
+ * explicitly and accepted its consequence: the five bars are no longer distinguishable from
+ * each other by colour, so the label (and the `role="progressbar"` accessible name) is what
+ * tells them apart. That trade-off is deliberate, not an oversight.
  *
- * `defense` and `reception` have NO design counterpart and are deliberately left alone rather
- * than repainted with a "closest" token: nothing under design/html declares a purple or a pink
- * hue, and the only bar tones the design owns are `--accent`, `--blue`, `--success` and
- * `--danger`. Choosing a colour for them is a design decision, not a colour-consistency one.
+ * A per-stat tone map used to live here. Its values drifted with the app rather than with the
+ * design: `block` and `serve` carried the raw Tailwind palette hues `blue-500` / `green-500`
+ * (close to, but not the same colour as, the design's own `--blue` #3b82f6 and `--success`
+ * #22c55e - Tailwind v4 declares its palette in oklch, so the two resolve to a slightly
+ * different sRGB), and `defense` / `reception` shipped `purple-500` / `pink-500`, which have no
+ * counterpart anywhere in the vendored design at all. Two of those four were caught by
+ * inspection rather than by the colour guard, which is why the guard now rejects Tailwind's
+ * stock palette utilities outright (`styles/tokens.test.ts`). Keeping a map that returned one
+ * value for all five keys would have implied the tones still meant something, so it is gone and
+ * the two accent classes are written where the design declares them.
  */
-const statToneClasses: Record<
-	PlayerStatBreakdownFixture["tone"],
-	Readonly<{ bar: string; text: string }>
-> = {
-	attack: { bar: "bg-vt-accent", text: "text-vt-accent" },
-	block: { bar: "bg-vt-blue", text: "text-vt-blue" },
-	defense: { bar: "bg-purple-500", text: "text-purple-500" },
-	reception: { bar: "bg-pink-500", text: "text-pink-500" },
-	serve: { bar: "bg-vt-success", text: "text-vt-success" },
-};
 
 function findPlayer(id: string) {
 	return PUBLIC_PLAYERS.find((player) => player.id === id);
@@ -226,34 +220,30 @@ export function PlayerDetailPage() {
 							<h2 id="player-stat-breakdown-title">Desglose por Fundamento</h2>
 						</CardHeader>
 						<CardBody className="space-y-6 min-[1416px]:space-y-10" data-testid="player-stat-breakdown-card-body">
-							{detail.statBreakdown.map((stat) => {
-								const tone = statToneClasses[stat.tone];
-
-								return (
+							{detail.statBreakdown.map((stat) => (
+								<div
+									className="flex flex-wrap items-start text-sm font-bold leading-4"
+									key={stat.id}
+								>
+									<p className="w-[150px] text-vt-muted">{stat.label}</p>
+									<p className="ml-auto w-[60px] text-right text-vt-accent min-[1416px]:ml-1.5">
+										{stat.value}
+									</p>
 									<div
-										className="flex flex-wrap items-start text-sm font-bold leading-4"
-										key={stat.id}
+										aria-label={`${stat.label}: ${stat.value}`}
+										aria-valuemax={100}
+										aria-valuemin={0}
+										aria-valuenow={stat.barPercent}
+										className="mt-3 h-2 w-full overflow-hidden rounded-full bg-vt-border-2 min-[1416px]:ml-5 min-[1416px]:mt-1 min-[1416px]:w-[250px]"
+										role="progressbar"
 									>
-										<p className="w-[150px] text-vt-muted">{stat.label}</p>
-										<p className={`ml-auto w-[60px] text-right min-[1416px]:ml-1.5 ${tone.text}`}>
-											{stat.value}
-										</p>
-										<div
-											aria-label={`${stat.label}: ${stat.value}`}
-											aria-valuemax={100}
-											aria-valuemin={0}
-											aria-valuenow={stat.barPercent}
-											className="mt-3 h-2 w-full overflow-hidden rounded-full bg-vt-border-2 min-[1416px]:ml-5 min-[1416px]:mt-1 min-[1416px]:w-[250px]"
-											role="progressbar"
-										>
-											<span
-												className={`block h-full rounded-full ${tone.bar}`}
-												style={{ width: `${stat.barPercent}%` }}
-											/>
-										</div>
+										<span
+											className="block h-full rounded-full bg-vt-accent"
+											style={{ width: `${stat.barPercent}%` }}
+										/>
 									</div>
-								);
-							})}
+								</div>
+							))}
 						</CardBody>
 					</Card>
 
