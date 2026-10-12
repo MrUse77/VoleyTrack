@@ -95,5 +95,15 @@ describe("PostMatchSummaryPage", () => {
     expect(html).toContain("Partido no encontrado");
     expect(html).toContain(`href="/admin/matches"`);
     expect(html).not.toContain(SCORING.summary.statusLabel);
+
+    // The fallback is the app's aligned block, not a hand-rolled legacy card: the design's
+    // structural `Card` (`padded={false}` -> no `p-6`), the announced `EmptyState`
+    // (`role="status"` with its own `<h2>`, not the screen's own `<h1>`) and the design's
+    // ghost `.btn` for the way back.
+    expect(html).toContain('role="status"');
+    expect(html).toContain("<h2 class=\"mb-[6px] text-[18px] font-bold text-vt-text\">Partido no encontrado</h2>");
+    expect(html).not.toContain("<h1");
+    expect(html).not.toContain("p-6");
+    expect(html).toContain("inline-flex");
   });
 });

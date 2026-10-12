@@ -1183,6 +1183,121 @@ const PROBE_SOURCE = `(async () => {
     listStates.restoredRowCount = document.querySelectorAll("main tbody tr, main ul > li").length;
   }
 
+  // Additive: new keys only, every key above keeps its name, order and shape. The design's
+  // collapsible filter panel (voleytrack-partidos.html:45-58, voleytrack-torneos.html:45-58) is
+  // a real button whose aria-expanded exposes its state and whose aria-controls names
+  // the panel it drives, over a panel of labelled selects. The filterPanels key above already
+  // reports that toggle/panel pair; filterPanelDetail adds what the panel HOLDS and what the
+  // toggle's state actually resolves to when it is operated: each control with the text of the
+  // label[for] that names it and the options it offers, plus the toggle's aria-expanded
+  // and the panel's hidden attribute measured closed and after a real click.
+  const filterPanelDetail = await (async () => {
+    const described = [];
+
+    for (const panel of Array.from(document.querySelectorAll("main [id$='-filter-panel']"))) {
+      const toggle = document.querySelector('[aria-controls="' + panel.id + '"]');
+      const expandedClosed = toggle ? toggle.getAttribute("aria-expanded") : null;
+      const hiddenClosed = panel.hasAttribute("hidden");
+
+      if (toggle) {
+        toggle.click();
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      }
+
+      const expandedOpen = toggle ? toggle.getAttribute("aria-expanded") : null;
+      const hiddenOpen = panel.hasAttribute("hidden");
+
+      if (toggle) {
+        toggle.click();
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      }
+
+      described.push({
+        id: panel.id,
+        toggle: toggle
+          ? {
+              tag: toggle.tagName.toLowerCase(),
+              type: toggle.getAttribute("type"),
+              text: (toggle.textContent || "").trim(),
+              controls: toggle.getAttribute("aria-controls"),
+              expandedClosed,
+              expandedOpen,
+            }
+          : null,
+        panelHiddenClosed: hiddenClosed,
+        panelHiddenOpen: hiddenOpen,
+        controls: Array.from(panel.querySelectorAll("select, input, textarea")).map((control) => {
+          const label = control.id
+            ? document.querySelector('label[for="' + control.id + '"]')
+            : null;
+          const tag = control.tagName.toLowerCase();
+
+          return {
+            id: control.id || null,
+            tag,
+            labelText: label ? (label.textContent || "").trim() : null,
+            value: control.value,
+            options: tag === "select"
+              ? Array.from(control.options).map((option) => ({
+                  value: option.value,
+                  label: option.textContent,
+                }))
+              : null,
+          };
+        }),
+      });
+    }
+
+    return described;
+  })();
+
+  // Additive: new key only. A filter is measured by APPLYING it: for every non-empty option of
+  // the panel's first select, the value is set, the change event the design's own
+  // filterMatches / filterTournaments listens for is dispatched, the visible row count is
+  // read, and the original value is restored so the capture that follows shows the populated
+  // screen. initialRows is the count before any of it, so a filter that changed nothing is
+  // visible as such instead of being described in prose.
+  const filterPanelEffect = await (async () => {
+    const panel = document.querySelector("main [id$='-filter-panel']");
+    const control = panel ? panel.querySelector("select") : null;
+    const listRoot = document.querySelector("main table") ?? document.querySelector("main ul");
+    if (!panel || !control || !listRoot) return null;
+
+    const countRows = () => {
+      const root = document.querySelector("main table") ?? document.querySelector("main ul");
+      return root ? root.querySelectorAll("tbody tr, :scope > li").length : 0;
+    };
+    const originalValue = control.value;
+    const initialRows = countRows();
+    const results = [];
+
+    for (const option of Array.from(control.options)) {
+      if (option.value === "") continue;
+
+      control.value = option.value;
+      control.dispatchEvent(new Event("change", { bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
+      results.push({
+        value: option.value,
+        label: option.textContent,
+        visibleRows: countRows(),
+      });
+    }
+
+    control.value = originalValue;
+    control.dispatchEvent(new Event("change", { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 60));
+
+    return {
+      panelId: panel.id,
+      controlId: control.id || null,
+      initialRows,
+      restoredRows: countRows(),
+      results,
+    };
+  })();
+
   // ---------------------------------------------------------------------------------------
   // Additive: the admin tournament area's own probes. New keys only - every key above keeps its
   // name, order and shape, and no existing strategy is reordered or redefined.
@@ -1271,6 +1386,60 @@ const PROBE_SOURCE = `(async () => {
   const infoRows = {
     format: describeInfoRows("tournament-format-card-body"),
     informacion: describeInfoRows("tournament-info-card-body"),
+  };
+
+  // Additive: new key only, every key above keeps its name, order and shape. The design's
+  // .info-row gives the EMPHASIS to the label and leaves the value muted:
+  //   frontend/design/html/voleytrack-admin.css:121  .info-row b{font-weight:700}
+  //   frontend/design/html/voleytrack-admin.css:122  .info-row span{color:var(--muted)}
+  // (the same two rules at frontend/design/html/voleytrack-torneos.css:45-46).
+  // The infoRows key above reports the row text but not which element owns which treatment,
+  // so a swap of the two tones would not be visible there. This key reports the RESOLVED ink
+  // and weight of each row's label and value, which is what the owner's decision changes, and
+  // it is measured on every route that renders an Informacion or Formato card.
+  const describeInfoRowTreatment = (testId) => {
+    const body = document.querySelector('[data-testid="' + testId + '"]');
+    if (!body) return null;
+
+    // The rows are found by their own resolved class pair rather than by position, so the same
+    // probe reads a card whose rows are the body's direct children (the tournament
+    // Informacion/Formato cards) and one whose rows sit inside a nested CardBody (the live
+    // screen's match-metadata panel). The two-span shape is what separates an InfoRow from
+    // the other rows that carry the same class pair (the admin team detail's performance readout
+    // is a dt/dd row), so the probe reports InfoRows and nothing else.
+    const rows = Array.from(
+      body.querySelectorAll('[class*="justify-between"][class*="border-vt-border-2"]'),
+    ).filter(
+      (row) =>
+        row.children.length === 2 &&
+        row.children[0].tagName === "SPAN" &&
+        row.children[1].tagName === "SPAN",
+    );
+
+    return {
+      testId,
+      rows: rows.map((row) => {
+        const label = row.children[0] || null;
+        const value = row.children[1] || null;
+        const labelStyle = label ? getComputedStyle(label) : null;
+        const valueStyle = value ? getComputedStyle(value) : null;
+
+        return {
+          label: (label?.textContent || "").trim(),
+          labelColor: labelStyle ? labelStyle.color : null,
+          labelFontWeight: labelStyle ? labelStyle.fontWeight : null,
+          value: (value?.textContent || "").trim(),
+          valueColor: valueStyle ? valueStyle.color : null,
+          valueFontWeight: valueStyle ? valueStyle.fontWeight : null,
+        };
+      }),
+    };
+  };
+  const infoRowTreatment = {
+    format: describeInfoRowTreatment("tournament-format-card-body"),
+    informacion: describeInfoRowTreatment("tournament-info-card-body"),
+    liveMetadata: describeInfoRowTreatment("match-metadata"),
+    adminTeamProfile: describeInfoRowTreatment("admin-team-overview-grid"),
   };
 
   // The .tournament-tabs strip (frontend/design/html/voleytrack-admin-ver-torneo.html,
@@ -2053,6 +2222,12 @@ const PROBE_SOURCE = `(async () => {
       modals,
       filterPanels,
       listStates,
+      // Additive keys: new names only, every key above is unchanged. filterPanelDetail reports
+      // the design's panel contents (each labelled control with its options) and the toggle's
+      // measured expanded/closed state, and filterPanelEffect the visible-row count produced by
+      // actually applying each of the panel's filter values.
+      filterPanelDetail,
+      filterPanelEffect,
       // Additive keys: new names only, every key above is unchanged. adminTournamentCards reports
       // the admin list's card treatment and its link destination, adminTournamentRegions which of
       // the tournament frame's regions rendered on the route, infoRows the Informacion and
@@ -2061,6 +2236,11 @@ const PROBE_SOURCE = `(async () => {
       adminTournamentCards,
       adminTournamentRegions,
       infoRows,
+      // Additive key: new name only, every key above is unchanged. infoRowTreatment reports the
+      // resolved ink and font weight of each InfoRow's label and value, which is the
+      // label-emphasis contract the design declares at voleytrack-admin.css:121-122 and that
+      // the infoRows key (text only) cannot see.
+      infoRowTreatment,
       adminTournamentTabs,
       // Additive keys: new names only, every key above is unchanged. adminTeamSquad reports the
       // inline roster builder's chips and their named remove affordances, adminTeamRegions which
