@@ -1689,6 +1689,85 @@ const PROBE_SOURCE = `(async () => {
       })()
     : null;
 
+  // Additive: the two auth screens' shared branding column. New key only - every key above
+  // keeps its name, order and shape, no existing strategy is reordered or redefined, and the
+  // exit codes are untouched. The key is null off the two auth routes, so every other capture
+  // is unchanged.
+  //
+  // Design: frontend/design/html/voleytrack-login.html is the only screen the pack draws
+  // outside the shell, and its .branding rule (line 43) is that column: the --surface fill
+  // with a 1px --border right edge and 80px padding, a 48px/900 -0.03em wordmark beside a 54px
+  // mark (lines 44-45) and a 16px --muted claim capped at 32ch (line 46). The login screen was
+  // aligned to it first and the change-password screen shares the same block, so this probe
+  // exists to report whether the two columns measure identically.
+  //
+  // The gate is the route pathname (not a control id or a class), so the SAME key reports the
+  // before and the after of the unification instead of appearing only once the code changed.
+  // The first element child of main is the branding column on both screens and the last is the
+  // form column, which is what the structural selector relies on rather than a data attribute
+  // the pre-unification change-password screen does not carry.
+  const authBrandingPathname = location.pathname;
+  const isAuthBrandingRoute =
+    authBrandingPathname === "/login" || authBrandingPathname === "/change-password";
+  const authBrandingMain = isAuthBrandingRoute ? document.querySelector("main") : null;
+  const authBranding = authBrandingMain
+    ? (() => {
+        const boxOf = (el) => {
+          if (!el) return null;
+          const cs = getComputedStyle(el);
+          return {
+            ...rect(el),
+            paddingTop: cs.paddingTop,
+            paddingRight: cs.paddingRight,
+            paddingBottom: cs.paddingBottom,
+            paddingLeft: cs.paddingLeft,
+            backgroundColor: cs.backgroundColor,
+            borderRightWidth: cs.borderRightWidth,
+            borderRightColor: cs.borderRightColor,
+            display: cs.display,
+            flexDirection: cs.flexDirection,
+            justifyContent: cs.justifyContent,
+          };
+        };
+        const typographyOf = (el) => {
+          if (!el) return null;
+          const cs = getComputedStyle(el);
+          return {
+            text: (el.textContent || "").trim().replace(/\\s+/g, " "),
+            fontSize: cs.fontSize,
+            fontWeight: cs.fontWeight,
+            lineHeight: cs.lineHeight,
+            letterSpacing: cs.letterSpacing,
+            color: cs.color,
+            marginTop: cs.marginTop,
+            marginBottom: cs.marginBottom,
+            maxWidth: cs.maxWidth,
+          };
+        };
+        const branding = authBrandingMain.firstElementChild;
+        const formColumn = authBrandingMain.lastElementChild;
+        return {
+          route: authBrandingPathname,
+          gridTemplateColumns: getComputedStyle(authBrandingMain).gridTemplateColumns,
+          branding: branding
+            ? {
+                testId: branding.getAttribute("data-testid"),
+                ...boxOf(branding),
+                // The mark is the logo block's own aria-hidden element. A wordmark that
+                // carries the mark as bare text instead reports 0 here rather than a mark
+                // the screen does not have.
+                markCount: branding.querySelectorAll('[aria-hidden="true"]').length,
+                logo: typographyOf(branding.firstElementChild),
+                claim: typographyOf(branding.lastElementChild),
+              }
+            : null,
+          formColumn: formColumn
+            ? { testId: formColumn.getAttribute("data-testid"), ...boxOf(formColumn) }
+            : null,
+        };
+      })()
+    : null;
+
   // Additive: the four scoring screens' own header treatment. New key only - every key above
   // keeps its name, order and shape, no existing strategy is reordered or redefined, and the
   // exit codes are untouched. The key is null off the four scoring routes, so every other
@@ -2001,6 +2080,11 @@ const PROBE_SOURCE = `(async () => {
       // login route's own columns, branding panel, typography, controls and submit, and is
       // null on every other route.
       loginScreen,
+      // Additive key: new name only, every key above is unchanged. authBranding reports the
+      // branding and form columns of the two auth screens - their measured boxes, the mark's
+      // presence, the wordmark and claim typography and the main grid template - and is null
+      // on every other route.
+      authBranding,
       // Additive key: new name only, every key above is unchanged. scoringHeader reports the
       // four scoring screens' wrapper, header row, heading level and computed typography,
       // eyebrow computed typography, description measure, actions container, the main h1 count

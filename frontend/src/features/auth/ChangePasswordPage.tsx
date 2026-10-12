@@ -11,7 +11,13 @@ export function ChangePasswordPage() {
 	const [confirmPassword, setConfirmPassword] = useState("");
 
 	return (
-		<main className="grid min-h-svh w-full grid-cols-1 bg-vt-background text-vt-text lg:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]">
+		/* Design: the pack draws this branding column only on its login screen
+		   (frontend/design/html/voleytrack-login.html), whose `.login-wrap` pins the column at
+		   640px and hides it below 920px (lines 42 and 62). This screen has no design of its own,
+		   so it takes the pack's own grid — and the same `BrandingPanel` — so its branding
+		   measures identically to the login screen's instead of keeping the retired canvas's
+		   4fr/5fr split, which only coincides with 640/800 at a 1440px viewport. */
+		<main className="grid min-h-svh w-full grid-cols-1 bg-vt-background text-vt-text min-[920px]:grid-cols-[640px_minmax(0,1fr)]">
 			<BrandingPanel />
 			<section className="bg-vt-background">
 				<form

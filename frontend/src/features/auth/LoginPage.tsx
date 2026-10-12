@@ -1,5 +1,6 @@
 import { type ChangeEvent, type FormEvent, useState } from "react";
 import { Field } from "../../components/primitives/Field";
+import { BrandingPanel } from "./BrandingPanel";
 
 /**
  * Design source: frontend/design/html/voleytrack-login.html — the pack's model of the
@@ -108,36 +109,10 @@ export function LoginPage() {
 			className="grid min-h-svh w-full grid-cols-1 bg-vt-background text-vt-text min-[920px]:grid-cols-[640px_minmax(0,1fr)]"
 			data-testid="login-screen"
 		>
-			{/* Design: `.branding{background:var(--surface);display:flex;flex-direction:column;
-			   justify-content:center;padding:80px;border-right:1px solid var(--border)}` (line 43).
-
-			   The panel is rendered here rather than through `BrandingPanel` on purpose: that
-			   component is the retired canvas's panel, still used by ChangePasswordPage, and the
-			   pack models no change-password screen at all, so moving this design into the shared
-			   panel would restyle an unspecced screen.
-
-			   The mark is the app's existing emoji: the design's `.vb` mark is `imagen.png` under
-			   a hardcoded filter chain (lines 44 and 73), and no equivalent asset ships in the app. */}
-			<section
-				className="hidden flex-col justify-center border-r border-vt-border bg-vt-surface p-20 min-[920px]:flex"
-				data-testid="login-branding"
-			>
-				<div className="flex items-center gap-3 text-[48px] font-black tracking-[-0.03em] text-vt-text">
-					{/* The design's mark is an image filling a 54px box (lines 44-45 and 73), so the app's
-					    emoji mark inherits the wordmark's size and centres in the same box. */}
-					<span aria-hidden="true" className="grid size-[54px] shrink-0 place-items-center">
-						🏐
-					</span>
-					VoleyTrack
-				</div>
-				{/* Design: `.brand-claim{color:var(--muted);font-size:16px;margin-top:16px;max-width:32ch}`
-				   (line 46). The design's own sentence opens with "Panel de administración —",
-				   which this app cannot claim: it has ONE login for every role. The role frame is
-				   dropped and the design's own list of areas kept. */}
-				<p className="mt-4 mb-0 max-w-[32ch] text-base text-vt-muted">
-					Gestión de staff, equipos, jugadores y torneos.
-				</p>
-			</section>
+			{/* Design: `.branding` is the pack's own column (voleytrack-login.html:43-46), drawn once
+			   in `BrandingPanel` and shared with the change-password screen so the two auth screens
+			   carry one branding treatment rather than two. */}
+			<BrandingPanel />
 
 			{/* Design: `.form-col{display:flex;align-items:center;justify-content:center;padding:40px;
 			   background:var(--bg)}` (line 50) holding `.form-box{width:100%;max-width:480px}` (line 51). */}
