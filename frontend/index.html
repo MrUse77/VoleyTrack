@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- The brand mark is `public/icon.svg` (the accent-filled volleyball icon the design's
+         `.logo-mark` uses); `/favicon.svg` never existed, so every page load fetched a file that
+         only ever returned the SPA fallback HTML. `public/favicon.ico` stays where it is for the
+         legacy fallback request every browser still makes. -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>voleytrack</title>
   </head>
