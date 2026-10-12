@@ -7,11 +7,18 @@ import { PostMatchSummaryPage } from "./PostMatchSummaryPage";
 let matchId = SCORING.summary.matchId;
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to, ...props }: { children: ReactNode; to: string } & ComponentPropsWithoutRef<"a">) => (
-    <a href={to} {...props}>
-      {children}
-    </a>
-  ),
+  Link: ({ activeOptions: _exactMarking, children, to, ...props }: { activeOptions?: unknown; children: ReactNode; to: string } & ComponentPropsWithoutRef<"a">) => {
+    // `activeOptions` is the exactness option the app's own Link
+    // (components/navigation/NavigationLink) always passes; a plain anchor has no such
+    // attribute, so the option is consumed here instead of leaking into the markup.
+    void _exactMarking;
+
+    return (
+      <a href={to} {...props}>
+        {children}
+      </a>
+    );
+  },
   useParams: () => ({ id: matchId }),
 }));
 

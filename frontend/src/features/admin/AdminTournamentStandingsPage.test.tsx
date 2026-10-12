@@ -7,9 +7,14 @@ import { AdminTournamentStandingsPage } from "./AdminTournamentStandingsPage";
 let tournamentId = ADMIN.tournaments[0].id;
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to, ...props }: { children: ReactNode; to: string; "aria-current"?: "page" }) => (
-    <a href={to} {...props}>{children}</a>
-  ),
+  Link: ({ activeOptions: _exactMarking, children, to, ...props }: { activeOptions?: unknown; children: ReactNode; to: string; "aria-current"?: "page" }) => {
+    // `activeOptions` is the exactness option the app's own Link
+    // (components/navigation/NavigationLink) always passes; a plain anchor has no such
+    // attribute, so the option is consumed here instead of leaking into the markup.
+    void _exactMarking;
+
+    return <a href={to} {...props}>{children}</a>;
+  },
   useParams: () => ({ id: tournamentId }),
 }));
 

@@ -1,4 +1,5 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { Badge } from "../../components/primitives/Badge";
 import { Card, CardBody } from "../../components/primitives/Card";
 import { EmptyState } from "../../components/primitives/EmptyState";

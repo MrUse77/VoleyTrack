@@ -1,4 +1,5 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { Badge } from "../../components/primitives/Badge";
 import { DataTable, type DataTableColumn } from "../../components/primitives/DataTable";
 import { PUBLIC_MATCHES, PUBLIC_TOURNAMENTS, type MatchFixture, type TournamentFixture } from "../../fixtures";

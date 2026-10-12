@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { useLocation } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../components/navigation/NavigationLink";
 import { Card, CardBody, CardHeader } from "../components/primitives/Card";
 import { EmptyState } from "../components/primitives/EmptyState";
 import { PageHeader } from "../components/primitives/PageHeader";

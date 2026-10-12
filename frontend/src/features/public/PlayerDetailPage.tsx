@@ -1,4 +1,5 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { Card, CardBody, CardHeader } from "../../components/primitives/Card";
 import { Kpi, KpiGrid } from "../../components/primitives/Kpi";
 import { StateBoundary } from "../../components/states/StateBoundary";

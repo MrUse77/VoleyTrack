@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { buttonClasses } from "../../components/primitives/buttonClasses";
 import { Card, CardBody, CardHeader } from "../../components/primitives/Card";
 import { StatePill, type MatchStatus as PillStatus } from "../../components/primitives/StatePill";

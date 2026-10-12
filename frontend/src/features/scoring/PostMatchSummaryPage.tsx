@@ -1,4 +1,5 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { useState } from "react";
 import { Button } from "../../components/primitives/Button";
 import { Card } from "../../components/primitives/Card";

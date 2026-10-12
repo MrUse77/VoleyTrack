@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import type { DataTableColumn } from "../../components/primitives/DataTable";
 import type { TournamentStandingFixture } from "../../fixtures";
 

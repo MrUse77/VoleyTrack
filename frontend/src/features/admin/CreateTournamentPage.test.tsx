@@ -6,9 +6,14 @@ import { describe, expect, it, vi } from "vitest";
 import { CreateTournamentPage } from "./CreateTournamentPage";
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ to, ...props }: { to: string; children?: ReactNode } & ComponentPropsWithoutRef<"a">) => (
-    <a {...props} href={to} />
-  ),
+  Link: ({ activeOptions: _exactMarking, to, ...props }: { activeOptions?: unknown; to: string; children?: ReactNode } & ComponentPropsWithoutRef<"a">) => {
+    // `activeOptions` is the exactness option the app's own Link
+    // (components/navigation/NavigationLink) always passes; a plain anchor has no such
+    // attribute, so the option is consumed here instead of leaking into the markup.
+    void _exactMarking;
+
+    return <a {...props} href={to} />;
+  },
 }));
 
 function renderPage() {

@@ -669,9 +669,17 @@ describe("router", () => {
     expect(window.location.pathname).toBe(`/admin/teams/${team.id}`);
     expect(container.textContent).toContain(team.name);
     expect(container.textContent).toContain("Perfil");
-    // The admin navigation's team entry is the destination this detail belongs to, and it is
-    // the one the sidebar marks current.
-    expect(container.querySelector('aside a[aria-current="page"][href="/admin/teams"]')).not.toBeNull();
+    // The admin navigation's team entry is the SECTION this detail belongs to. It contains the
+    // current location but is not it, so it carries `location` - the value ARIA defines for
+    // exactly this - while the page itself is the `Detalle` tab below.
+    //
+    // This assertion pinned `page` before the semantics pass, which was the defect: on this
+    // nested route the sidebar entry and the tab both announced themselves as the current page.
+    expect(container.querySelector('aside a[aria-current="location"][href="/admin/teams"]')).not.toBeNull();
+    expect(container.querySelector('aside a[aria-current="page"]')).toBeNull();
+    expect(
+      container.querySelector(`a[aria-current="page"][href="/admin/teams/${team.id}"]`),
+    ).not.toBeNull();
 
     await act(async () => {
       await router.navigate({ to: "/admin/teams/$id/roster", params: { id: team.id } });
@@ -988,6 +996,175 @@ describe("router", () => {
     expect(
       container.querySelector('a[aria-current="page"][href="/live"]')?.textContent,
     ).toContain("En vivo");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("keeps aria-current truthful on every route: page only for the current location, location for the section that contains it", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    const tournamentId = PUBLIC_TOURNAMENTS.inProgress[0].id;
+    const teamId = PUBLIC_TEAMS[0].id;
+    const playerId = PUBLIC_PLAYERS[0].id;
+    const liveMatchId = PUBLIC_MATCHES.live[0].id;
+    const finishedMatchId = PUBLIC_MATCHES.finished[0].id;
+    const adminTeamId = ADMIN.teams[0].id;
+    const adminTournamentId = ADMIN.tournaments[0].id;
+
+    // Every route this app renders, each with the fixture id it resolves. `to` is the route's
+    // own path, so the expected pathname is derived from it below and a case that stops
+    // resolving to its route fails here instead of silently checking nothing.
+    const routeCases: {
+      to: string;
+      params?: Record<string, string>;
+      search?: Record<string, unknown>;
+    }[] = [
+      { to: "/" },
+      { to: "/matches" },
+      { to: "/matches", search: { status: "live" } },
+      { to: "/tournaments" },
+      { to: "/teams" },
+      { to: "/players" },
+      { to: "/live" },
+      { to: "/tournaments/$id", params: { id: tournamentId } },
+      { to: "/tournaments/$id/matches", params: { id: tournamentId } },
+      { to: "/tournaments/$id/standings", params: { id: tournamentId } },
+      { to: "/tournaments/$id/stats", params: { id: tournamentId } },
+      { to: "/tournaments/$id/bracket", params: { id: tournamentId } },
+      { to: "/teams/$id", params: { id: teamId } },
+      { to: "/teams/$id/roster", params: { id: teamId } },
+      { to: "/teams/$id/matches", params: { id: teamId } },
+      { to: "/teams/$id/stats", params: { id: teamId } },
+      { to: "/players/$id", params: { id: playerId } },
+      { to: "/matches/$id/live", params: { id: liveMatchId } },
+      { to: "/login" },
+      { to: "/change-password" },
+      { to: "/admin" },
+      { to: "/admin/matches" },
+      { to: "/admin/tournaments" },
+      { to: "/admin/teams" },
+      { to: "/admin/players" },
+      { to: "/admin/staff/register" },
+      { to: "/admin/ui-states" },
+      { to: "/planillero" },
+      { to: "/planillero", search: { partido: liveMatchId } },
+      { to: "/admin/matches/setup" },
+      { to: "/admin/matches/create" },
+      { to: "/admin/matches/$id/scoring", params: { id: liveMatchId } },
+      { to: "/admin/matches/$id/point-entry", params: { id: liveMatchId } },
+      { to: "/admin/matches/$id/summary", params: { id: finishedMatchId } },
+      { to: "/admin/tournaments/create" },
+      { to: "/admin/tournaments/$id", params: { id: adminTournamentId } },
+      { to: "/admin/tournaments/$id/edit", params: { id: adminTournamentId } },
+      { to: "/admin/tournaments/$id/matches", params: { id: adminTournamentId } },
+      { to: "/admin/tournaments/$id/standings", params: { id: adminTournamentId } },
+      { to: "/admin/tournaments/$id/stats", params: { id: adminTournamentId } },
+      { to: "/admin/tournaments/$id/bracket", params: { id: adminTournamentId } },
+      { to: "/admin/teams/create" },
+      { to: "/admin/teams/$id", params: { id: adminTeamId } },
+      { to: "/admin/teams/$id/roster", params: { id: adminTeamId } },
+      { to: "/admin/teams/$id/matches", params: { id: adminTeamId } },
+      { to: "/admin/teams/$id/stats", params: { id: adminTeamId } },
+      { to: "/admin/players/create" },
+    ];
+
+    const pathnameOf = (to: string, params?: Record<string, string>) =>
+      Object.entries(params ?? {}).reduce(
+        (path, [key, value]) => path.replace(`$${key}`, value),
+        to,
+      );
+    const labelOf = (element: Element) =>
+      (element.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40);
+    // The three routes that deliberately render no shell: the two auth screens and the focused,
+    // standalone live detail. Every other case must have a sidebar, or the sidebar assertions
+    // below would quietly check nothing.
+    const hasSidebar = (pathname: string) =>
+      pathname !== "/login" &&
+      pathname !== "/change-password" &&
+      !/^\/matches\/[^/]+\/live$/.test(pathname);
+
+    await act(async () => {
+      await router.navigate({ to: "/" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    for (const { to, params, search } of routeCases) {
+      await act(async () => {
+        await router.navigate({ to, params, search } as never);
+      });
+
+      const expectedPath = pathnameOf(to, params);
+      expect(window.location.pathname).toBe(expectedPath);
+      // A guard that reads an unmounted container is a broken guard, not a passing one.
+      expect((container.textContent ?? "").length).toBeGreaterThan(0);
+      if (hasSidebar(expectedPath)) {
+        expect(container.querySelectorAll("aside nav a").length).toBeGreaterThan(0);
+      }
+
+      // The invariant, point by point:
+      //
+      // (i) `aria-current="page"` means "this link points at the page you are on", so every
+      //     element carrying it must point at the current location. The only exception is a
+      //     breadcrumb's current crumb, which IS the page rather than a link to it - it carries
+      //     no href and is the last entry of the nav it sits in. Two links that genuinely point
+      //     at the same place may both carry `page`: accuracy is the invariant, not cardinality.
+      const pageClaimants = [...container.querySelectorAll('[aria-current="page"]')].map(
+        (marker) => {
+          const href = marker.getAttribute("href");
+          return {
+            label: labelOf(marker),
+            href,
+            truthful:
+              href === null
+                ? marker.closest("nav")?.lastElementChild === marker
+                : new URL(href, "http://localhost").pathname === expectedPath,
+          };
+        },
+      );
+      expect(pageClaimants.filter((claim) => !claim.truthful)).toEqual([]);
+
+      // (ii) `aria-current="location"` means "the current location is inside this entry", so it
+      //      may only mark an entry whose path strictly contains the current one.
+      const locationClaimants = [...container.querySelectorAll('[aria-current="location"]')].map(
+        (marker) => {
+          const href = marker.getAttribute("href") ?? "";
+          return {
+            label: labelOf(marker),
+            href,
+            containsLocation: href !== "" && expectedPath.startsWith(`${href}/`),
+          };
+        },
+      );
+      expect(locationClaimants.filter((claim) => !claim.containsLocation)).toEqual([]);
+
+      // (iii) The shell's own section entry is the case this whole pass exists for: the entry the
+      //       sidebar highlights for the current route carries `page` when it IS the location and
+      //       `location` when it merely contains it - never `page` for an ancestor, and never no
+      //       marker at all. Every other sidebar entry carries nothing.
+      const sidebarLinks = [...container.querySelectorAll("aside nav a")];
+      const sidebarHrefs = sidebarLinks.map((link) => link.getAttribute("href") ?? "");
+      const matchedSidebarHref =
+        sidebarHrefs
+          .filter(
+            (href) => href === expectedPath || (href !== "/" && expectedPath.startsWith(`${href}/`)),
+          )
+          .sort((left, right) => right.length - left.length)[0] ?? null;
+      expect(
+        sidebarLinks.map((link) => ({
+          href: link.getAttribute("href"),
+          ariaCurrent: link.getAttribute("aria-current"),
+        })),
+      ).toEqual(
+        sidebarHrefs.map((href) => ({
+          href,
+          ariaCurrent:
+            href !== matchedSidebarHref ? null : href === expectedPath ? "page" : "location",
+        })),
+      );
+    }
 
     await act(async () => root.unmount());
     container.remove();

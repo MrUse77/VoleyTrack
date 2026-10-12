@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { Badge } from "../../components/primitives/Badge";
 import { Num } from "../../components/primitives/Num";
 import type { TournamentBracketMatchFixture, TournamentBracketRoundFixture } from "../../fixtures";

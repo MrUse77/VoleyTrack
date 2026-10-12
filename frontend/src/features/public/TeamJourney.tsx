@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import type { BadgeVariant } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
 import { StateBoundary } from "../../components/states/StateBoundary";

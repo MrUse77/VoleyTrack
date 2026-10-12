@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { buttonClasses } from "../../components/primitives/buttonClasses";
 import { PageHeader } from "../../components/primitives/PageHeader";
 import { TournamentFormCard } from "./TournamentFormCard";

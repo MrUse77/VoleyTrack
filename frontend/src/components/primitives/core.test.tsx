@@ -551,11 +551,16 @@ describe("core primitives", () => {
     expect(html).toContain("text-vt-background");
   });
 
-  it("announces the live pill as a status region with a reduced-motion safe dot", () => {
+  it("renders the live pill as ordinary labelled content with a reduced-motion safe dot", () => {
     const html = renderToStaticMarkup(<LivePill />);
 
-    expect(html).toContain('role="status"');
-    expect(html).toContain('aria-live="polite"');
+    // Deliberately NOT a live region. A pill's text is a fixed label ("En vivo", "AUTO · 2s",
+    // "SET 3 EN VIVO"), so it announces nothing on mount and nothing later, and on the live
+    // match screen two of these sat beside the score region that does change - three live
+    // regions for one moving score. The screen-level consequence is pinned in
+    // `features/public/LiveMatchPage.test.tsx`.
+    expect(html).not.toContain('role="status"');
+    expect(html).not.toContain("aria-live");
     expect(html).toContain("En vivo");
     expect(html).toContain("font-mono");
     expect(html).toContain("text-[10px]");

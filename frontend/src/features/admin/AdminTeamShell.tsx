@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { Badge } from "../../components/primitives/Badge";
 import { buttonClasses } from "../../components/primitives/buttonClasses";
 import { PageHeader } from "../../components/primitives/PageHeader";

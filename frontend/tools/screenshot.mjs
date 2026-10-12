@@ -1681,6 +1681,76 @@ const PROBE_SOURCE = `(async () => {
       })()
     : null;
 
+  // Additive: the accessibility-semantics census. New keys only - every key above keeps its
+  // name, order and shape, no existing strategy is reordered or redefined, and the exit
+  // codes are untouched. Two defects live in the accessible state of a page rather than in
+  // its pixels, so the DOM's own semantics are read instead of a class name:
+  //
+  //   currentPage  - every element carrying aria-current, with the value it carries, plus
+  //                  the count of aria-current="page". The value "page" means "this link
+  //                  points at the page you are on", so exactly one element per page may
+  //                  carry it; a section link that merely contains the current location
+  //                  must not.
+  //   liveRegions  - every element that is a live region, either through role="status" or
+  //                  through an explicit aria-live, with its role, politeness, accessible
+  //                  label, text and whether it sits inside navigation. It also snapshots
+  //                  each region's text twice, 2.6s apart, so regions whose content is bound
+  //                  to changing state can be told apart from those painted with a fixed
+  //                  literal.
+  const censusTextOf = (el) =>
+    el ? (el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 80) : null;
+  const navLabelOf = (el) => {
+    const nav = el.closest("nav");
+    if (!nav) return null;
+    return nav.getAttribute("aria-label") || "(nav sin etiqueta)";
+  };
+
+  const currentPage = Array.from(document.querySelectorAll("[aria-current]")).map((el) => ({
+    tag: el.tagName.toLowerCase(),
+    value: el.getAttribute("aria-current"),
+    label: censusTextOf(el),
+    href: el.getAttribute("href"),
+    nav: navLabelOf(el),
+  }));
+  const currentPageCensus = {
+    pageCount: currentPage.filter((entry) => entry.value === "page").length,
+    entries: currentPage,
+  };
+
+  const liveRegionElements = Array.from(
+    document.querySelectorAll('[role="status"], [aria-live]'),
+  );
+  const liveRegionTextBefore = liveRegionElements.map(censusTextOf);
+  // The second sample only exists to tell a region whose text is bound to changing state
+  // from one painted with a fixed literal, and the screen where that matters is the one
+  // carrying more than one region - so only that screen pays the extra window. The fixture
+  // set this app renders carries no clock, so no region in it changes on its own; the flag
+  // therefore reads "the text did not change inside the window", not "the content is static".
+  if (liveRegionElements.length > 1) {
+    await new Promise((resolve) => setTimeout(resolve, 2600));
+  }
+  const liveRegionTextAfter = liveRegionElements.map(censusTextOf);
+  const liveRegionCensus = {
+    count: liveRegionElements.length,
+    statusCount: liveRegionElements.filter((el) => el.getAttribute("role") === "status").length,
+    entries: liveRegionElements.map((el, index) => ({
+      tag: el.tagName.toLowerCase(),
+      testId: el.getAttribute("data-testid"),
+      role: el.getAttribute("role"),
+      ariaLive: el.getAttribute("aria-live"),
+      ariaAtomic: el.getAttribute("aria-atomic"),
+      label: el.getAttribute("aria-label"),
+      // The visible text the region shows (sr-only text included), and the same text after
+      // a 2.6s window (sampled only when the route carries more than one region): a region
+      // whose text differs between the two was rewritten during the capture.
+      text: liveRegionTextBefore[index],
+      textAfter: liveRegionTextAfter[index],
+      changesOverTime: liveRegionTextBefore[index] !== liveRegionTextAfter[index],
+      nav: navLabelOf(el),
+      inSidebar: Boolean(el.closest("aside")),
+    })),
+  };
+
   return {
     title: document.title,
     readyState: document.readyState,
@@ -1798,6 +1868,12 @@ const PROBE_SOURCE = `(async () => {
       // login route's own columns, branding panel, typography, controls and submit, and is
       // null on every other route.
       loginScreen,
+      // Additive keys: new names only, every key above is unchanged. currentPageCensus counts
+      // the elements claiming aria-current="page" and lists every aria-current value with its
+      // label, href and enclosing nav; liveRegionCensus lists every live region with its role,
+      // politeness and text, and whether that text changed across a 2.6s window.
+      currentPageCensus,
+      liveRegionCensus,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

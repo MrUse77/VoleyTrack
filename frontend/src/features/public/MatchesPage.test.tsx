@@ -12,9 +12,14 @@ let search: Record<string, string> = {};
 const navigate = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to, ...props }: { children: ReactNode; to: string } & AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a {...props} href={to}>{children}</a>
-  ),
+  Link: ({ activeOptions: _exactMarking, children, to, ...props }: { activeOptions?: unknown; children: ReactNode; to: string } & AnchorHTMLAttributes<HTMLAnchorElement>) => {
+    // `activeOptions` is the exactness option the app's own Link
+    // (components/navigation/NavigationLink) always passes; a plain anchor has no such
+    // attribute, so the option is consumed here instead of leaking into the markup.
+    void _exactMarking;
+
+    return <a {...props} href={to}>{children}</a>;
+  },
   useLocation: () => ({ search }),
   useNavigate: () => navigate,
 }));
