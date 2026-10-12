@@ -85,7 +85,6 @@ const indexPath = fileURLToPath(new URL("../index.css", import.meta.url));
 const publicShellPath = fileURLToPath(new URL("../layouts/PublicShell.tsx", import.meta.url));
 const adminShellPath = fileURLToPath(new URL("../layouts/AdminShell.tsx", import.meta.url));
 const scoringConsolePath = fileURLToPath(new URL("../features/scoring/ScoringConsolePage.tsx", import.meta.url));
-const placeholderPagePath = fileURLToPath(new URL("../pages/PlaceholderPage.tsx", import.meta.url));
 const adminPagePath = fileURLToPath(new URL("../pages/AdminPage.tsx", import.meta.url));
 const planilleroPagePath = fileURLToPath(new URL("../pages/PlanilleroPage.tsx", import.meta.url));
 const createTeamPagePath = fileURLToPath(new URL("../features/admin/CreateTeamPage.tsx", import.meta.url));
@@ -176,11 +175,13 @@ describe("design tokens", () => {
   it("normalizes generic page surfaces to canonical tokens without white/black leaks", () => {
     // `pages/LoginPage.tsx` left this list with T10: it was an orphan (the live `/login`
     // route renders `features/auth/LoginPage.tsx`), so the file is gone.
+    // `pages/PlaceholderPage.tsx` left it the same way: no route rendered it any more and
+    // nothing imported it, so the dead file (and its own test) are gone.
     // The pattern now includes the design's `--bg` layer (`bg-vt-background`) as well: the
     // planillero's setup blocks are the design's `.setup-team{background:var(--bg)}`
     // (frontend/design/html/voleytrack-admin.css:214), which is a canonical token with no
     // app-only counterpart, so a screen that uses it is more aligned, not less.
-    for (const filePath of [scoringConsolePath, placeholderPagePath, adminPagePath, planilleroPagePath]) {
+    for (const filePath of [scoringConsolePath, adminPagePath, planilleroPagePath]) {
       const source = readFileSync(filePath, "utf8");
 
       expect(source).toMatch(/bg-vt-(panel|surface|raised|background)/);
@@ -191,7 +192,6 @@ describe("design tokens", () => {
     }
 
     expect(readFileSync(scoringConsolePath, "utf8")).toMatch(/bg-vt-(panel|surface)/);
-    expect(readFileSync(placeholderPagePath, "utf8")).toContain("bg-vt-panel");
     expect(readFileSync(adminPagePath, "utf8")).toContain("bg-vt-panel");
 
     // The planillero's alignment replaced the whole control-room screen, so the app-only
