@@ -349,8 +349,12 @@ describe("core primitives", () => {
     // empty state's card and the setup card), so the measured total moved 81 → 79 across the same 35
     // production files and the total floor moves with it, while the legacy form stays at its measured
     // 24/8 and neither legacy ceiling moves.
-    expect(cards.length).toBeGreaterThanOrEqual(79);
-    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(35);
+    // The polish slice that built the public filter panel added the shared `FilterPanel`
+    // primitive (one structural `Card` in a new file) and converted the scoring screen's
+    // fallback to the structural form, so the measured total moved 79 -> 80 across 35 -> 36
+    // production files and both floors move with it.
+    expect(cards.length).toBeGreaterThanOrEqual(80);
+    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(36);
 
     // A JSX spread could inject `padded={false}` (or a shadowing prop) behind the
     // guard's back and the count would silently drift. Fail loudly instead of
@@ -394,7 +398,12 @@ describe("core primitives", () => {
     // rewrote is structural, so the measured total moved to 81 across 35 production files and
     // the floors move with it, while the legacy form stays at its measured 24/8 and neither
     // ceiling moves.
-    expect(legacyCount).toBeLessThanOrEqual(24);
+    // The polish slice that flipped `InfoRow` to the design's label emphasis also brought the
+    // scoring screen's last hand-rolled fallback onto the structural form (`Card padded={false}`
+    // + `EmptyState` instead of a uniform-padding Card carrying its own `<h1>`), which took the
+    // legacy form to 23 call sites. The file count is unchanged (that screen keeps five other
+    // uniform-padding Cards), so only the count ceiling drops, to its measured value.
+    expect(legacyCount).toBeLessThanOrEqual(23);
     expect(legacyFiles.length).toBeLessThanOrEqual(8);
   });
 
@@ -661,7 +670,7 @@ describe("core primitives", () => {
     expect(html).toContain("Cambiá los filtros o creá un nuevo partido.");
   });
 
-  it("renders an info row with a muted label, a bold value and no trailing border", () => {
+  it("renders an info row with a bold label, a muted value and no trailing border", () => {
     const html = renderToStaticMarkup(<InfoRow label="Duración" value="1h 42m" />);
 
     expect(html).toContain("Duración");
@@ -676,6 +685,14 @@ describe("core primitives", () => {
     expect(html).toContain("last:border-b-0");
     expect(html).toContain("text-vt-muted");
     expect(html).toContain("font-bold");
+
+    // The ASSOCIATION, not just the presence of each class: the design gives the emphasis to
+    // the label (frontend/design/html/voleytrack-admin.css:121-122, `.info-row b` bold and
+    // `.info-row span` muted), so the label span owns the bold ink and the value span owns the
+    // muted one. Both class lists still appear somewhere in the markup either way, so these two
+    // fragments are the assertion that actually measures the treatment.
+    expect(html).toContain('<span class="font-bold text-vt-text">Duración</span>');
+    expect(html).toContain('<span class="text-vt-muted">1h 42m</span>');
   });
 
   it("renders an avatar as a named image or as decorative initials", () => {
