@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import type { BadgeVariant } from "../../components/primitives/Badge";
+import { buttonClasses } from "../../components/primitives/buttonClasses";
 import { Card } from "../../components/primitives/Card";
+import { EmptyState } from "../../components/primitives/EmptyState";
 import { StateBoundary } from "../../components/states/StateBoundary";
 import {
   PUBLIC_MATCHES,
@@ -214,17 +216,35 @@ export function teamPerformanceReadout(
     .slice(0, limit);
 }
 
+/**
+ * The unknown-id fallback shared by the four public team routes, on the same primitives as
+ * every other not-found branch in the app (`AdminTeamNotFound` / `TournamentNotFound` /
+ * `PostMatchSummaryPage`): the design's structural `Card` (`padded={false}`,
+ * voleytrack.css:75-78) holding the announced `role="status"` `EmptyState` block, with the way
+ * back as the design's ghost `.btn` (voleytrack.css:69-74).
+ *
+ * The design has no counterpart for this branch (its prototype always resolves the team it
+ * links to), so `EmptyState` is the app's own aligned block rather than a design region. Its
+ * title is the `h2` the other fallbacks carry, not this branch's old `h1`: the shared block owns
+ * the heading level and `role="status"` so all fallbacks announce identically.
+ *
+ * Before this, the branch rendered the legacy uniform-padding `Card` plus its own `<h1>` and an
+ * inline accent link. `StateBoundary` is untouched: it is this route family's mock-state
+ * contract, not part of the fallback's treatment.
+ */
 export function TeamNotFound() {
   return (
     <StateBoundary>
-      <Card data-testid="team-not-found">
-        <h1 className="text-2xl font-bold text-vt-text">Equipo no encontrado</h1>
-        <Link
-          className="mt-4 inline-block text-sm font-semibold text-vt-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
-          to={"/teams" as string}
-        >
-          ← Volver a equipos
-        </Link>
+      <Card data-testid="team-not-found" padded={false}>
+        <EmptyState
+          description="El equipo que buscás no está disponible."
+          title="Equipo no encontrado"
+        />
+        <div className="px-5 pb-[18px]">
+          <Link className={buttonClasses("ghost")} to={"/teams" as string}>
+            ← Volver a equipos
+          </Link>
+        </div>
       </Card>
     </StateBoundary>
   );

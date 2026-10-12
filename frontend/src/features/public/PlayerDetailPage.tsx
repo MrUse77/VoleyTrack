@@ -1,6 +1,8 @@
 import { useParams } from "@tanstack/react-router";
 import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { Card, CardBody, CardHeader } from "../../components/primitives/Card";
+import { EmptyState } from "../../components/primitives/EmptyState";
+import { buttonClasses } from "../../components/primitives/buttonClasses";
 import { Kpi, KpiGrid } from "../../components/primitives/Kpi";
 import { StateBoundary } from "../../components/states/StateBoundary";
 import {
@@ -82,19 +84,16 @@ export function PlayerDetailPage() {
 		return (
 			<StateBoundary>
 				<div className="w-full max-w-[1104px] min-[1428px]:ml-3">
-					<Card data-testid="player-not-found">
-						<h1 className="text-2xl font-bold text-vt-text">
-							Jugador no encontrado
-						</h1>
-						<p className="mt-2 text-sm text-vt-muted">
-							No existe un perfil público para este jugador.
-						</p>
-						<Link
-							className="mt-4 inline-flex min-h-6 items-center text-sm font-semibold text-vt-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
-							to={"/players" as string}
-						>
-							← Volver a jugadores
-						</Link>
+					<Card data-testid="player-not-found" padded={false}>
+						<EmptyState
+							description="No existe un perfil público para este jugador."
+							title="Jugador no encontrado"
+						/>
+						<div className="px-5 pb-[18px]">
+							<Link className={buttonClasses("ghost")} to={"/players" as string}>
+								← Volver a jugadores
+							</Link>
+						</div>
 					</Card>
 				</div>
 			</StateBoundary>
