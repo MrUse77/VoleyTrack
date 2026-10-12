@@ -236,10 +236,27 @@ describe("design tokens", () => {
     }
 
     const playerDetail = readFileSync(playerDetailPath, "utf8");
-    expect(playerDetail).toContain("bg-vt-panel");
+    // The hero used the app-only panel layer, which the vendored design never defined. The
+    // colour-alignment slice removed it and left the surface to the `Card` primitive's own default
+    // (`variant="surface"`, frontend/design/html/voleytrack.css:75
+    // `.card{background:var(--surface);...}`) instead of restating a background class at the call
+    // site, which `core.test.tsx`'s typed-variant guard also vetoes. The ink is the pin here,
+    // together with the absence of the retired layer: `text-vt-text` and `text-vt-background` are
+    // the design's `--fg` and `--bg`.
+    expect(playerDetail).not.toContain("bg-vt-panel");
+    expect(playerDetail).not.toContain("bg-vt-raised");
+    expect(playerDetail).not.toMatch(/<Card\b[^>]*bg-vt-/s);
+    expect(playerDetail).toContain("text-vt-text");
     expect(playerDetail).toContain("text-vt-muted");
+    expect(playerDetail).toContain("text-vt-background");
+    expect(playerDetail).not.toContain("text-white");
     expect(playerDetail).not.toContain("bg-slate-900");
     expect(playerDetail).not.toContain("text-slate-200");
+    // The screen's two brand tones are the vendored design's own `--blue` and `--success`
+    // (voleytrack.css:17-18); its remaining two breakdown tones have no design counterpart at
+    // all, so they keep their raw Tailwind hues and are NOT repainted with a "closest" token.
+    expect(playerDetail).toContain("bg-vt-blue");
+    expect(playerDetail).toContain("bg-vt-success");
 
     for (const filePath of [playerSelectionModalPath, matchSetupPath, scoringConsolePath, pointEntryPath]) {
       const source = readFileSync(filePath, "utf8");
@@ -302,20 +319,61 @@ describe("design tokens", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("keeps the auth, layout and dashboard surfaces free of raw colour literals", () => {
+  // Widened one group at a time, each group measured with THIS pattern (and this file's own
+  // `.tsx`-per-directory collection, which includes `.test.tsx`) BEFORE it was added. A group
+  // whose measured count was non-zero was left out and reported rather than the pattern being
+  // loosened to admit it. Current measurement:
+  //
+  //   group                    files  offenders  coverage
+  //   features/auth                4          0  guarded (since the first slice)
+  //   layouts                      3          0  guarded (since the first slice)
+  //   DashboardPage.tsx            1          0  guarded (since the first slice)
+  //   features/scoring            11          0  guarded (added by this slice)
+  //   components/states            2          0  guarded (added by this slice)
+  //   features/public             38          4  NOT guarded: LiveMatchPresentation.tsx:73,302,303 and
+  //                                             TournamentBracket.tsx:85 cite the vendored design's own
+  //                                             hex/rgba literals in explanatory comments. Real colour
+  //                                             usage there is 0 lines; the guard is line-based with no
+  //                                             comment stripping, and adding comment-awareness is a
+  //                                             change to the guard's contract, not to its pattern.
+  //   features/admin              39          1  NOT guarded: AdminTeamShell.tsx:59 cites the design's
+  //                                             `background:#3b82f6` in a comment.
+  //   components/primitives       21         19  NOT guarded: core.test.tsx asserts the token literals
+  //                                             themselves (lines 178-179, 705-719, 735, 748-749, 779,
+  //                                             974-975). A test that pins `--color-vt-*` values cannot
+  //                                             be scanned by a pattern that bans those values.
+  //   components/navigation        2          1  NOT guarded: Sidebar.tsx:81 cites the design's
+  //                                             `.nav-item.active{...color:#0b1220}` in a comment.
+  //   pages                        3          1  NOT guarded: pages/AdminPage.tsx:47 still carries a raw
+  //                                             `text-white` on the admin dashboard card title. That is
+  //                                             live colour usage and a real finding; it is reported, not
+  //                                             fixed here, because this guard may not be the change that
+  //                                             edits the screen it measures.
+  it("keeps the auth, layout, dashboard, scoring and state surfaces free of raw colour literals", () => {
     const authDir = fileURLToPath(new URL("../features/auth", import.meta.url));
     const layoutsDir = fileURLToPath(new URL("../layouts", import.meta.url));
     const dashboardPagePath = fileURLToPath(new URL("../features/public/DashboardPage.tsx", import.meta.url));
+    const scoringDir = fileURLToPath(new URL("../features/scoring", import.meta.url));
+    const statesDir = fileURLToPath(new URL("../components/states", import.meta.url));
 
     const tsxIn = (directory: string): string[] =>
       readdirSync(directory)
         .filter((name) => name.endsWith(".tsx"))
         .map((name) => `${directory}/${name}`);
 
-    const guarded = [...tsxIn(authDir), ...tsxIn(layoutsDir), dashboardPagePath];
+    const guarded = [
+      ...tsxIn(authDir),
+      ...tsxIn(layoutsDir),
+      ...tsxIn(scoringDir),
+      ...tsxIn(statesDir),
+      dashboardPagePath,
+    ];
 
     // A guard that matches zero files is a broken guard, not a passing one.
     expect(guarded.length).toBeGreaterThan(0);
+    // The scoring and state groups are the ones this slice added; pin that the scoring group is
+    // really in scope, so a later edit cannot silently shrink the group back to the first three.
+    expect(guarded.filter((filePath) => filePath.startsWith(scoringDir)).length).toBeGreaterThan(0);
 
     // Raw hex (3 to 8 digits), rgb()/rgba(), and the disallowed Tailwind utility families.
     const forbidden = /#[0-9a-fA-F]{3,8}\b|rgba?\(|\b(?:text|bg|border)-white\b|\bbg-black\b|\bslate-/;
@@ -510,8 +568,15 @@ describe("design tokens", () => {
     // exclusions: vt-panel 19/12, vt-raised 13/7, vt-raised-border 5/3. vt-panel is one occurrence
     // and one file below its T25 ceiling, so the ceiling is tightened to the measured value; the
     // other two already sit exactly on their measured values and stay.
+    // The colour-alignment slice that followed T26 removed the last app-only panel occurrence
+    // from a public screen: the player ficha's hero banner, which the design renders as a
+    // `--surface` card (frontend/design/html/voleytrack.css:75), moved off `bg-vt-panel`, and the
+    // screen's breakdown tones that had exact design counterparts (`--blue`, `--success`) moved
+    // off the raw Tailwind hues. Measured with this guard's own patterns and exclusions: vt-panel
+    // 18/11, vt-raised 13/7, vt-raised-border 5/3, so vt-panel's ceiling drops to its measured
+    // value and the other two stay on theirs.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 19, baselineFiles: 12 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 18, baselineFiles: 11 },
       { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 13, baselineFiles: 7 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 5, baselineFiles: 3 },
     ];
