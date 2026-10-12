@@ -1,8 +1,10 @@
 import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { Card } from "../../components/primitives/Card";
 import { EmptyState } from "../../components/primitives/EmptyState";
 import { Filter, FilterGroup } from "../../components/primitives/FilterGroup";
+import { FilterPanel, FilterPanelSelect, FilterPanelToggle } from "../../components/primitives/FilterPanel";
 import { Num } from "../../components/primitives/Num";
 import { PageHeader } from "../../components/primitives/PageHeader";
 import { StatePill, type MatchStatus as PillStatus } from "../../components/primitives/StatePill";
@@ -16,13 +18,24 @@ import {
 
 type MatchesFilter = "all" | MatchStatus;
 
+/** The "all" value of the panel's own dimensions, as the design's empty option value. */
+const allTournaments = "";
+const allTeams = "";
+
 /**
  * The screen's pill group, in the design's order: its `.filters` row is the time window
- * (Todos / Hoy / Próximos, frontend/design/html/voleytrack-partidos.html) and the design's
- * status vocabulary adds the live and finished states it exposes in the filter panel
- * (`matches-status-filter`, same file: En vivo / Programado / Finalizado). The app's
- * fixture statuses are the union of both dimensions, and each one is a real button with
- * `aria-pressed` inside a labelled group.
+ * (Todos / Hoy / Próximos, frontend/design/html/voleytrack-partidos.html:46, `aria-label`
+ * "Ventana temporal") and the design's status vocabulary adds the live and finished states it
+ * exposes in the filter panel (`matches-status-filter`, same file: En vivo / Programado /
+ * Finalizado). The app's fixture statuses are the union of both dimensions, and each one is a
+ * real button with `aria-pressed` inside a labelled group.
+ *
+ * The design keeps BOTH structures on this screen, and they are two different dimensions: the
+ * `.filters` row is a quick single-choice control (its own `selectMatchTime` keeps exactly one
+ * pill pressed), while the panel holds the multi-dimensional `Estado` / `Torneo` / `Equipo`
+ * selects. The app has ONE single-choice status dimension, so it stays in the pill row and the
+ * panel carries the two dimensions the app renders nowhere else. Rendering the design's
+ * `Estado` select as well would be a second control for the same state.
  */
 const filterTabs = [
   { label: "Todos", value: "all" },
@@ -105,7 +118,44 @@ export function MatchesPage() {
     });
   };
 
-  const matches = visibleMatches(status);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [tournamentId, setTournamentId] = useState(allTournaments);
+  const [teamId, setTeamId] = useState(allTeams);
+
+  /**
+   * The panel's option lists come from the screen's WHOLE fixture set, not from the currently
+   * visible subset: the design lists every competition and every team its cards carry
+   * (voleytrack-partidos.html:51-52), so changing the status pill must not remove an option
+   * from the panel.
+   */
+  const everyMatch = visibleMatches("all");
+  const tournamentOptions = [
+    { label: "Todos", value: allTournaments },
+    ...[...new Map(everyMatch.map((match) => [match.tournamentId, tournamentName(match)])).entries()]
+      .map(([value, label]) => ({ label, value })),
+  ];
+  const teamPairs: [string, string][] = everyMatch.flatMap((match) => [
+    [match.homeTeamId, match.homeTeamName],
+    [match.awayTeamId, match.awayTeamName],
+  ]);
+  const teamOptions = [
+    { label: "Todos", value: allTeams },
+    ...[...new Map(teamPairs).entries()].map(([value, label]) => ({ label, value })),
+  ];
+
+  const matches = visibleMatches(status).filter(
+    (match) =>
+      (tournamentId === allTournaments || match.tournamentId === tournamentId) &&
+      (teamId === allTeams || match.homeTeamId === teamId || match.awayTeamId === teamId),
+  );
+
+  const clearFilters = () => {
+    setTournamentId(allTournaments);
+    setTeamId(allTeams);
+    // The design's `Limpiar filtros` also returns the pill row to its first pill
+    // (voleytrack-partidos.html:133-136).
+    setStatus("all");
+  };
 
   return (
     <StateBoundary>
@@ -113,9 +163,18 @@ export function MatchesPage() {
         {/*
          * Design: frontend/design/html/voleytrack.css:65-67 and
          * voleytrack-partidos.html:45 — `.page-head{margin-bottom:22px}` above the h1
-         * "Partidos" and its single description line.
+         * "Partidos", its single description line and the `Filtros` toggle in
+         * `.head-actions` (`aria-expanded` / `aria-controls="matches-filter-panel"`,
+         * voleytrack-partidos.html:45).
          */}
         <PageHeader
+          actions={
+            <FilterPanelToggle
+              controls="matches-filter-panel"
+              isOpen={isFilterOpen}
+              onToggle={() => setIsFilterOpen((current) => !current)}
+            />
+          }
           className="mb-[22px]"
           description="Filtros, estados y acceso a detalle en vivo. Click en cualquier card abre el Live Detail (1.06)."
           title="Partidos"
@@ -130,7 +189,8 @@ export function MatchesPage() {
          * The inverted light pill is the design's own active treatment, not a mistake: it is
          * the same `.filter.active` rule the dashboard and the admin screens use.
          * `FilterGroup`/`Filter` are that rule as primitives (labelled `role="group"`, real
-         * buttons, `aria-pressed`), so the group is not re-hand-rolled here.
+         * buttons, `aria-pressed`), so the group is not re-hand-rolled here. The design keeps
+         * this row alongside the panel; the panel's own dimensions are the two below.
          */}
         <FilterGroup aria-label="Filtrar partidos por estado">
           {filterTabs.map((filter) => (
@@ -145,19 +205,37 @@ export function MatchesPage() {
         </FilterGroup>
 
         {/*
-         * Design: voleytrack-partidos.css:18-19 (.match-results-count) — the panel footer's
-         * mono 11px result count with the number in --fg. It is the design's only result
-         * count, so it is kept as the design's own element; `aria-live="polite"` reports the
-         * count changing with the filter.
+         * Design: the collapsible `#matches-filter-panel` with its `.match-filter-grid` of
+         * labelled selects and its `.match-filter-footer` (count + `Limpiar filtros`),
+         * voleytrack-partidos.html:47-58. The design's third control, `Estado`, is not
+         * rendered: the app's single status dimension is the pill row above, and a second
+         * control for the same state would be two controls for one value.
          */}
-        <p
-          aria-live="polite"
-          className="mb-4 font-mono text-[11px] font-bold text-vt-muted"
-          data-testid="matches-results-count"
+        <FilterPanel
+          count={matches.length}
+          countPlural="partidos"
+          countSingular="partido"
+          countTestId="matches-results-count"
+          id="matches-filter-panel"
+          isOpen={isFilterOpen}
+          onClear={clearFilters}
+          onClose={() => setIsFilterOpen(false)}
         >
-          <strong className="text-vt-text">{matches.length}</strong>{" "}
-          {matches.length === 1 ? "partido" : "partidos"}
-        </p>
+          <FilterPanelSelect
+            id="matches-tournament-filter"
+            label="Torneo"
+            onChange={setTournamentId}
+            options={tournamentOptions}
+            value={tournamentId}
+          />
+          <FilterPanelSelect
+            id="matches-team-filter"
+            label="Equipo"
+            onChange={setTeamId}
+            options={teamOptions}
+            value={teamId}
+          />
+        </FilterPanel>
 
         {matches.length === 0 ? (
           /*

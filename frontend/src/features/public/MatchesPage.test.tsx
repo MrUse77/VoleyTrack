@@ -118,6 +118,107 @@ describe("public matches", () => {
     expect(active[0]?.textContent).toBe("En vivo");
   });
 
+  /**
+   * The design's panel (frontend/design/html/voleytrack-partidos.html:45-58): a `Filtros`
+   * toggle in the page head whose `aria-expanded` exposes the state and whose
+   * `aria-controls` names the panel, over a panel that holds labelled `<select>`s. These
+   * tests measure the toggle's state, the panel's presence and the effect of actually
+   * applying a filter, which is what the pill-only screen could not show.
+   */
+  it("opens the design's panel from a keyboard-operable toggle that exposes its state", () => {
+    renderInteractive();
+    const toggle = container.querySelector<HTMLButtonElement>('[aria-controls="matches-filter-panel"]');
+    const panel = container.querySelector<HTMLElement>("#matches-filter-panel");
+
+    // A real button, so Enter/Space operate it and it is in the tab order.
+    expect(toggle?.tagName.toLowerCase()).toBe("button");
+    expect(toggle?.getAttribute("type")).toBe("button");
+    expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+    expect(panel?.hasAttribute("hidden")).toBe(true);
+
+    act(() => toggle?.click());
+
+    expect(toggle?.getAttribute("aria-expanded")).toBe("true");
+    expect(panel?.hasAttribute("hidden")).toBe(false);
+
+    act(() => toggle?.click());
+
+    expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+    expect(panel?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("labels every control in the panel and omits the design's third dimension", () => {
+    renderInteractive();
+    const tournamentSelect = container.querySelector<HTMLSelectElement>("#matches-tournament-filter");
+    const teamSelect = container.querySelector<HTMLSelectElement>("#matches-team-filter");
+
+    expect(container.querySelector('label[for="matches-tournament-filter"]')?.textContent).toBe("Torneo");
+    expect(container.querySelector('label[for="matches-team-filter"]')?.textContent).toBe("Equipo");
+    expect(tournamentSelect?.tagName.toLowerCase()).toBe("select");
+    expect(teamSelect?.tagName.toLowerCase()).toBe("select");
+
+    // The design's `Estado` select is deliberately absent: the app's single status dimension
+    // is the pill row, and two controls for one value would be a second source of truth.
+    expect(container.querySelector("#matches-status-filter")).toBeNull();
+  });
+
+  it("filters the grid by the panel's tournament dimension and reports the new count", () => {
+    renderInteractive();
+    const everyMatch = Object.values(PUBLIC_MATCHES).flat();
+    const tournament = PUBLIC_MATCHES.live[0].tournamentId;
+    const expected = everyMatch.filter((match) => match.tournamentId === tournament);
+
+    // The fixture must make the assertion meaningful: a filter that matches everything or
+    // nothing would pass without filtering.
+    expect(expected.length).toBeGreaterThan(0);
+    expect(expected.length).toBeLessThan(everyMatch.length);
+
+    const select = container.querySelector<HTMLSelectElement>("#matches-tournament-filter");
+    act(() => {
+      select!.value = tournament;
+      select!.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    expect(container.querySelectorAll('[data-testid="public-match-card"]')).toHaveLength(expected.length);
+    expect(container.querySelector('[data-testid="matches-results-count"]')?.textContent)
+      .toBe(`${expected.length} partidos`);
+  });
+
+  it("returns the pill row and the panel to their defaults from Limpiar filtros", () => {
+    renderInteractive("live");
+    const select = container.querySelector<HTMLSelectElement>("#matches-tournament-filter");
+    act(() => {
+      select!.value = PUBLIC_MATCHES.live[0].tournamentId;
+      select!.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    const clear = Array.from(container.querySelectorAll<HTMLButtonElement>("button"))
+      .find((button) => button.textContent === "Limpiar filtros");
+    act(() => clear?.click());
+
+    expect(select?.value).toBe("");
+    expect(navigate).toHaveBeenCalledOnce();
+    const navigation = navigate.mock.calls[0]?.[0] as {
+      search: (current: Record<string, string>) => Record<string, string>;
+    };
+    expect(navigation.search({ status: "live" })).toEqual({ status: "all" });
+  });
+
+  it("closes the panel on Escape and returns focus to the toggle", () => {
+    renderInteractive();
+    const toggle = container.querySelector<HTMLButtonElement>('[aria-controls="matches-filter-panel"]');
+
+    act(() => toggle?.click());
+    const select = container.querySelector<HTMLSelectElement>("#matches-team-filter");
+    act(() => select?.focus());
+    act(() => {
+      select?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    });
+
+    expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(toggle);
+  });
+
   it("keeps the all/default result set reachable through the design's Todos pill", () => {
     renderInteractive("live");
     const group = container.querySelector<HTMLElement>('[aria-label="Filtrar partidos por estado"]');
