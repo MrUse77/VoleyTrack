@@ -176,10 +176,14 @@ describe("design tokens", () => {
   it("normalizes generic page surfaces to canonical tokens without white/black leaks", () => {
     // `pages/LoginPage.tsx` left this list with T10: it was an orphan (the live `/login`
     // route renders `features/auth/LoginPage.tsx`), so the file is gone.
+    // The pattern now includes the design's `--bg` layer (`bg-vt-background`) as well: the
+    // planillero's setup blocks are the design's `.setup-team{background:var(--bg)}`
+    // (frontend/design/html/voleytrack-admin.css:214), which is a canonical token with no
+    // app-only counterpart, so a screen that uses it is more aligned, not less.
     for (const filePath of [scoringConsolePath, placeholderPagePath, adminPagePath, planilleroPagePath]) {
       const source = readFileSync(filePath, "utf8");
 
-      expect(source).toMatch(/bg-vt-(panel|surface|raised)/);
+      expect(source).toMatch(/bg-vt-(panel|surface|raised|background)/);
       expect(source).toContain("border-vt-border");
       expect(source).not.toContain("border-white/");
       expect(source).not.toContain("bg-white/");
@@ -189,7 +193,15 @@ describe("design tokens", () => {
     expect(readFileSync(scoringConsolePath, "utf8")).toMatch(/bg-vt-(panel|surface)/);
     expect(readFileSync(placeholderPagePath, "utf8")).toContain("bg-vt-panel");
     expect(readFileSync(adminPagePath, "utf8")).toContain("bg-vt-panel");
-    expect(readFileSync(planilleroPagePath, "utf8")).toContain("bg-vt-panel");
+
+    // The planillero's alignment replaced the whole control-room screen, so the app-only
+    // `bg-vt-panel` surfaces it was built from are gone. The assertion is inverted into an absence
+    // pin: the design's own layers (`--bg` on the setup blocks, `--surface` through the Card
+    // primitive) are what the source may carry now, and the retired token may not come back.
+    const planilleroSource = readFileSync(planilleroPagePath, "utf8");
+    expect(planilleroSource).toContain("bg-vt-background");
+    expect(planilleroSource).not.toContain("bg-vt-panel");
+    expect(planilleroSource).not.toContain("bg-vt-raised");
   });
 
   it("normalizes CreateTeamPage slate tokens to vt", () => {
@@ -485,8 +497,15 @@ describe("design tokens", () => {
     // their panels through the design's `--surface` / `--surface-2` layers. Measured with
     // this guard's own patterns and exclusions: vt-panel 28/14, vt-raised 13/7,
     // vt-raised-border 5/3, so every ceiling drops to its measured value.
+    // T25 then aligned the planillero, which was the largest single `bg-vt-panel` consumer left:
+    // the design's assigned-matches list is a `.match-list` of `--surface` match cards, its empty
+    // state is the design's `.card.empty-state`, and the setup view uses the design's `--bg`
+    // `.setup-team` blocks inside a structural card. Every one of the eight `bg-vt-panel`
+    // occurrences the screen carried left with it. Measured with this guard's own patterns and
+    // exclusions: vt-panel 20/13, vt-raised 13/7 and vt-raised-border 5/3 (both unchanged, so their
+    // ceilings stay).
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 28, baselineFiles: 14 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 20, baselineFiles: 13 },
       { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 13, baselineFiles: 7 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 5, baselineFiles: 3 },
     ];

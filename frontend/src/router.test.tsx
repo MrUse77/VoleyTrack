@@ -30,6 +30,7 @@ import { AdminTournamentEditPage } from "./features/admin/AdminTournamentEditPag
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
 import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
 import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
+import { PlanilleroPage } from "./pages/PlanilleroPage";
 import { ADMIN, PUBLIC_DASHBOARD, PUBLIC_MATCHES, PUBLIC_PLAYERS, PUBLIC_TEAMS, PUBLIC_TOURNAMENTS } from "./fixtures";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
 import { PlayersPage } from "./features/public/PlayersPage";
@@ -239,6 +240,22 @@ describe("router", () => {
     const matchSetupRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/matches/setup",
     );
+
+    // The planillero is ONE route with the design's two views: `#assigned-view` is `/planillero`
+    // itself and `#setup-view` is `?partido=<id>`, the same search-carries-the-view shape the
+    // scoring routes below use. So the path the admin navigation points at does not move, and the
+    // setup view is linkable and reloadable instead of living only in component state.
+    const planilleroRoute = adminChildren?.find(
+      (route) => route.fullPath === "/planillero",
+    );
+    expect(planilleroRoute?.options?.component).toBe(PlanilleroPage);
+    expect(planilleroRoute?.options?.validateSearch?.({ partido: ADMIN.matches[1].id })).toEqual({
+      partido: ADMIN.matches[1].id,
+    });
+    // A junk or empty value resolves to the list, because the design only reaches the setup view
+    // from a list entry and models no not-found state for it.
+    expect(planilleroRoute?.options?.validateSearch?.({ partido: "" })).toEqual({});
+    expect(planilleroRoute?.options?.validateSearch?.({ partido: 7 })).toEqual({});
 
     expect(matchSetupRoute?.options?.component).toBe(MatchSetupPage);
     expect(matchSetupRoute?.options?.validateSearch?.({ modal: "player-selection" })).toEqual({
@@ -673,6 +690,42 @@ describe("router", () => {
     });
     expect(window.location.pathname).toBe(`/admin/teams/${team.id}/stats`);
     expect(container.textContent).toContain("Jugadores");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the planillero's assigned matches and its setup view through the real router", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const match = ADMIN.matches.find((item) => item.status === "upcoming")!;
+
+    await act(async () => {
+      await router.navigate({ to: "/planillero" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/planillero");
+    expect(container.textContent).toContain("Partidos asignados");
+    expect(container.textContent).toContain(`${match.homeTeamName} vs ${match.awayTeamName}`);
+    // The design's match row is the entry point to the setup view, and here it is a real link.
+    expect(
+      container.querySelector(`a[data-match-id="${match.id}"]`)?.getAttribute("href"),
+    ).toBe(`/planillero?partido=${match.id}`);
+
+    await act(async () => {
+      await router.navigate({ to: "/planillero", search: { partido: match.id } });
+    });
+
+    expect(window.location.search).toBe(`?partido=${match.id}`);
+    expect(container.textContent).toContain("Setup");
+    expect(container.textContent).toContain("Partido seleccionado");
+    expect(container.textContent).toContain("contra");
+    expect(container.textContent).not.toContain("Partidos asignados");
+    expect(
+      container.querySelector('a[href="/admin/matches/' + match.id + '/scoring"]'),
+    ).not.toBeNull();
 
     await act(async () => root.unmount());
     container.remove();

@@ -162,6 +162,17 @@ const adminRoute = createRoute({
 const planilleroRoute = createRoute({
 	getParentRoute: () => adminShellRoute,
 	path: "/planillero",
+	// Design: `frontend/design/html/voleytrack-planillero.html` is ONE page with two views toggled by
+	// `hidden` (`#assigned-view` and `#setup-view`), and it remembers the selected match in the
+	// browser's own key/value store. The path is kept unchanged — `/planillero` is the admin
+	// navigation's own destination and the route `router.test.tsx` pins — and the selection is carried
+	// in the search string instead, the shape this app already uses for a view inside a screen
+	// (`?editar=` on the staff screen, `?modal=` on the console, `?step=` on point entry). The setup
+	// view therefore has a real URL: it can be linked to and reloaded, and "Volver a partidos" is an
+	// href rather than a script that unhides a div. A junk or empty value resolves to the list, because
+	// the design only reaches the setup view from a list entry and has no not-found state to model.
+	validateSearch: (search: Record<string, unknown>) =>
+		typeof search.partido === "string" && search.partido !== "" ? { partido: search.partido } : {},
 	component: PlanilleroPage,
 });
 

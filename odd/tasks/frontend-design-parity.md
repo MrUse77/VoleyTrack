@@ -1180,21 +1180,70 @@ readable against the completed record above; the carried-over items it lists wer
 
 ### Slice 4 — Scoring
 
-- [ ] **T25 — Planillero parity.** Replace the current control-room screen with the design's
-  assigned-matches list → selected match → setup flow, on the shared primitives instead of the
-  legacy system.
+- [x] **T25 — Planillero parity.** Done, and it is the last screen the pack specifies.
+  - The screen is now the design's two views: **`Partidos asignados`** as a labelled list of match rows
+    each carrying a title, a meta line and a `programado` state pill, with the design's empty state in a
+    structural `Card`; and **`Setup`** at `?partido=<id>`, a structural `Card` whose header names the
+    selected match and whose body holds the design's `setup-grid` of two team blocks around a
+    `contra` separator, ending in the form actions with an accent call to action.
+  - `/planillero` was kept because it is an admin nav destination pinned by the router test, and
+    `validateSearch` was added for `?partido=`. A junk or empty value falls back to the list. The four
+    scoring routes are untouched, and the call to action links into the console.
+  - **The invented demo data is gone, and that was the point.** Before, the screen rendered a
+    "Scorekeeper control room" with four hand-padded cards, eight uses of an app-only token, and a
+    fabricated Brazil, Italy, USA, Poland, France and Japan scoreboard that exists in no fixture. After,
+    the heading is `Partidos asignados` at 28px/900 over a three-row list measured at 816/88 tracks with
+    16px 18px padding and a 14px radius on the border token, three mono `programado` pills, and no
+    form control at all because the design's setup view has none. The setup grid measures
+    `420.72 / 40.56 / 420.72` at an 18px gap, team blocks at 16px weight 800, the separator in mono
+    11px/800 uppercase, actions with a 22px top margin over a 1px divider, `CardBody` at 18px 20px, and
+    a 40px accent pill call to action. The legacy system is no longer reachable from this screen, and
+    both captures re-ran byte-identical.
+  - **Three corrections to this document's brief, and the first one mattered.** The brief called this
+    "the last screen still built on the legacy `components/ui/*` system". That was **false**: the file
+    imported none of it, because an earlier task had already migrated those imports; what remained was
+    use of an app-only colour token, which is a different thing. The brief also assumed the setup view
+    has form fields whose label wiring needed preserving — it has no controls at all — and assumed the
+    screen has a `StateBoundary`, which it does not, like every other aligned admin-shell screen.
+  - The design's `renderMatches` sorts on a machine-readable timestamp that our fixture does not carry,
+    so **no sort was applied and no timestamp was invented**, which is the right call. The design's
+    match card reserves three tracks where this screen's row has two children, so the empty track was
+    dropped rather than left as a dead grid column.
+  - The admin matches fixture was extended with the public upcoming matches so the store the design
+    filters actually holds programmes; **no match was invented**. The empty state is therefore no longer
+    reachable at runtime and its evidence is the unit test, which is stated rather than implied.
+  - Ratchets lowered: `vt-panel` 28/14 → **20/13** with the ceiling following, `vt-raised` 13/7 and
+    `vt-raised-border` 5/3 unchanged, legacy `Card` unchanged at 24/8, and the all-`Card` floor 81 → 79.
+    `SectionShell` stayed at five consumers, so no new ratchet was added for it.
+  - Suite `49 files / 338 passed`, lint exit 0, build exit 0. Dev servers stopped with single-PID kills,
+    the port released, the other session's process untouched.
+  - Two facts reported rather than fixed, as asked: `SectionShell` has **five live consumers** (the four
+    spec-less scoring screens plus `PlaceholderPage`), and `pages/PlaceholderPage.tsx` is now reachable
+    from **no route at all**, so it is dead code that is documented rather than silently deleted.
+  - One genuine defect found in the tooling and deliberately left alone: two pre-existing probe fields in
+    the screenshot harness use a `\s+` pattern inside a template literal, so their output swallows the
+    letter `s`. Fixing it would change existing probe output, so it was reported instead of changed
+    mid-flight — the right restraint, and it is recorded here for the polish pass.
 
-#### Decision recorded: three scoring screens have no design spec, and that is now accepted
+#### Decision recorded: four scoring screens have no design spec, and that is now accepted
 
-The design pack contains **no scoring console, point-entry or post-match summary screen**. Its 21 HTML
-files are thirteen admin pages plus dashboard, equipos, jugadores, live, login, partidos, planillero and
-torneos. `planillero.html` models only two things: the assigned-matches list with its empty state, and
-the `Setup` view built from a `setup-grid` of two `setup-team` blocks around a `setup-versus` separator.
+The design pack contains **no scoring console, point-entry, post-match summary or match-setup screen**.
+Its 21 HTML files are thirteen admin pages plus dashboard, equipos, jugadores, live, login, partidos,
+planillero and torneos. `planillero.html` models only two things: the assigned-matches list with its
+empty state, and the `Setup` view built from a `setup-grid` of two `setup-team` blocks around a
+`setup-versus` separator.
 
-So `ScoringConsolePage`, `PointEntryPage` and `PostMatchSummaryPage` exist, work and are tested, but
-the pack specifies nothing for them to be aligned against. They were built from the **retired** `.op`
-artboards (manifest indices 26 to 30), which the project owner discarded as design authority at the
-start of this feature.
+So `ScoringConsolePage`, `PointEntryPage`, `PostMatchSummaryPage` **and `MatchSetupPage`** exist, work and
+are tested, but the pack specifies nothing for them to be aligned against. They were built from the
+**retired** `.op` artboards (manifest indices 26 to 30, whose pages are named `2.01 Match Setup`,
+`2.02 Scoring Console`, `2.03 Anotar Punto Flow` and `2.04 Post Match Summary`), which the project owner
+discarded as design authority at the start of this feature.
+
+**Correction to this record:** an earlier version of this section said three screens, and the owner's
+decision was taken on that number. The count is **four**, because `MatchSetupPage` is absent from the pack
+as well. The owner's decision still applies unchanged, since it was a decision about how to treat
+spec-less screens and not about the exact number; the corrected count is recorded here so the exception
+list is accurate.
 
 **Decision taken by the project owner: leave them as they are.** They function, they have tests, and
 they were built against a design source that existed at the time. They are recorded here as the only
@@ -1203,7 +1252,7 @@ their unaligned state for an oversight. Recovering the retired `.op` for them wa
 declined, as was commissioning new pack pages for the scoring flow.
 
 Consequence for the closing report: the claim at the end of this feature must be that every screen
-**the pack covers** is aligned, not that every screen in the application is. Those three are the
+**the pack covers** is aligned, not that every screen in the application is. Those four are the
 exception, and the exception is documented rather than glossed.
 
 ## Slice 1 close

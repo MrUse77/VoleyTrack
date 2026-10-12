@@ -41,13 +41,40 @@ export const ADMIN = Object.freeze({
       detail: upcomingCup,
     }),
   ]),
-  matches: Object.freeze([Object.freeze({
-    id: match.id, tournamentId: match.tournamentId, status: match.status, statusLabel: match.badgeLabel, scheduledLabel: match.scheduledLabel,
-    // `MatchFixture` carries only the tournament id, so the name the design's card prints is
-    // resolved here; a missing tournament prints an explicit gap rather than an empty label.
-    tournamentName: matchTournament?.name ?? "Torneo no disponible",
-    homeTeamId: match.homeTeamId, homeTeamName: match.homeTeamName, awayTeamId: match.awayTeamId, awayTeamName: match.awayTeamName, venue: match.venue,
-  })]),
+  // The design's planillero filters the admin match store on `status === 'Programado'`
+  // (frontend/design/html/voleytrack-planillero.html, `renderMatches`) and lists what it finds, so
+  // the store has to hold the programmed matches or that screen can only ever show its empty
+  // state. It held the live match alone, so the three scheduled matches the public fixtures already
+  // publish are registered here — appended after the live row, never reordered, so
+  // `ADMIN.matches[0]` stays the live match that `scoring-admin.test.ts` and the admin matches
+  // screen's own tests pin. Nothing new is invented: every field comes from the `MatchFixture` the
+  // public side already renders, and `tournamentName` is resolved the same way as the live row.
+  matches: Object.freeze([
+    Object.freeze({
+      id: match.id, tournamentId: match.tournamentId, status: match.status, statusLabel: match.badgeLabel, scheduledLabel: match.scheduledLabel,
+      // `MatchFixture` carries only the tournament id, so the name the design's card prints is
+      // resolved here; a missing tournament prints an explicit gap rather than an empty label.
+      tournamentName: matchTournament?.name ?? "Torneo no disponible",
+      homeTeamId: match.homeTeamId, homeTeamName: match.homeTeamName, awayTeamId: match.awayTeamId, awayTeamName: match.awayTeamName, venue: match.venue,
+    }),
+    ...PUBLIC_MATCHES.upcoming.map((scheduled) =>
+      Object.freeze({
+        id: scheduled.id,
+        tournamentId: scheduled.tournamentId,
+        status: scheduled.status,
+        statusLabel: scheduled.badgeLabel,
+        scheduledLabel: scheduled.scheduledLabel,
+        tournamentName:
+          PUBLIC_TOURNAMENTS.all.find((item) => item.id === scheduled.tournamentId)?.name ??
+          "Torneo no disponible",
+        homeTeamId: scheduled.homeTeamId,
+        homeTeamName: scheduled.homeTeamName,
+        awayTeamId: scheduled.awayTeamId,
+        awayTeamName: scheduled.awayTeamName,
+        venue: scheduled.venue,
+      }),
+    ),
+  ]),
   teams: teamRecords,
   players: playerRecords,
 } satisfies AdminFixtures);

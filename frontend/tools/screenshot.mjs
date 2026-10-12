@@ -1420,6 +1420,143 @@ const PROBE_SOURCE = `(async () => {
       }
     : null;
 
+  // Additive: the planillero area's own probes. New keys only - every key above keeps its name,
+  // order and shape, no existing strategy is reordered or redefined, and the exit codes are
+  // untouched. Both keys are null off the planillero routes, so every other capture is unchanged.
+  //
+  // The design models exactly two regions there (frontend/design/html/voleytrack-planillero.html):
+  // #assigned-view is a .match-list of .match-card.match-select rows (16px 18px padding, a 1px
+  // --border edge, a 14px radius on --surface, minmax(0,1fr) auto auto tracks at an 18px gap) and
+  // #setup-view is a .card whose .card-b holds the .setup-grid (1fr auto 1fr, 18px gap) around a
+  // .setup-versus separator, over the .form-actions row with the accent "Iniciar partido" control.
+  // Reading the resolved tracks, boxes, typography and the control's destination makes both regions
+  // machine-readable without an image.
+  const describeMatchRow = (row) => {
+    const cs = getComputedStyle(row);
+    const title = row.querySelector("h2");
+    return {
+      tag: row.tagName.toLowerCase(),
+      matchId: row.getAttribute("data-match-id"),
+      href: row.getAttribute("href"),
+      title: title ? (title.textContent || "").trim() : null,
+      meta: (row.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 80),
+      status: row.querySelector("[data-status]")?.getAttribute("data-status") ?? null,
+      paddingTop: cs.paddingTop,
+      paddingLeft: cs.paddingLeft,
+      borderRadius: cs.borderTopLeftRadius,
+      borderColor: cs.borderTopColor,
+      backgroundColor: cs.backgroundColor,
+      display: cs.display,
+      gridTemplateColumns: cs.gridTemplateColumns,
+    };
+  };
+  const assignedListElement = document.querySelector('[data-testid="planillero-assigned-matches"]');
+  const planilleroAssigned = assignedListElement
+    ? {
+        present: true,
+        tag: assignedListElement.tagName.toLowerCase(),
+        ariaLabel: assignedListElement.getAttribute("aria-label"),
+        itemCount: assignedListElement.querySelectorAll(":scope > li").length,
+        rows: Array.from(assignedListElement.querySelectorAll("[data-match-id]")).map(describeMatchRow),
+      }
+    : {
+        present: false,
+        // The design's other branch: .card.empty-state (#assigned-empty) with role="status".
+        emptyStateText: (() => {
+          const empty = document.querySelector('[data-testid="planillero-screen"] [role="status"]');
+          return empty ? (empty.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 120) : null;
+        })(),
+      };
+  const setupGridElement = document.querySelector('[data-testid="planillero-setup-grid"]');
+  const planilleroSetup = setupGridElement
+    ? (() => {
+        const gridStyle = getComputedStyle(setupGridElement);
+        const versus = document.querySelector('[data-testid="planillero-setup-versus"]');
+        const versusStyle = versus ? getComputedStyle(versus) : null;
+        const actions = document.querySelector('[data-testid="planillero-setup-actions"]');
+        const actionsStyle = actions ? getComputedStyle(actions) : null;
+        const cta = document.querySelector('[data-testid="planillero-start-match"]');
+        const ctaStyle = cta ? getComputedStyle(cta) : null;
+        const cardBody = document.querySelector('[data-testid="planillero-setup-card-body"]');
+        const cardBodyStyle = cardBody ? getComputedStyle(cardBody) : null;
+        return {
+          heading: (document.querySelector('[data-testid="planillero-screen"] h1')?.textContent || "").trim(),
+          eyebrow: (document.querySelector('[data-testid="planillero-screen"] p')?.textContent || "").trim(),
+          // The pageHeading.description key above reads the FIRST p of the heading's container, which
+          // is now the design's eyebrow, so the page-head meta line the design renders below the h1
+          // is reported here by name rather than left unmeasured.
+          meta: (
+            document.querySelector('[data-testid="planillero-screen"] header > div > p:last-of-type')
+              ?.textContent || ""
+          ).trim(),
+          gridTemplateColumns: gridStyle.gridTemplateColumns,
+          columnGap: gridStyle.columnGap,
+          textAlign: gridStyle.textAlign,
+          teams: Array.from(
+            setupGridElement.querySelectorAll('[data-testid="planillero-setup-team"]'),
+          ).map((team) => {
+            const cs = getComputedStyle(team);
+            return {
+              text: (team.textContent || "").trim(),
+              paddingTop: cs.paddingTop,
+              paddingLeft: cs.paddingLeft,
+              borderRadius: cs.borderTopLeftRadius,
+              borderColor: cs.borderTopColor,
+              backgroundColor: cs.backgroundColor,
+              fontSize: cs.fontSize,
+              fontWeight: cs.fontWeight,
+            };
+          }),
+          versus: versusStyle
+            ? {
+                text: (versus.textContent || "").trim(),
+                fontFamily: versusStyle.fontFamily,
+                fontSize: versusStyle.fontSize,
+                fontWeight: versusStyle.fontWeight,
+                textTransform: versusStyle.textTransform,
+                color: versusStyle.color,
+              }
+            : null,
+          actions: actionsStyle
+            ? {
+                display: actionsStyle.display,
+                justifyContent: actionsStyle.justifyContent,
+                marginTop: actionsStyle.marginTop,
+                paddingTop: actionsStyle.paddingTop,
+                borderTopWidth: actionsStyle.borderTopWidth,
+                borderTopColor: actionsStyle.borderTopColor,
+              }
+            : null,
+          cardBodyPadding: cardBodyStyle
+            ? {
+                paddingTop: cardBodyStyle.paddingTop,
+                paddingRight: cardBodyStyle.paddingRight,
+                paddingBottom: cardBodyStyle.paddingBottom,
+                paddingLeft: cardBodyStyle.paddingLeft,
+              }
+            : null,
+          startMatch: ctaStyle
+            ? {
+                tag: cta.tagName.toLowerCase(),
+                text: (cta.textContent || "").trim(),
+                href: cta.getAttribute("href"),
+                height: ctaStyle.height,
+                borderRadius: ctaStyle.borderRadius,
+                backgroundColor: ctaStyle.backgroundColor,
+                color: ctaStyle.color,
+                fontSize: ctaStyle.fontSize,
+                fontWeight: ctaStyle.fontWeight,
+              }
+            : null,
+          // The design puts no form control on this screen at all (#setup-home / #setup-away are
+          // plain text blocks), so the count is reported rather than left implicit.
+          formControlCount: document.querySelectorAll(
+            'main input:not([type=hidden]), main select, main textarea',
+          ).length,
+        };
+      })()
+    : null;
+
   return {
     title: document.title,
     readyState: document.readyState,
@@ -1526,6 +1663,13 @@ const PROBE_SOURCE = `(async () => {
       adminTeamSquad,
       adminTeamRegions,
       adminTeamTabs,
+      // Additive keys: new names only, every key above is unchanged. planilleroAssigned reports the
+      // design's assigned-matches list (or its .card.empty-state branch) and planilleroSetup the
+      // setup view's grid, its two team blocks, the contra separator, the .form-actions rule and
+      // the "Iniciar partido" control together with the screen's form-control count, which is zero
+      // because the design models no control here.
+      planilleroAssigned,
+      planilleroSetup,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),
