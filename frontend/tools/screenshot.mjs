@@ -303,6 +303,14 @@ function electronEntry(opts, url, output) {
 // Electron side
 // ---------------------------------------------------------------------------------------
 
+// ESCAPING RULE FOR EVERYTHING BELOW. `PROBE_SOURCE` is a template literal, so a single
+// backslash is CONSUMED by the template before `evaluate()` ever sees it: a pattern written with
+// one backslash before the `s` reaches the page as `/s+/g`, and the probe then rewrites the letter
+// "s" out of every label it reports. Two fields did exactly that (`adminTournamentCards[].figures`
+// and `adminTournamentTabs[].tabs[].label`, the `"equipos"` -> `"equipo "` corruption). Every
+// regex escape inside this literal is therefore written with a doubled backslash. When adding a
+// probe, re-check the literal for odd-length backslash runs: a run of 2n backslashes yields n
+// escaped characters, while an odd run leaves its last backslash escaping the next character.
 const PROBE_SOURCE = `(async () => {
   const round = (n) => Math.round(n * 100) / 100;
   const rect = (el) => {
@@ -1197,7 +1205,7 @@ const PROBE_SOURCE = `(async () => {
       ariaLabel: card.getAttribute("aria-label"),
       eyebrow: (card.querySelector("small")?.textContent || "").trim(),
       heading: (card.querySelector("h3")?.textContent || "").trim(),
-      figures: (card.querySelector("p")?.textContent || "").trim().replace(/\s+/g, " "),
+      figures: (card.querySelector("p")?.textContent || "").trim().replace(/\\s+/g, " "),
       badgeCount: card.querySelectorAll("span[class*='rounded-full']").length,
       badges: Array.from(card.querySelectorAll("span[class*='rounded-full']")).map((badge) =>
         (badge.textContent || "").trim(),
@@ -1277,7 +1285,7 @@ const PROBE_SOURCE = `(async () => {
         tabs: Array.from(adminTournamentTabsElement.querySelectorAll("a")).map((tab) => {
           const cs = getComputedStyle(tab);
           return {
-            label: (tab.textContent || "").trim().replace(/\s+/g, " "),
+            label: (tab.textContent || "").trim().replace(/\\s+/g, " "),
             href: tab.getAttribute("href"),
             isCurrent: tab.getAttribute("aria-current") === "page",
             backgroundColor: cs.backgroundColor,
