@@ -12,15 +12,32 @@ import {
 	type PlayerStatBreakdownFixture,
 } from "../../fixtures";
 
+/**
+ * The design this breakdown is modelled on is the vendored `.stat-bar`
+ * (frontend/design/html/voleytrack-admin.css:300-305): its value ink (`.stat-bar-val`) and its
+ * fill (`.stat-bar i`) are both `var(--accent)`.
+ *
+ * `block` and `serve` used to carry the raw Tailwind palette hues `blue-500` / `green-500`, which
+ * are close to — but not the same colour as — the design's own `--blue` and `--success`
+ * (frontend/design/html/voleytrack.css:17-18, already tokened here as `--color-vt-blue` and
+ * `--color-vt-success`). Tailwind v4 declares its palette in oklch, so `blue-500` / `green-500`
+ * resolve to a slightly different sRGB than the design's hexes; the harness capture measured the
+ * shift on the two affected bars, so this is a real colour correction, not a no-op rename.
+ *
+ * `defense` and `reception` have NO design counterpart and are deliberately left alone rather
+ * than repainted with a "closest" token: nothing under design/html declares a purple or a pink
+ * hue, and the only bar tones the design owns are `--accent`, `--blue`, `--success` and
+ * `--danger`. Choosing a colour for them is a design decision, not a colour-consistency one.
+ */
 const statToneClasses: Record<
 	PlayerStatBreakdownFixture["tone"],
 	Readonly<{ bar: string; text: string }>
 > = {
 	attack: { bar: "bg-vt-accent", text: "text-vt-accent" },
-	block: { bar: "bg-blue-500", text: "text-blue-500" },
+	block: { bar: "bg-vt-blue", text: "text-vt-blue" },
 	defense: { bar: "bg-purple-500", text: "text-purple-500" },
 	reception: { bar: "bg-pink-500", text: "text-pink-500" },
-	serve: { bar: "bg-green-500", text: "text-green-500" },
+	serve: { bar: "bg-vt-success", text: "text-vt-success" },
 };
 
 function findPlayer(id: string) {
@@ -96,14 +113,34 @@ export function PlayerDetailPage() {
 				className="w-full max-w-[1104px] min-[1428px]:ml-3"
 				data-testid="player-detail-content"
 			>
+				{/*
+				 * Colour-only alignment with the vendored design; the box, the absolute geometry and
+				 * every breakpoint class below are unchanged.
+				 *   hero surface: the `Card` primitive's own default (`variant="surface"`), which is the
+				 *     design's `--surface` layer — frontend/design/html/voleytrack.css:75
+				 *     `.card{background:var(--surface);border:1px solid var(--border);...}`. This call
+				 *     site used to override it with the app-only panel layer, which the pack never
+				 *     defined; that override is gone and the surface now comes from the primitive's
+				 *     default variant alone. A call site may not name a `bg-vt-*` background on `Card`
+				 *     (core.test.tsx pins that), so the design line is cited here instead.
+				 *   name / number / opponent ink (was the raw white utility) -> the design's `--fg`
+				 *     ink: voleytrack.css:27 `body{...color:var(--fg);...}`, which the `h1` of
+				 *     voleytrack.css:66 `.page-head h1` inherits
+				 *   ink on the accent avatar fill (was the raw white utility) -> the design's `--bg`,
+				 *     the ink every accent fill on the pack uses, including the accent-filled number
+				 *     badge this avatar is: voleytrack.css:71 `.btn.accent`, :83 `.chip.accent`,
+				 *     :55 `.nav-item.active` and voleytrack-admin.css:268 `.squad-item .num-badge`
+				 * The decorative number is that same `--fg` ink at 3%: the vendored ficha has no
+				 * watermark, so only the colour role maps across; the 3% alpha is this screen's own.
+				 */}
 				<Card
 					aria-labelledby="player-name"
-					className="relative overflow-hidden border-transparent bg-vt-panel p-6 sm:p-8 min-[1416px]:h-[180px] min-[1416px]:p-0"
+					className="relative overflow-hidden border-transparent p-6 sm:p-8 min-[1416px]:h-[180px] min-[1416px]:p-0"
 					data-testid="player-hero"
 				>
 					<span
 						aria-hidden="true"
-						className="pointer-events-none absolute -right-1 -top-5 hidden text-[220px] font-black leading-none text-white/[0.03] min-[720px]:block"
+						className="pointer-events-none absolute -right-1 -top-5 hidden text-[220px] font-black leading-none text-vt-text/[0.03] min-[720px]:block"
 					>
 						{player.number}
 					</span>
@@ -111,7 +148,7 @@ export function PlayerDetailPage() {
 					<div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center min-[1416px]:contents">
 						<div
 							aria-hidden="true"
-							className="flex size-[100px] shrink-0 items-center justify-center rounded-full bg-vt-accent text-[40px] font-black leading-none text-white min-[1416px]:absolute min-[1416px]:left-10 min-[1416px]:top-10"
+							className="flex size-[100px] shrink-0 items-center justify-center rounded-full bg-vt-accent text-[40px] font-black leading-none text-vt-background min-[1416px]:absolute min-[1416px]:left-10 min-[1416px]:top-10"
 						>
 							{player.number}
 						</div>
@@ -134,7 +171,7 @@ export function PlayerDetailPage() {
 							</nav>
 
 							<h1
-								className="mt-3 text-[32px] font-black leading-10 text-white min-[1416px]:absolute min-[1416px]:left-[164px] min-[1416px]:top-[50px] min-[1416px]:mt-0 min-[1416px]:text-[36px]"
+								className="mt-3 text-[32px] font-black leading-10 text-vt-text min-[1416px]:absolute min-[1416px]:left-[164px] min-[1416px]:top-[50px] min-[1416px]:mt-0 min-[1416px]:text-[36px]"
 								id="player-name"
 							>
 								{player.fullName}
@@ -249,13 +286,13 @@ export function PlayerDetailPage() {
 											{liveRouteAvailable ? (
 												<Link
 													aria-label={`Ver ${opponent} en vivo`}
-													className="block truncate text-base font-bold leading-5 text-white hover:text-vt-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
+													className="block truncate text-base font-bold leading-5 text-vt-text hover:text-vt-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
 													to={`/matches/${match.id}/live` as string}
 												>
 													vs {opponent}
 												</Link>
 											) : (
-												<p className="truncate text-base font-bold leading-5 text-white">
+												<p className="truncate text-base font-bold leading-5 text-vt-text">
 													vs {opponent}
 												</p>
 											)}
