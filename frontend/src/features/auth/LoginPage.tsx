@@ -1,64 +1,191 @@
-import { useState } from "react";
-import { BrandingPanel } from "./BrandingPanel";
+import { type ChangeEvent, type FormEvent, useState } from "react";
+import { Field } from "../../components/primitives/Field";
 
-const fieldClassName =
-	"mt-2 block h-12 w-full rounded-lg border border-vt-border-2 bg-vt-surface px-4 text-sm text-vt-text outline-none placeholder:text-vt-muted-2 focus:border-vt-accent";
-const labelClassName = "block text-sm font-bold leading-4 text-vt-label";
+/**
+ * Design source: frontend/design/html/voleytrack-login.html — the pack's model of the
+ * auth screen, which is the only screen it draws outside the shell. This screen keeps its
+ * own control spec rather than the shared admin one: `.input{height:48px;border-radius:10px;
+ * border:1px solid var(--border-2);background:var(--surface);padding:0 16px;font-size:14px}`
+ * (line 57) against the admin `input{height:46px;padding:0 14px;border-radius:12px;
+ * border:1px solid var(--border);background:var(--bg);font-size:13px}`
+ * (voleytrack-admin.css:184) that `fieldControlClasses` implements. `Field` still owns the
+ * label/id/error wiring; only the box belongs to this screen.
+ */
+const loginFieldClasses =
+	"block h-12 w-full rounded-vt-sm border border-vt-border-2 bg-vt-surface px-4 text-sm text-vt-text outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-vt-muted-2 focus:border-vt-accent focus:shadow-vt-focus-ring aria-invalid:border-vt-danger";
+
+/**
+ * Design source: voleytrack-login.html:58-59 —
+ *   `.btn-primary{width:100%;height:48px;border-radius:10px;border:1px solid var(--accent);
+ *    background:var(--accent);color:<canvas ink>;font-weight:800;font-size:14px;
+ *    letter-spacing:.01em;transition:.15s}`
+ *   `.btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px)}`
+ * The elided ink is the design's dark canvas tone, i.e. `vt-background`; its literal cannot be
+ * written here because src/styles/tokens.test.ts bans raw colour literals in this directory.
+ * This is deliberately not the app's `Button`/`buttonClasses` pill: the shared `.btn`
+ * (voleytrack.css:69) is a 40px fully-rounded control at 700 weight, and the design gives
+ * the login submit its own 48px, 10px-radius, 800-weight box.
+ */
+const loginSubmitClasses =
+	"mt-[18px] block h-12 w-full rounded-vt-sm border border-vt-accent bg-vt-accent text-sm font-extrabold tracking-[0.01em] text-vt-background transition-[filter,transform] duration-150 hover:-translate-y-px hover:brightness-[1.05] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent";
+
+type LoginErrors = {
+	email?: string;
+	password?: string;
+};
+
+/**
+ * The design's own two checks and their messages (voleytrack-login.html:88-90). The app
+ * had no validation on this screen before, so these are the spec's rules rather than a
+ * migration: a trimmed email must contain an `@`, and a trimmed password must be at least
+ * three characters. The prototype's success branch navigates to the admin console; this
+ * app has no session store and no auth destination to reach, so a valid submit only clears
+ * the errors and stops — no destination was added.
+ */
+function validateLogin(email: string, password: string): LoginErrors {
+	const errors: LoginErrors = {};
+
+	if (!email.includes("@")) {
+		errors.email = "Ingresá un email válido";
+	}
+
+	if (password.length < 3) {
+		errors.password = "Contraseña muy corta";
+	}
+
+	return errors;
+}
+
+/**
+ * `Field` renders the error and derives `aria-invalid` from it. Wrapping the text in
+ * `role="alert"` is this codebase's convention for a form error (CreatePlayerPage.tsx:99),
+ * so a failed submit is announced as well as described. The design's single message slot
+ * below the button (voleytrack-login.html:86) is realised as the failing field's error line
+ * instead, because the app owns exactly one field-error concept.
+ */
+function errorFeedback(message: string | undefined) {
+	return message ? { error: <span role="alert">{message}</span> } : {};
+}
 
 export function LoginPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [errors, setErrors] = useState<LoginErrors>({});
+
+	const updateField = (field: keyof LoginErrors, setValue: (value: string) => void) => (
+		event: ChangeEvent<HTMLInputElement>,
+	) => {
+		setValue(event.target.value);
+		setErrors((current) => {
+			if (!current[field]) {
+				return current;
+			}
+
+			const nextErrors = { ...current };
+			delete nextErrors[field];
+			return nextErrors;
+		});
+	};
+
+	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		const nextErrors = validateLogin(email.trim(), password.trim());
+		setErrors(nextErrors);
+
+		if (Object.keys(nextErrors).length > 0) {
+			const firstInvalidId = nextErrors.email ? "login-email" : "login-password";
+			event.currentTarget.querySelector<HTMLElement>(`#${firstInvalidId}`)?.focus();
+		}
+	};
 
 	return (
-		<main className="grid min-h-svh w-full grid-cols-1 bg-vt-background text-vt-text lg:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]">
-			<BrandingPanel />
-			<section className="bg-vt-background">
-				<form
-					className="w-full px-6 py-12 sm:px-10 sm:py-16 lg:px-[20%] lg:py-[200px]"
-					onSubmit={(event) => event.preventDefault()}
-				>
-					<h1 className="m-0 max-w-[480px] text-[28px] font-black leading-10 text-vt-text sm:text-[32px]">
-						Bienvenido de vuelta
-					</h1>
-					<p className="mt-[10px] mb-0 max-w-[480px] text-sm leading-6 text-vt-muted">
-						Ingresa tus credenciales para acceder al sistema.
-					</p>
+		/* Design: `.login-wrap{display:grid;grid-template-columns:640px 1fr;min-height:100vh}`
+		   (line 42) with the panel hidden below 920px (line 62). The design pins the 640px
+		   branding column exactly, where the app previously used a 4fr/5fr split that only
+		   coincides with 640/800 at a 1440px viewport. */
+		<main
+			className="grid min-h-svh w-full grid-cols-1 bg-vt-background text-vt-text min-[920px]:grid-cols-[640px_minmax(0,1fr)]"
+			data-testid="login-screen"
+		>
+			{/* Design: `.branding{background:var(--surface);display:flex;flex-direction:column;
+			   justify-content:center;padding:80px;border-right:1px solid var(--border)}` (line 43).
 
-					<div className="mt-[36px] w-full max-w-[480px]">
-						<label className={labelClassName} htmlFor="login-email">
-							Email
-						</label>
+			   The panel is rendered here rather than through `BrandingPanel` on purpose: that
+			   component is the retired canvas's panel, still used by ChangePasswordPage, and the
+			   pack models no change-password screen at all, so moving this design into the shared
+			   panel would restyle an unspecced screen.
+
+			   The mark is the app's existing emoji: the design's `.vb` mark is `imagen.png` under
+			   a hardcoded filter chain (lines 44 and 73), and no equivalent asset ships in the app. */}
+			<section
+				className="hidden flex-col justify-center border-r border-vt-border bg-vt-surface p-20 min-[920px]:flex"
+				data-testid="login-branding"
+			>
+				<div className="flex items-center gap-3 text-[48px] font-black tracking-[-0.03em] text-vt-text">
+					{/* The design's mark is an image filling a 54px box (lines 44-45 and 73), so the app's
+					    emoji mark inherits the wordmark's size and centres in the same box. */}
+					<span aria-hidden="true" className="grid size-[54px] shrink-0 place-items-center">
+						🏐
+					</span>
+					VoleyTrack
+				</div>
+				{/* Design: `.brand-claim{color:var(--muted);font-size:16px;margin-top:16px;max-width:32ch}`
+				   (line 46). The design's own sentence opens with "Panel de administración —",
+				   which this app cannot claim: it has ONE login for every role. The role frame is
+				   dropped and the design's own list of areas kept. */}
+				<p className="mt-4 mb-0 max-w-[32ch] text-base text-vt-muted">
+					Gestión de staff, equipos, jugadores y torneos.
+				</p>
+			</section>
+
+			{/* Design: `.form-col{display:flex;align-items:center;justify-content:center;padding:40px;
+			   background:var(--bg)}` (line 50) holding `.form-box{width:100%;max-width:480px}` (line 51). */}
+			<section className="flex items-center justify-center bg-vt-background p-10">
+				<form className="w-full max-w-[480px]" noValidate onSubmit={handleSubmit}>
+					{/* Design: `.form-box h1{font-size:32px;font-weight:900;letter-spacing:-0.02em;margin:0}`
+					   (line 52), with the body's inherited line-height. The design's heading is the
+					   ROLE it was drawn for ("Admin", line 78) and this app has one login for every
+					   role, so the slot carries the screen's own name instead — the same words the
+					   design puts on its submit control. */}
+					<h1 className="m-0 text-[32px] font-black tracking-[-0.02em] text-vt-text">Iniciar sesión</h1>
+					{/* Design: `.form-box .sub{color:var(--muted);font-size:14px;margin:8px 0 32px}` (line 53).
+					   Its second sentence, "Demo: cualquier email válido.", describes the prototype's
+					   prefilled credentials and is dropped with them. */}
+					<p className="mt-2 mb-8 text-sm text-vt-muted">Acceso restringido.</p>
+
+					{/* The design prefills `value="admin@voleytrack.com"` (line 82), which is both a
+					    role-specific account and a credential a production login must never ship, so no
+					    field is prefilled. Its placeholder is the same admin address, so the example keeps
+					    the design's shape and drops the role. */}
+					<Field id="login-email" label="Email" {...errorFeedback(errors.email)}>
 						<input
-							className={fieldClassName}
-							id="login-email"
+							className={loginFieldClasses}
 							name="email"
-							onChange={(event) => setEmail(event.target.value)}
-							placeholder="planillero@voleytrack.com"
+							onChange={updateField("email", setEmail)}
+							placeholder="usuario@voleytrack.com"
 							type="email"
 							value={email}
 						/>
+					</Field>
+
+					{/* Design: the second label carries `style="margin-top:14px"` (line 83), the only
+					   gap the prototype gives between the two controls. */}
+					<div className="mt-[14px]">
+						<Field id="login-password" label="Contraseña" {...errorFeedback(errors.password)}>
+							<input
+								className={loginFieldClasses}
+								name="password"
+								onChange={updateField("password", setPassword)}
+								placeholder="••••••••"
+								type="password"
+								value={password}
+							/>
+						</Field>
 					</div>
 
-					<div className="mt-6 w-full max-w-[480px]">
-						<label className={labelClassName} htmlFor="login-password">
-							Contraseña
-						</label>
-						<input
-							className={fieldClassName}
-							id="login-password"
-							name="password"
-							onChange={(event) => setPassword(event.target.value)}
-							placeholder="••••••••"
-							type="password"
-							value={password}
-						/>
-					</div>
-
-					<button
-						className="mt-10 block h-12 w-full max-w-[480px] rounded-lg bg-vt-accent text-sm font-bold text-vt-background transition-colors hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
-						type="submit"
-					>
-						Iniciar Sesión
+					<button className={loginSubmitClasses} type="submit">
+						Iniciar sesión →
 					</button>
 				</form>
 			</section>

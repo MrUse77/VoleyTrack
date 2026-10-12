@@ -1557,6 +1557,130 @@ const PROBE_SOURCE = `(async () => {
       })()
     : null;
 
+  // Additive: the login screen's own probes. New keys only - every key above keeps its name,
+  // order and shape, no existing strategy is reordered or redefined, and the exit codes are
+  // untouched. The key is null off the login route, so every other capture is unchanged.
+  //
+  // Design: frontend/design/html/voleytrack-login.html. The .login-wrap rule is
+  // display:grid with grid-template-columns 640px 1fr and min-height 100vh (line 42), whose
+  // first column is .branding - the --surface fill with a 1px --border right edge and 80px
+  // padding (line 43), a 48px/900 -0.03em wordmark beside a 54px mark (lines 44-45) and a
+  // 16px --muted claim capped at 32ch (line 46) - and whose second is .form-col (centred,
+  // 40px padding, the --bg canvas, line 50) holding a 480px .form-box (line 51) with a
+  // 32px/900 -0.02em heading (line 52), a 14px --muted sub with an 8px/32px vertical margin
+  // (line 53), 48px/10px controls (line 57) and the 48px/10px accent submit with its #0b1220
+  // ink (line 58). Reading the resolved columns, boxes, typography, control geometry and the
+  // submit's fill and ink makes the alignment machine-readable without an image.
+  // The gate is the screen's own email field id, which both the pre-alignment screen and
+  // the aligned one render, so the same key reports the before and the after of this work
+  // instead of appearing only after the change.
+  const loginEmailControl = document.querySelector("#login-email");
+  const loginScreenElement = loginEmailControl ? loginEmailControl.closest("main") : null;
+  const loginScreen = loginScreenElement
+    ? (() => {
+        const boxOf = (el) => {
+          if (!el) return null;
+          const cs = getComputedStyle(el);
+          return {
+            ...rect(el),
+            paddingTop: cs.paddingTop,
+            paddingRight: cs.paddingRight,
+            paddingBottom: cs.paddingBottom,
+            paddingLeft: cs.paddingLeft,
+            backgroundColor: cs.backgroundColor,
+            borderRightWidth: cs.borderRightWidth,
+            borderRightColor: cs.borderRightColor,
+            display: cs.display,
+            flexDirection: cs.flexDirection,
+            justifyContent: cs.justifyContent,
+          };
+        };
+        const textOf = (el) => (el ? (el.textContent || "").trim().replace(/\\s+/g, " ") : null);
+        const typographyOf = (el) => {
+          if (!el) return null;
+          const cs = getComputedStyle(el);
+          return {
+            text: textOf(el),
+            fontSize: cs.fontSize,
+            fontWeight: cs.fontWeight,
+            lineHeight: cs.lineHeight,
+            letterSpacing: cs.letterSpacing,
+            color: cs.color,
+            marginTop: cs.marginTop,
+            marginBottom: cs.marginBottom,
+            maxWidth: cs.maxWidth,
+          };
+        };
+        const branding = loginScreenElement.querySelector("section");
+        const brandStats = loginScreenElement.querySelectorAll('[data-testid="login-brand-stat"]');
+        const heading = loginScreenElement.querySelector("h1");
+        const submit = loginScreenElement.querySelector('button[type="submit"]');
+        const submitStyle = submit ? getComputedStyle(submit) : null;
+        const errors = Array.from(loginScreenElement.querySelectorAll('[role="alert"]')).map(textOf);
+        return {
+          columns: {
+            gridTemplateColumns: getComputedStyle(loginScreenElement).gridTemplateColumns,
+            minHeight: getComputedStyle(loginScreenElement).minHeight,
+            children: Array.from(loginScreenElement.children).map((child) => ({
+              testId: child.getAttribute("data-testid"),
+              ...boxOf(child),
+            })),
+          },
+          branding: branding
+            ? {
+                ...boxOf(branding),
+                // The first and last element children are the mark/wordmark block and the
+                // claim in both the pre-alignment panel and the design's panel.
+                logo: typographyOf(branding.firstElementChild),
+                claim: typographyOf(branding.lastElementChild),
+              }
+            : { present: false },
+          // The design's login stylesheet declares .brand-stats (lines 47-49) but its
+          // markup renders no such element (lines 73-74 are the logo and the claim), so the
+          // count is reported rather than assumed.
+          brandStatCount: brandStats.length,
+          brandStats: Array.from(brandStats).map(textOf),
+          heading: typographyOf(heading),
+          sub: typographyOf(heading ? heading.nextElementSibling : null),
+          controls: Array.from(loginScreenElement.querySelectorAll("input, select, textarea")).map(
+            (control) => {
+              const cs = getComputedStyle(control);
+              return {
+                id: control.id,
+                type: control.getAttribute("type"),
+                ...rect(control),
+                borderRadius: cs.borderRadius,
+                borderColor: cs.borderTopColor,
+                backgroundColor: cs.backgroundColor,
+                fontSize: cs.fontSize,
+                paddingLeft: cs.paddingLeft,
+                ariaDescribedBy: control.getAttribute("aria-describedby"),
+                ariaInvalid: control.getAttribute("aria-invalid"),
+              };
+            },
+          ),
+          submit: submit
+            ? {
+                text: textOf(submit),
+                ...rect(submit),
+                borderRadius: submitStyle.borderRadius,
+                backgroundColor: submitStyle.backgroundColor,
+                color: submitStyle.color,
+                borderColor: submitStyle.borderTopColor,
+                fontSize: submitStyle.fontSize,
+                fontWeight: submitStyle.fontWeight,
+                letterSpacing: submitStyle.letterSpacing,
+              }
+            : null,
+          errorCount: errors.length,
+          errors,
+          // The design's login form is a bare 480px .form-box (line 51) and paints no
+          // .card at all, so there is no card padding to report on this screen.
+          cardPadding: null,
+        };
+      })()
+    : null;
+
   return {
     title: document.title,
     readyState: document.readyState,
@@ -1670,6 +1794,10 @@ const PROBE_SOURCE = `(async () => {
       // because the design models no control here.
       planilleroAssigned,
       planilleroSetup,
+      // Additive key: new name only, every key above is unchanged. loginScreen reports the
+      // login route's own columns, branding panel, typography, controls and submit, and is
+      // null on every other route.
+      loginScreen,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),
