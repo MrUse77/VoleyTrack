@@ -1315,6 +1315,62 @@ same reason. In each case the alternative was a blind change nobody could verify
 parity is asserted through computed styles and geometry, and the actual visual judgement belongs to
 the human reviewer looking at the captures in `frontend/screenshots/`.
 
+## Polish pass
+
+After the four slices, every page of the design pack is aligned and the remaining work is the debt
+recorded along the way. The pass is ordered by impact, defects before preferences.
+
+### P1 — login structure. Done, commit `60cc1a6`.
+
+The last unaligned pack page. Its colours had been tokenised earlier, so what remained was its
+structure: the 640px branding column, the 480px form, and the design's own control and submit
+treatments. Two things were decided rather than copied. The design's login was drawn for a single
+role and its heading is literally "Admin", while this app has one login for every role, so the role
+frame was dropped and the heading uses the design's own submit wording. And **no credentials are
+prefilled**, because the design ships an email and a password as values, which a production login
+must never carry.
+
+Change-password is not modelled by the pack at all, so it was left byte-identical rather than given
+an invented design — the same call made for the scoring screens.
+
+### P2 — accessibility defects. Done, commit `c4eb0af`.
+
+Both were reproduced with browser evidence before being touched, and both were fixed at the
+mechanism rather than at the instances.
+
+- **`aria-current` was lying, systemically.** TanStack's `Link` marked the link for an **ancestor**
+  route with `aria-current="page"`, and the Sidebar marked its own most specific ancestor too. It
+  reproduced on **every** nested route with up to **four** claimants on one page, and on
+  `/matches/<id>/live` the single element claiming to be the current page was the **"Volver" back
+  link**, which is the exact opposite of what the attribute means.
+  The fix wraps the library `Link` in a `NavigationLink` that forces exact `activeOptions`, spread
+  last so no call site can relax it, making an ancestor not active at all; the Sidebar then decides
+  the value itself — `page` only for the current location, `location` for the section containing it.
+  Thirty-eight call sites moved with a single import swap each and no JSX rewritten.
+  Measured after: public tournament standings **4 → 1**, admin tournament standings 4 → 1, admin team
+  roster 4 → 1, `/matches/<id>/live` **1 → 0**, `/admin/matches/setup` 1 → 0 (correct: no link points
+  at its own location), and `/matches?status=live` stays at 2 because both links genuinely point at
+  the location.
+  **This document's own instruction was corrected here.** It demanded "exactly one element per page",
+  which is unreachable and wrong: some screens have no link to their own location so zero is correct,
+  and some have two links that genuinely point at the same place. The accepted invariant is about
+  **accuracy, not cardinality** — no element claims `page` unless its target is the current location,
+  section ancestors carry `location`, action links carry none, and the count may be zero or, where
+  several links point at the same place, more than one. Enforcing a count of one would have required
+  suppressing accurate markers to satisfy an invented number.
+- **Three live regions competed on the live screen**, two of which never change. The static pills are
+  no longer live regions but remain rendered and readable as ordinary content, and the score region
+  carries `role="status"` matching the polite and atomic semantics it already had. Measured: **three
+  regions to one**, `role="status"` from two to one, and the score still announces.
+- Three separate RED reproductions were captured, one per mechanism, and the guard that protects the
+  invariant covers **forty-eight routes**. Worth recording: its **first version passed vacuously**
+  because the router provider was never mounted, so it asserted against an empty tree. The worker
+  caught that itself, rebuilt the guard around a real provider, and added per-route non-vacuity
+  assertions so the same failure cannot return silently.
+- Four assertions were updated deliberately and listed, because they **pinned** the old behaviour
+  rather than catching it. That distinction matters: an assertion that pins a defect has to change
+  with the fix, and saying which ones is what keeps that auditable.
+
 ## Baseline (T01)
 
 Captured before any source change, from `frontend/`.
