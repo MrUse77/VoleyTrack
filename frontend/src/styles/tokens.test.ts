@@ -36,6 +36,90 @@ function stripCssComments(source: string): string {
 }
 
 /**
+ * Production `.tsx` files only, collected with the same convention `core.test.tsx` uses: the
+ * `generated` / `__generated__` directories are skipped and every `.test.tsx`, `.spec.tsx` and
+ * `.gen.tsx` file is excluded. A test that asserts on a token literal is not a shipped colour,
+ * so scanning tests turns the guard's own pins into false positives.
+ */
+function productionTsxFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      const entryPath = `${directory}/${entry.name}`;
+
+      if (entry.isDirectory()) {
+        return ["generated", "__generated__"].includes(entry.name) ? [] : productionTsxFiles(entryPath);
+      }
+
+      if (!entry.name.endsWith(".tsx") || /\.(?:test|spec|gen)\.tsx$/.test(entry.name)) return [];
+      return [entryPath];
+    })
+    .sort();
+}
+
+/**
+ * Comment-aware source stripper. A comment that cites a forbidden literal is documentation,
+ * not a defect, so its text must not reach the colour pattern.
+ *
+ * This walks the source instead of running a regex, because a naive regex would strip a `//`
+ * that lives inside a string or a URL (`"https://..."`, `to="/foo//bar"`). String bodies are
+ * copied verbatim, so their contents are never treated as delimiters. Block-comment newlines
+ * are re-emitted, so a later line's reported number still points at the real source line.
+ * Regex literals are not modelled (no production file here carries a `//` inside one).
+ */
+function stripJsComments(source: string): string {
+  const quoteCharacters = ['"', "'", "`"];
+  let stripped = "";
+  let index = 0;
+
+  while (index < source.length) {
+    const character = source[index];
+
+    if (quoteCharacters.includes(character)) {
+      stripped += character;
+      index += 1;
+
+      while (index < source.length) {
+        const stringCharacter = source[index];
+        stripped += stringCharacter;
+
+        if (stringCharacter === "\\" && index + 1 < source.length) {
+          stripped += source[index + 1];
+          index += 2;
+          continue;
+        }
+
+        index += 1;
+        if (stringCharacter === character) break;
+      }
+
+      continue;
+    }
+
+    if (character === "/" && source[index + 1] === "/") {
+      while (index < source.length && source[index] !== "\n") index += 1;
+      continue;
+    }
+
+    if (character === "/" && source[index + 1] === "*") {
+      index += 2;
+
+      while (index < source.length && !(source[index] === "*" && source[index + 1] === "/")) {
+        if (source[index] === "\n") stripped += "\n";
+        index += 1;
+      }
+
+      index += 2;
+      continue;
+    }
+
+    stripped += character;
+    index += 1;
+  }
+
+  return stripped;
+}
+
+/**
  * Cascade-position scanner. A plain regex cannot answer "is this rule inside
  * `@layer`?", because `@layer base { ... }` legitimately wraps `a` and `button`
  * rules. This walks the stylesheet character by character and records, for every
@@ -319,61 +403,43 @@ describe("design tokens", () => {
     expect(offenders).toEqual([]);
   });
 
-  // Widened one group at a time, each group measured with THIS pattern (and this file's own
-  // `.tsx`-per-directory collection, which includes `.test.tsx`) BEFORE it was added. A group
-  // whose measured count was non-zero was left out and reported rather than the pattern being
-  // loosened to admit it. Current measurement:
+  // The guard now scans every production `.tsx` file under `src` with the same walker
+  // `core.test.tsx` uses (`productionTsxFiles`), and strips comments before matching. Two
+  // earlier exclusions were consequences of the guard's own blind spots, not of real colour
+  // usage:
   //
-  //   group                    files  offenders  coverage
-  //   features/auth                4          0  guarded (since the first slice)
-  //   layouts                      3          0  guarded (since the first slice)
-  //   DashboardPage.tsx            1          0  guarded (since the first slice)
-  //   features/scoring            11          0  guarded (added by this slice)
-  //   components/states            2          0  guarded (added by this slice)
-  //   features/public             38          4  NOT guarded: LiveMatchPresentation.tsx:73,302,303 and
-  //                                             TournamentBracket.tsx:85 cite the vendored design's own
-  //                                             hex/rgba literals in explanatory comments. Real colour
-  //                                             usage there is 0 lines; the guard is line-based with no
-  //                                             comment stripping, and adding comment-awareness is a
-  //                                             change to the guard's contract, not to its pattern.
-  //   features/admin              39          1  NOT guarded: AdminTeamShell.tsx:59 cites the design's
-  //                                             `background:#3b82f6` in a comment.
-  //   components/primitives       21         19  NOT guarded: core.test.tsx asserts the token literals
-  //                                             themselves (lines 178-179, 705-719, 735, 748-749, 779,
-  //                                             974-975). A test that pins `--color-vt-*` values cannot
-  //                                             be scanned by a pattern that bans those values.
-  //   components/navigation        2          1  NOT guarded: Sidebar.tsx:81 cites the design's
-  //                                             `.nav-item.active{...color:#0b1220}` in a comment.
-  //   pages                        3          1  NOT guarded: pages/AdminPage.tsx:47 still carries a raw
-  //                                             `text-white` on the admin dashboard card title. That is
-  //                                             live colour usage and a real finding; it is reported, not
-  //                                             fixed here, because this guard may not be the change that
-  //                                             edits the screen it measures.
-  it("keeps the auth, layout, dashboard, scoring and state surfaces free of raw colour literals", () => {
-    const authDir = fileURLToPath(new URL("../features/auth", import.meta.url));
-    const layoutsDir = fileURLToPath(new URL("../layouts", import.meta.url));
-    const dashboardPagePath = fileURLToPath(new URL("../features/public/DashboardPage.tsx", import.meta.url));
-    const scoringDir = fileURLToPath(new URL("../features/scoring", import.meta.url));
-    const statesDir = fileURLToPath(new URL("../components/states", import.meta.url));
-
-    const tsxIn = (directory: string): string[] =>
-      readdirSync(directory)
-        .filter((name) => name.endsWith(".tsx"))
-        .map((name) => `${directory}/${name}`);
-
-    const guarded = [
-      ...tsxIn(authDir),
-      ...tsxIn(layoutsDir),
-      ...tsxIn(scoringDir),
-      ...tsxIn(statesDir),
-      dashboardPagePath,
-    ];
+  //   * `components/primitives` failed only because `core.test.tsx` asserts on the token
+  //     literals themselves. A test file is not shipped UI, so the production walker removes
+  //     those 19 hits.
+  //   * `features/public`, `features/admin` and `components/navigation` failed only on comment
+  //     text that cites a design hex/rgba. Stripping comments removes those 6 hits.
+  //
+  // Every group was measured with THIS pattern and this walker BEFORE it was admitted. Measured
+  // production files / offenders under the improved guard:
+  //
+  //   group                    files  offenders  note
+  //   features/auth                3          0
+  //   features/scoring             5          0
+  //   features/public             22          0  the 4 old hits (LiveMatchPresentation.tsx:73,302,303,
+  //                                             TournamentBracket.tsx:85) were all comment text
+  //   features/admin              25          0  the 1 old hit (AdminTeamShell.tsx:59) was a comment
+  //   layouts                      2          0
+  //   components/states            1          0
+  //   components/navigation        2          0  the 1 old hit (Sidebar.tsx:81) was a comment
+  //   components/primitives       19          0  the 19 old hits were core.test.tsx's literal pins
+  //   pages                        2          0  AdminPage.tsx:47 was a real leak and was fixed here
+  //   root (App/main/router)       3          0
+  //   total                       84          0
+  it("keeps every production TSX file free of raw colour literals", () => {
+    const guarded = productionTsxFiles(srcRootPath);
 
     // A guard that matches zero files is a broken guard, not a passing one.
     expect(guarded.length).toBeGreaterThan(0);
-    // The scoring and state groups are the ones this slice added; pin that the scoring group is
-    // really in scope, so a later edit cannot silently shrink the group back to the first three.
-    expect(guarded.filter((filePath) => filePath.startsWith(scoringDir)).length).toBeGreaterThan(0);
+    // The groups this slice added must stay in scope, so a later edit cannot silently shrink
+    // coverage back to the first slice's handful of directories.
+    for (const group of ["features/scoring", "features/public", "features/admin", "components/primitives", "components/navigation", "pages"]) {
+      expect(guarded.some((filePath) => filePath.startsWith(`${srcRootPath}/${group}/`))).toBe(true);
+    }
 
     // Raw hex (3 to 8 digits), rgb()/rgba(), and the disallowed Tailwind utility families.
     const forbidden = /#[0-9a-fA-F]{3,8}\b|rgba?\(|\b(?:text|bg|border)-white\b|\bbg-black\b|\bslate-/;
@@ -381,7 +447,7 @@ describe("design tokens", () => {
     const offenders: string[] = [];
 
     for (const filePath of guarded) {
-      readFileSync(filePath, "utf8")
+      stripJsComments(readFileSync(filePath, "utf8"))
         .split("\n")
         .forEach((line, index) => {
           if (forbidden.test(line)) {
