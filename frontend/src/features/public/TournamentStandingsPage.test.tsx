@@ -29,13 +29,21 @@ describe("public tournament standings", () => {
 
     expect(html).toContain(tournament.name);
     expect(html).toContain(tournament.statusLabel);
-    expect(html).toContain("Tabla de posiciones");
-    for (const label of ["#", "Equipo", "PJ", "PG", "PP", "SETS", "PTS"]) {
+    // The design's standings panel is `Clasificación <small>TOP 5</small>` with the columns
+    // `# | Equipo | PJ | PG | Pts` (frontend/design/html/voleytrack-torneos.html, the
+    // `liga-a1` detail); the app's former columns were `# | Equipo | PJ | PG | PP | SETS | PTS`.
+    expect(html).toContain("Clasificación");
+    expect(html).toContain("TOP 5");
+    for (const label of ["#", "Equipo", "PJ", "PG", "Pts"]) {
       expect(html).toContain(label);
     }
+    expect(html).not.toContain("SETS");
+    // Every team still appears: the design gives a cup an `Equipos participantes` panel
+    // instead of the top five, and this route carries both panels.
     for (const team of tournament.standings) {
       expect(html).toContain(team.teamName);
     }
+    expect(html).toContain("Equipos participantes");
   });
 
   it("links only standings entries with canonical team identities", () => {

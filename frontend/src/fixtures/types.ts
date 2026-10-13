@@ -1,5 +1,12 @@
 export type MatchStatus = "upcoming" | "live" | "today" | "finished";
 export type TournamentStatus = "in-progress" | "upcoming" | "finished";
+/**
+ * The design's tournament type dimension: the "Tipo" filter offers Liga and Copa
+ * (frontend/design/html/voleytrack-torneos.html, the `tournaments-type-filter` select).
+ * The third option there, "Bracket", is not a competition type: its own card reads
+ * "Diseño exploratorio, no en V1" (same file, the `tournament-card-bracket` card).
+ */
+export type TournamentType = "Liga" | "Copa";
 
 export type MatchScore = Readonly<{
   home: number;
@@ -37,6 +44,28 @@ export type LiveTeamRotationFixture = Readonly<{
   teamId: string;
   teamName: string;
   positions: readonly LiveRotationPositionFixture[];
+}>;
+
+/**
+ * One player's per-match line in the design's "Estadísticas individuales" roster
+ * (frontend/design/html/voleytrack-live.html, the `.roster-player` rows: photo, name and
+ * shirt number, role, then PTS / ATA / BLQ / ACE). `role` is the volleyball position the
+ * design prints under the name ("Punta", "Central", "Opuesto", "Líbero", "Armador").
+ */
+export type LiveRosterPlayerFixture = Readonly<{
+  playerName: string;
+  number: number;
+  role: string;
+  points: number;
+  attackPercent: number;
+  blocks: number;
+  aces: number;
+}>;
+
+export type LiveTeamRosterFixture = Readonly<{
+  teamId: string;
+  teamName: string;
+  players: readonly LiveRosterPlayerFixture[];
 }>;
 
 export type LiveMatchEventFixture = Readonly<{
@@ -81,6 +110,7 @@ export type LiveMatchDetailFixture = Readonly<{
   awaySetsWon: number;
   sets: readonly LiveSetFixture[];
   rotations: readonly [LiveTeamRotationFixture, LiveTeamRotationFixture];
+  rosters: readonly [LiveTeamRosterFixture, LiveTeamRosterFixture];
   events: readonly LiveMatchEventFixture[];
   playerLeaders: readonly LivePlayerStatFixture[];
   teamStats: readonly LiveTeamStatFixture[];
@@ -92,6 +122,8 @@ export type TournamentFixture = Readonly<{
   name: string;
   status: TournamentStatus;
   statusLabel: string;
+  type: TournamentType;
+  typeLabel: string;
   dateLabel: string;
   location: string;
   category: string;
@@ -204,8 +236,12 @@ export type PlayerFixture = Readonly<{
 }>;
 
 export type PlayerKpiFixture = Readonly<{
-  label: "Puntos Totales" | "Eficacia Ataque" | "Aces (Saques)" | "Bloqueos";
+  label: "Puntos" | "Ataque" | "Bloqueo" | "Saque ace";
   value: string;
+  /**
+   * The design's `.kpi-sub` line (voleytrack-jugadores.html, the player view's `.kpi` tiles).
+   */
+  sub: string;
 }>;
 
 export type PlayerStatBreakdownFixture = Readonly<{

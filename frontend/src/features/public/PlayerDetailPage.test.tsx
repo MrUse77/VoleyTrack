@@ -49,20 +49,28 @@ describe("public player detail", () => {
 		expect(html).toContain(detail.ageLabel);
 	});
 
-	it("renders the four measured canonical KPI cards with represented values", () => {
+	it("renders the four design KPI tiles through the aligned KpiGrid/Kpi primitives", () => {
 		const html = renderPlayerDetail();
 
 		expect(html.match(/data-testid="player-kpi"/g)).toHaveLength(4);
-		expect(html).toContain("Puntos Totales");
-		expect(html).toContain(">245<");
-		expect(html).toContain("Eficacia Ataque");
-		expect(html).toContain(">52%<");
-		expect(html).toContain("Aces (Saques)");
-		expect(html).toContain(">18<");
-		expect(html).toContain("Bloqueos");
-		expect(html).toContain(">42<");
-		expect(html).toContain("min-[1416px]:grid-cols-[repeat(4,261px)]");
-		expect(html).toContain("min-[1416px]:h-[100px]");
+		expect(html).toContain('aria-label="Indicadores principales del jugador"');
+		expect(html).toContain('role="list"');
+		for (const [label, value, sub] of [
+			["Puntos", "142", "3.8 / set · 1º del torneo"],
+			["Ataque", "49%", "Efectividad"],
+			["Bloqueo", "18", "0.5 / set"],
+			["Saque ace", "11", "Top 3 liga"],
+		] as const) {
+			expect(html).toContain(label);
+			expect(html).toContain(`>${value}<`);
+			expect(html).toContain(sub);
+		}
+		// Design: voleytrack-jugadores.css:3-10 (.kpi-grid, 4 columns, 2 below 1200px) and the
+		// .kpi-value typography (32px/900, line-height 1).
+		expect(html).toContain("min-[600px]:grid-cols-2");
+		expect(html).toContain("min-[1200px]:grid-cols-4");
+		expect(html).toContain("text-[32px]");
+		expect(html).toContain("font-black");
 	});
 
 	it("renders the canonical statistical hierarchy and visual emphasis", () => {

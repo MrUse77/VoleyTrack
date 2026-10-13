@@ -429,10 +429,36 @@ describe("design tokens", () => {
     // and exclusions). vt-raised (46/26) and vt-raised-border (9/7) were untouched by that
     // deletion, so their ceilings stay at their measured values. Lowering every ceiling in the
     // same change as the drop is what keeps a slack ceiling from re-spending the freed budget.
+    // T11 then moved the public dashboard onto the design's own layers: its metrics block
+    // (four legacy Cards) and the live/upcoming shells dropped both `bg-vt-panel` usages,
+    // which took vt-panel to 71 occurrences in 38 files, so the ceiling moves with the drop.
+    // vt-raised (46/26) and vt-raised-border (9/7) were untouched again and keep their
+    // measured values.
+    // T12/T13 then rebuilt the public matches screen, the tournaments list and the five
+    // tournament detail routes: the app-only `bg-vt-panel` tiles and rows those screens were
+    // built from moved onto the design's --surface / --surface-2 / --bg layers, and the
+    // `border-vt-border bg-vt-raised` detail heroes moved onto the shared shell's structural
+    // cards. Measured with this guard's own patterns and exclusions: vt-panel 61/31,
+    // vt-raised 36/21, vt-raised-border 9/7 (unchanged, so its ceiling stays).
+    // T14/T15 then built the public teams and players screens. The two new list tables are
+    // rendered by the shared `DataTable` primitive, which still paints its own `vt-panel`
+    // header and `vt-raised` body (+2 each), while the team and player detail screens those
+    // slices restructured moved their own app-only tiles onto the design's --surface-2 and
+    // --bg layers and dropped the player KPI cards' raised borders. Measured with this
+    // guard's own patterns and exclusions: vt-panel 52/27, vt-raised 29/18, and
+    // vt-raised-border unchanged at 9/7 (so its ceiling stays).
+    // T16 then aligned the public live screen: its own hand-rolled status chip and its six
+    // app-only `bg-vt-panel` stat/event rows moved onto the design's state pill and --surface
+    // layers, the court's `border-vt-raised bg-vt-surface` card and
+    // `border-vt-raised-border bg-vt-raised` graphic became the design's --surface card over
+    // a --surface-2 court, and the three legacy uniform-padding Cards on the screen became
+    // structural ones. Measured with this guard's own patterns and exclusions: vt-panel
+    // 45/26, vt-raised 25/16, vt-raised-border 7/5, so every ceiling drops to its measured
+    // value.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 73, baselineFiles: 39 },
-      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 46, baselineFiles: 26 },
-      { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 9, baselineFiles: 7 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 45, baselineFiles: 26 },
+      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 25, baselineFiles: 16 },
+      { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 7, baselineFiles: 5 },
     ];
 
     for (const { token, pattern, ceiling, baselineFiles } of ratchets) {

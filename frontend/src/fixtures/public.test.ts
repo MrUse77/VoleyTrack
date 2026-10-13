@@ -34,6 +34,19 @@ describe("public fixtures", () => {
     });
   });
 
+  it("carries the design's tournament type dimension on every tournament", () => {
+    // The design's tournaments filter offers a "Tipo" dimension (Liga / Copa) and its
+    // detail pages branch on it (frontend/design/html/voleytrack-torneos.html), so every
+    // tournament publishes it and the fixture stays immutable.
+    for (const tournament of PUBLIC_TOURNAMENTS.all) {
+      expect(["Liga", "Copa"]).toContain(tournament.type);
+      expect(tournament.typeLabel).toBe(tournament.type);
+      expect(Object.isFrozen(tournament)).toBe(true);
+    }
+    expect(PUBLIC_TOURNAMENTS.all.some((tournament) => tournament.type === "Liga")).toBe(true);
+    expect(PUBLIC_TOURNAMENTS.all.some((tournament) => tournament.type === "Copa")).toBe(true);
+  });
+
   it("provides the canonical dashboard match composition with stable route IDs", () => {
     expect(PUBLIC_MATCHES.live.map((match) => match.id)).toEqual(expect.arrayContaining([
       "match-liga-a1-river-boca",
@@ -48,6 +61,15 @@ describe("public fixtures", () => {
       "match-copa-nacional-boca-monteros",
     ]));
     expect(PUBLIC_DASHBOARD.live.featured.match.id).toBe("match-liga-a1-river-boca");
+    // The design's featured live card also names the match clock, the referee and the match
+    // format (frontend/design/html/voleytrack-dashboard.html:51-54). The match record has no
+    // counterpart for any of them, so they are pinned here as part of the immutable
+    // dashboard projection.
+    expect(PUBLIC_DASHBOARD.live.featured).toMatchObject({
+      bestOf: 5,
+      clockLabel: "21:42",
+      refereeName: "P. López",
+    });
     expect(PUBLIC_DASHBOARD.live.compact).toHaveLength(2);
     expect(PUBLIC_DASHBOARD.upcoming).toHaveLength(3);
     expect(Object.isFrozen(PUBLIC_DASHBOARD)).toBe(true);
@@ -159,11 +181,14 @@ describe("public fixtures", () => {
     expect(PUBLIC_PLAYER_DETAILS.map(({ playerId }) => playerId)).toEqual(
       publicPlayerIds,
     );
+    // The design's own KPI tile set (frontend/design/html/voleytrack-jugadores.html),
+    // including its `.kpi-sub` lines; see the fixture comment for why it supersedes the
+    // previous canonical pairs.
     expect(PUBLIC_PLAYER_DETAILS[0].kpis).toEqual([
-      { label: "Puntos Totales", value: "245" },
-      { label: "Eficacia Ataque", value: "52%" },
-      { label: "Aces (Saques)", value: "18" },
-      { label: "Bloqueos", value: "42" },
+      { label: "Puntos", value: "142", sub: "3.8 / set · 1º del torneo" },
+      { label: "Ataque", value: "49%", sub: "Efectividad" },
+      { label: "Bloqueo", value: "18", sub: "0.5 / set" },
+      { label: "Saque ace", value: "11", sub: "Top 3 liga" },
     ]);
     expect(PUBLIC_PLAYER_DETAILS[0].statBreakdown).toEqual([
       { id: "attack", label: "Ataque", value: "140 pts", barPercent: 100, tone: "attack" },
@@ -303,6 +328,26 @@ describe("public fixtures", () => {
       expect(detail.rotations).toHaveLength(2);
       expect(detail.rotations[0].positions).toHaveLength(6);
       expect(detail.rotations[1].positions).toHaveLength(6);
+      // The live screen's "Estadísticas individuales" roster prints one line per player on
+      // court (design: voleytrack-live.html, the `.roster-player` rows), so the roster is
+      // the same six players as the rotation, index-aligned, with the per-player match line.
+      expect(detail.rosters).toHaveLength(2);
+      for (const [index, roster] of detail.rosters.entries()) {
+        expect(roster.teamId).toBe(detail.rotations[index].teamId);
+        expect(roster.teamName).toBe(detail.rotations[index].teamName);
+        expect(roster.players.map(({ playerName }) => playerName)).toEqual(
+          detail.rotations[index].positions.map(({ playerName }) => playerName),
+        );
+        expect(roster.players.map(({ number }) => number)).toEqual(
+          detail.rotations[index].positions.map(({ number }) => number),
+        );
+        expect(Object.isFrozen(roster)).toBe(true);
+        expect(Object.isFrozen(roster.players)).toBe(true);
+        for (const player of roster.players) {
+          expect(Object.isFrozen(player)).toBe(true);
+          expect(player.role).not.toHaveLength(0);
+        }
+      }
       expect(detail.events).not.toHaveLength(0);
       expect(detail.playerLeaders).not.toHaveLength(0);
       expect(detail.teamStats).toHaveLength(4);
@@ -310,6 +355,7 @@ describe("public fixtures", () => {
       expect(Object.isFrozen(detail.sets)).toBe(true);
       expect(Object.isFrozen(detail.rotations)).toBe(true);
       expect(Object.isFrozen(detail.rotations[0].positions)).toBe(true);
+      expect(Object.isFrozen(detail.rosters)).toBe(true);
       expect(Object.isFrozen(detail.events)).toBe(true);
       expect(Object.isFrozen(detail.playerLeaders)).toBe(true);
       expect(Object.isFrozen(detail.teamStats)).toBe(true);

@@ -29,8 +29,10 @@ describe("public tournament matches", () => {
     const matches = Object.values(PUBLIC_MATCHES).flat();
 
     expect(html).toContain(tournament.name);
-    expect(html).toContain(`Torneos / ${tournament.name}`);
-    expect(html).toContain("Partidos del Torneo");
+    expect(html).toContain(`Detalle del torneo · ${tournament.category}`);
+    // The design's own label for the matches section (frontend/design/html/voleytrack-torneos.html,
+    // `card-h` "Próximos partidos"); the app's former heading was "Partidos del Torneo".
+    expect(html).toContain("Próximos partidos");
     for (const match of matches.filter(({ tournamentId }) => tournamentId === tournament.id)) {
       expect(html).toContain(match.homeTeamName);
       expect(html).toContain(match.awayTeamName);
@@ -54,9 +56,9 @@ describe("public tournament matches", () => {
     expect(html).toContain('aria-current="page"');
     expect(html).toContain("Resumen");
     expect(html).toContain("Partidos");
-    expect(html).toContain("Tabla");
+    expect(html).toContain("Clasificación");
     expect(html).toContain("Estadísticas");
-    expect(html).toContain("Cuadro");
+    expect(html).toContain("Llaves");
   });
 
   it("renders a not-found state without match data for an unknown tournament", () => {

@@ -1,5 +1,6 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { Card } from "../../components/primitives/Card";
+import { Card, CardBody, CardHeader } from "../../components/primitives/Card";
+import { Kpi, KpiGrid } from "../../components/primitives/Kpi";
 import { StateBoundary } from "../../components/states/StateBoundary";
 import {
 	PUBLIC_LIVE_MATCH_DETAILS,
@@ -158,34 +159,35 @@ export function PlayerDetailPage() {
 					</div>
 				</Card>
 
-				<dl
-					aria-label="Indicadores principales del jugador"
-					className="mt-6 grid gap-5 sm:grid-cols-2 min-[1416px]:grid-cols-[repeat(4,261px)]"
-				>
+				{/*
+				 * Design: frontend/design/html/voleytrack-jugadores.html, the player view's
+				 * `.kpi-grid` — four `.kpi` tiles (label, value, sub) on a 4-column grid that drops
+				 * to two columns below 1200px (voleytrack-jugadores.css:3-10). `KpiGrid`/`Kpi` are
+				 * that rule and tile as primitives, so the screen stops hand-rolling a `dl` of
+				 * uniform-padding Cards and the values/labels come from the design's tile set.
+				 */}
+				<KpiGrid aria-label="Indicadores principales del jugador" className="mt-6">
 					{detail.kpis.map((kpi) => (
-						<Card
-							className="border-vt-raised min-[1416px]:h-[100px] min-[1416px]:rounded-xl"
+						<Kpi
 							data-testid="player-kpi"
 							key={kpi.label}
-						>
-							<dt className="text-sm leading-4 text-vt-muted">{kpi.label}</dt>
-							<dd className="mt-2 text-[32px] font-black leading-8 text-white">{kpi.value}</dd>
-						</Card>
+							label={kpi.label}
+							sub={kpi.sub}
+							value={kpi.value}
+						/>
 					))}
-				</dl>
+				</KpiGrid>
 
 				<div className="mt-6 grid gap-6 min-[1416px]:grid-cols-[repeat(2,540px)]">
 					<Card
 						aria-labelledby="player-stat-breakdown-title"
-						className="min-w-0 border-vt-raised min-[1416px]:h-[400px]"
+						className="min-w-0 min-[1416px]:h-[400px]"
+						padded={false}
 					>
-						<h2
-							className="text-lg font-bold leading-6 text-white"
-							id="player-stat-breakdown-title"
-						>
-							Desglose por Fundamento
-						</h2>
-						<div className="mt-8 space-y-6 min-[1416px]:space-y-10">
+						<CardHeader>
+							<h2 id="player-stat-breakdown-title">Desglose por Fundamento</h2>
+						</CardHeader>
+						<CardBody className="space-y-6 min-[1416px]:space-y-10" data-testid="player-stat-breakdown-card-body">
 							{detail.statBreakdown.map((stat) => {
 								const tone = statToneClasses[stat.tone];
 
@@ -203,7 +205,7 @@ export function PlayerDetailPage() {
 											aria-valuemax={100}
 											aria-valuemin={0}
 											aria-valuenow={stat.barPercent}
-											className="mt-3 h-2 w-full overflow-hidden rounded-full bg-vt-raised min-[1416px]:ml-5 min-[1416px]:mt-1 min-[1416px]:w-[250px]"
+											className="mt-3 h-2 w-full overflow-hidden rounded-full bg-vt-border-2 min-[1416px]:ml-5 min-[1416px]:mt-1 min-[1416px]:w-[250px]"
 											role="progressbar"
 										>
 											<span
@@ -214,20 +216,19 @@ export function PlayerDetailPage() {
 									</div>
 								);
 							})}
-						</div>
+						</CardBody>
 					</Card>
 
 					<Card
 						aria-labelledby="player-recent-matches-title"
-						className="min-w-0 border-vt-raised min-[1416px]:h-[400px]"
+						className="min-w-0 min-[1416px]:h-[400px]"
+						padded={false}
 					>
-						<h2
-							className="text-lg font-bold leading-6 text-white"
-							id="player-recent-matches-title"
-						>
-							Últimos Partidos
-						</h2>
-						<ul className="mt-8 space-y-4">
+						<CardHeader>
+							<h2 id="player-recent-matches-title">Últimos Partidos</h2>
+						</CardHeader>
+						<CardBody data-testid="player-recent-matches-card-body">
+							<ul className="space-y-4">
 							{detail.recentMatches.map((performance) => {
 								const { match } = performance;
 								const opponent = opponentName(match, player.teamId);
@@ -236,7 +237,7 @@ export function PlayerDetailPage() {
 
 								return (
 									<li
-										className="relative min-h-[60px] rounded-lg border border-vt-raised bg-vt-background py-3 pl-10 pr-4 min-[1416px]:h-[60px] min-[1416px]:p-0"
+										className="relative min-h-[60px] rounded-lg border border-vt-border bg-vt-background py-3 pl-10 pr-4 min-[1416px]:h-[60px] min-[1416px]:p-0"
 										key={match.id}
 									>
 										<span
@@ -273,7 +274,8 @@ export function PlayerDetailPage() {
 									</li>
 								);
 							})}
-						</ul>
+							</ul>
+						</CardBody>
 					</Card>
 				</div>
 			</div>

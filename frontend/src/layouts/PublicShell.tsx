@@ -8,6 +8,13 @@ interface PublicShellProps {
 }
 
 function getPublicPageMeta(currentPath: string) {
+  if (currentPath.startsWith("/live")) {
+    return {
+      title: "En vivo",
+      subtitle: "Partido en directo",
+    };
+  }
+
   if (currentPath.startsWith("/matches")) {
     return {
       title: "Partidos",

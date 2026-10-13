@@ -2,9 +2,11 @@ import type {
   LiveMatchDetailFixture,
   LiveMatchEventFixture,
   LivePlayerStatFixture,
+  LiveRosterPlayerFixture,
   LiveRotationPositionFixture,
   LiveSetFixture,
   LiveTeamStatFixture,
+  LiveTeamRosterFixture,
   LiveTeamRotationFixture,
   MatchFixture,
   PlayerDetailFixture,
@@ -174,6 +176,8 @@ const ligaRosarina = Object.freeze({
   name: "Liga Rosarina Apertura 2026",
   status: "in-progress",
   statusLabel: "En curso",
+  type: "Liga",
+  typeLabel: "Liga",
   dateLabel: "Marzo a julio de 2026",
   location: "Rosario, Santa Fe",
   category: "Primera División",
@@ -185,6 +189,8 @@ const copaLitoral = Object.freeze({
   name: "Copa del Litoral 2026",
   status: "upcoming",
   statusLabel: "Próximo",
+  type: "Copa",
+  typeLabel: "Copa",
   dateLabel: "Agosto de 2026",
   location: "Santa Fe, Argentina",
   category: "Primera División",
@@ -196,6 +202,8 @@ const torneoFederal = Object.freeze({
   name: "Torneo Federal de Verano 2026",
   status: "finished",
   statusLabel: "Finalizado",
+  type: "Liga",
+  typeLabel: "Liga",
   dateLabel: "Enero a febrero de 2026",
   location: "Córdoba, Argentina",
   category: "Primera División",
@@ -207,6 +215,8 @@ const ligaA1 = Object.freeze({
   name: "Liga A1",
   status: "in-progress",
   statusLabel: "En curso",
+  type: "Liga",
+  typeLabel: "Liga",
   dateLabel: "Temporada 2026",
   location: "Argentina",
   category: "Primera División",
@@ -218,6 +228,8 @@ const copaNacional = Object.freeze({
   name: "Copa Nacional",
   status: "in-progress",
   statusLabel: "En curso",
+  type: "Copa",
+  typeLabel: "Copa",
   dateLabel: "Julio de 2026",
   location: "Argentina",
   category: "Primera División",
@@ -376,12 +388,6 @@ const riverBolivarUpcomingMatch = Object.freeze({
 } satisfies MatchFixture);
 
 export const PUBLIC_DASHBOARD = Object.freeze({
-  metrics: Object.freeze([
-    Object.freeze({ label: "EN VIVO", value: "3", detail: null, href: null }),
-    Object.freeze({ label: "PRÓXIMOS", value: "12", detail: "7 días", href: null }),
-    Object.freeze({ label: "TORNEOS", value: "4", detail: "Activos", href: `/tournaments/${ligaRosarina.id}` }),
-    Object.freeze({ label: "PUNTOS REGISTRADOS", value: "1.248", detail: "Semana", href: null }),
-  ]),
   live: Object.freeze({
     featured: Object.freeze({
       match: featuredDashboardLiveMatch,
@@ -389,6 +395,17 @@ export const PUBLIC_DASHBOARD = Object.freeze({
       homeSetsWon: riverBocaDashboardVisualSnapshot.homeSetsWon,
       awaySetsWon: riverBocaDashboardVisualSnapshot.awaySetsWon,
       latestAction: "Ataque punto",
+      // PROTOTYPE DATA — NOT REAL. The design's featured live card carries three values the
+      // match record itself does not: a match clock, the officiating referee and the match
+      // format (voleytrack-dashboard.html:51-54 — "21:42 · Árbitro: P. López",
+      // "al mejor de 5"). They are the design prototype's own values, copied here so the
+      // screen can render its structure; public.test.ts pins them only so the shape cannot
+      // drift. They must be replaced by real data (a clock, a referee assignment and the
+      // tournament's format) as soon as the backend exposes them, and must not be read as
+      // facts about this match.
+      bestOf: 5,
+      clockLabel: "21:42",
+      refereeName: "P. López",
       visualSnapshot: riverBocaDashboardVisualSnapshot,
     }),
     compact: Object.freeze([
@@ -472,11 +489,20 @@ export const PUBLIC_MATCHES = Object.freeze({
   ]),
 } satisfies PublicMatchFixtures);
 
+/**
+ * Prototype data: the four tiles of the design's player `.kpi-grid`
+ * (frontend/design/html/voleytrack-jugadores.html), including their `.kpi-sub` lines. The
+ * app's previous canonical pairs (Puntos Totales 245, Eficacia Ataque 52%, Aces (Saques) 18,
+ * Bloqueos 42) were superseded by the design's own labels, values and subs when the detail
+ * screen moved onto `KpiGrid`/`Kpi`. The two ranking subs ("1º del torneo", "Top 3 liga")
+ * have no app counterpart at all, so the whole set MUST be replaced by real per-player values
+ * before the screen is trusted.
+ */
 const canonicalPlayerKpis = Object.freeze([
-  Object.freeze({ label: "Puntos Totales", value: "245" }),
-  Object.freeze({ label: "Eficacia Ataque", value: "52%" }),
-  Object.freeze({ label: "Aces (Saques)", value: "18" }),
-  Object.freeze({ label: "Bloqueos", value: "42" }),
+  Object.freeze({ label: "Puntos", value: "142", sub: "3.8 / set · 1º del torneo" }),
+  Object.freeze({ label: "Ataque", value: "49%", sub: "Efectividad" }),
+  Object.freeze({ label: "Bloqueo", value: "18", sub: "0.5 / set" }),
+  Object.freeze({ label: "Saque ace", value: "11", sub: "Top 3 liga" }),
 ] satisfies PlayerDetailFixture["kpis"]);
 
 const canonicalPlayerStatBreakdown = Object.freeze([
@@ -593,6 +619,16 @@ type LeaderSeed = Readonly<{
   side: TeamSide;
   points: number;
 }>;
+// `role` plus the four counting stats the design's roster rows print
+// (PTS / ATA / BLQ / ACE). Index-aligned with the side's `RotationSeed` list, so the same
+// six players carry the rotation slot and the per-player line instead of naming them twice.
+type RosterSeed = Readonly<{
+  role: string;
+  points: number;
+  attackPercent: number;
+  blocks: number;
+  aces: number;
+}>;
 type LiveDetailSeed = Readonly<{
   match: MatchFixture;
   tournamentName: string;
@@ -600,6 +636,8 @@ type LiveDetailSeed = Readonly<{
   setScores: readonly Readonly<{ home: number; away: number }>[];
   homeRotation: readonly RotationSeed[];
   awayRotation: readonly RotationSeed[];
+  homeRoster: readonly RosterSeed[];
+  awayRoster: readonly RosterSeed[];
   events: readonly EventSeed[];
   leaders: readonly LeaderSeed[];
   teamStats: readonly LiveTeamStatFixture[];
@@ -624,6 +662,29 @@ function freezeRotation(
   return Object.freeze({ teamId, teamName, positions });
 }
 
+function freezeRoster(
+  teamId: string,
+  teamName: string,
+  players: readonly RotationSeed[],
+  stats: readonly RosterSeed[],
+): LiveTeamRosterFixture {
+  const roster = Object.freeze(
+    players.map((player, index) =>
+      Object.freeze({
+        playerName: player.playerName,
+        number: player.number,
+        role: stats[index].role,
+        points: stats[index].points,
+        attackPercent: stats[index].attackPercent,
+        blocks: stats[index].blocks,
+        aces: stats[index].aces,
+      } satisfies LiveRosterPlayerFixture),
+    ),
+  );
+
+  return Object.freeze({ teamId, teamName, players: roster });
+}
+
 function createLiveDetail(seed: LiveDetailSeed): LiveMatchDetailFixture {
   const sets = Object.freeze(
     seed.setScores.map((set, index) =>
@@ -645,6 +706,10 @@ function createLiveDetail(seed: LiveDetailSeed): LiveMatchDetailFixture {
     freezeRotation(seed.match.homeTeamId, seed.match.homeTeamName, seed.homeRotation),
     freezeRotation(seed.match.awayTeamId, seed.match.awayTeamName, seed.awayRotation),
   ]) as readonly [LiveTeamRotationFixture, LiveTeamRotationFixture];
+  const rosters = Object.freeze([
+    freezeRoster(seed.match.homeTeamId, seed.match.homeTeamName, seed.homeRotation, seed.homeRoster),
+    freezeRoster(seed.match.awayTeamId, seed.match.awayTeamName, seed.awayRotation, seed.awayRoster),
+  ]) as readonly [LiveTeamRosterFixture, LiveTeamRosterFixture];
   const events = Object.freeze(
     seed.events.map((event, index) => {
       const team = teamIdentity[event.side];
@@ -688,6 +753,7 @@ function createLiveDetail(seed: LiveDetailSeed): LiveMatchDetailFixture {
     awaySetsWon: completedSets.filter(({ home, away }) => away > home).length,
     sets,
     rotations,
+    rosters,
     events,
     playerLeaders,
     teamStats,
@@ -720,6 +786,29 @@ export const PUBLIC_LIVE_MATCH_DETAILS = Object.freeze([
       { playerName: "Micaela Díaz", number: 12 },
       { playerName: "Carolina Ferreyra", number: 3 },
       { playerName: "Josefina Luna", number: 8 },
+    ],
+    // Prototype data. The design's "Estadísticas individuales" roster
+    // (frontend/design/html/voleytrack-live.html, the `.roster-player` rows) prints PTS, ATA,
+    // BLQ and ACE for all twelve players on court, and no fixture carried a per-player match
+    // line. These values are transcribed in the design's shape and MUST be replaced by real
+    // per-player match statistics; the design's own prototype numbers belong to different
+    // teams, so they were not copied. Roles are the five volleyball positions the design's
+    // `.roster-player-role` prints.
+    homeRoster: [
+      { role: "Punta", points: 22, attackPercent: 45, blocks: 1, aces: 1 },
+      { role: "Central", points: 15, attackPercent: 49, blocks: 3, aces: 0 },
+      { role: "Opuesto", points: 11, attackPercent: 39, blocks: 1, aces: 1 },
+      { role: "Punta", points: 9, attackPercent: 43, blocks: 1, aces: 0 },
+      { role: "Líbero", points: 0, attackPercent: 51, blocks: 0, aces: 0 },
+      { role: "Armador", points: 5, attackPercent: 34, blocks: 0, aces: 2 },
+    ],
+    awayRoster: [
+      { role: "Opuesto", points: 20, attackPercent: 43, blocks: 2, aces: 1 },
+      { role: "Central", points: 14, attackPercent: 47, blocks: 3, aces: 1 },
+      { role: "Punta", points: 10, attackPercent: 41, blocks: 1, aces: 0 },
+      { role: "Punta", points: 7, attackPercent: 36, blocks: 0, aces: 1 },
+      { role: "Líbero", points: 0, attackPercent: 53, blocks: 0, aces: 0 },
+      { role: "Armador", points: 3, attackPercent: 30, blocks: 0, aces: 1 },
     ],
     events: [
       { time: "18:42", eventType: "Ataque punto", playerName: "Camila Sosa", side: "home", score: "18-14", outcome: "point" },
@@ -763,6 +852,24 @@ export const PUBLIC_LIVE_MATCH_DETAILS = Object.freeze([
       { playerName: "Martín Rojas", number: 2 },
       { playerName: "Alan Gómez", number: 8 },
     ],
+    // Prototype data — see the first seed: the design's per-player roster line has no
+    // counterpart in this projection yet and must be replaced by real match statistics.
+    homeRoster: [
+      { role: "Punta", points: 28, attackPercent: 46, blocks: 2, aces: 1 },
+      { role: "Central", points: 18, attackPercent: 50, blocks: 4, aces: 0 },
+      { role: "Opuesto", points: 11, attackPercent: 38, blocks: 1, aces: 1 },
+      { role: "Punta", points: 9, attackPercent: 41, blocks: 1, aces: 0 },
+      { role: "Líbero", points: 0, attackPercent: 55, blocks: 0, aces: 0 },
+      { role: "Armador", points: 5, attackPercent: 33, blocks: 0, aces: 2 },
+    ],
+    awayRoster: [
+      { role: "Opuesto", points: 24, attackPercent: 44, blocks: 2, aces: 1 },
+      { role: "Central", points: 15, attackPercent: 48, blocks: 3, aces: 1 },
+      { role: "Punta", points: 12, attackPercent: 40, blocks: 1, aces: 0 },
+      { role: "Punta", points: 8, attackPercent: 37, blocks: 0, aces: 1 },
+      { role: "Líbero", points: 0, attackPercent: 52, blocks: 0, aces: 0 },
+      { role: "Armador", points: 4, attackPercent: 31, blocks: 0, aces: 2 },
+    ],
     events: [
       { time: "21:45", eventType: "Ataque punto", playerName: "Mateo Silva", side: "home", score: "21-18", outcome: "point" },
       { time: "21:43", eventType: "Error no forzado", playerName: "Bruno Herrera", side: "away", score: "20-18", outcome: "error" },
@@ -801,6 +908,24 @@ export const PUBLIC_LIVE_MATCH_DETAILS = Object.freeze([
       { playerName: "Ezequiel Ríos", number: 14 },
       { playerName: "Sebastián Ortiz", number: 3 },
       { playerName: "Leandro Ruiz", number: 10 },
+    ],
+    // Prototype data — see the first seed: the design's per-player roster line has no
+    // counterpart in this projection yet and must be replaced by real match statistics.
+    homeRoster: [
+      { role: "Punta", points: 8, attackPercent: 42, blocks: 1, aces: 1 },
+      { role: "Central", points: 5, attackPercent: 46, blocks: 1, aces: 0 },
+      { role: "Opuesto", points: 4, attackPercent: 37, blocks: 0, aces: 0 },
+      { role: "Punta", points: 3, attackPercent: 40, blocks: 1, aces: 0 },
+      { role: "Líbero", points: 0, attackPercent: 50, blocks: 0, aces: 0 },
+      { role: "Armador", points: 2, attackPercent: 32, blocks: 0, aces: 1 },
+    ],
+    awayRoster: [
+      { role: "Opuesto", points: 6, attackPercent: 41, blocks: 1, aces: 1 },
+      { role: "Central", points: 5, attackPercent: 45, blocks: 1, aces: 0 },
+      { role: "Punta", points: 3, attackPercent: 38, blocks: 0, aces: 1 },
+      { role: "Punta", points: 2, attackPercent: 35, blocks: 0, aces: 0 },
+      { role: "Líbero", points: 0, attackPercent: 49, blocks: 0, aces: 0 },
+      { role: "Armador", points: 1, attackPercent: 29, blocks: 0, aces: 1 },
     ],
     events: [
       { time: "20:18", eventType: "Ataque punto", playerName: "Tomás Pereyra", side: "home", score: "15-10", outcome: "point" },
@@ -845,6 +970,24 @@ export const PUBLIC_LIVE_MATCH_DETAILS = Object.freeze([
       { playerName: "Julián Acosta", number: 14 },
       { playerName: "Emiliano Luna", number: 3 },
       { playerName: "Tobías Gómez", number: 12 },
+    ],
+    // Prototype data — see the first seed: the design's per-player roster line has no
+    // counterpart in this projection yet and must be replaced by real match statistics.
+    homeRoster: [
+      { role: "Punta", points: 25, attackPercent: 47, blocks: 2, aces: 1 },
+      { role: "Central", points: 17, attackPercent: 51, blocks: 4, aces: 0 },
+      { role: "Opuesto", points: 12, attackPercent: 40, blocks: 1, aces: 1 },
+      { role: "Punta", points: 9, attackPercent: 44, blocks: 1, aces: 0 },
+      { role: "Líbero", points: 0, attackPercent: 54, blocks: 0, aces: 0 },
+      { role: "Armador", points: 4, attackPercent: 35, blocks: 0, aces: 2 },
+    ],
+    awayRoster: [
+      { role: "Opuesto", points: 23, attackPercent: 45, blocks: 2, aces: 2 },
+      { role: "Central", points: 16, attackPercent: 49, blocks: 3, aces: 1 },
+      { role: "Punta", points: 11, attackPercent: 42, blocks: 1, aces: 0 },
+      { role: "Punta", points: 8, attackPercent: 38, blocks: 0, aces: 1 },
+      { role: "Líbero", points: 0, attackPercent: 51, blocks: 0, aces: 0 },
+      { role: "Armador", points: 3, attackPercent: 30, blocks: 0, aces: 2 },
     ],
     events: [
       { time: "22:07", eventType: "Bloqueo punto", playerName: "Pedro Molina", side: "home", score: "8-6", outcome: "point" },

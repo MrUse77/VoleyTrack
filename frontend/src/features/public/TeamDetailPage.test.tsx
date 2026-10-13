@@ -116,6 +116,36 @@ describe("public team detail", () => {
     expect(html).toContain('href="/matches/match-liga-a1-river-boca/live"');
   });
 
+  it("reconciles the design's four tabs and adds the Rendimiento Últimos 5 treatment", () => {
+    const html = renderTeamDetail();
+
+    // Design: frontend/design/html/voleytrack-equipos.html, the team-detail tab row is
+    // `Detalle · Plantel (14) · Partidos · Estadísticas`. The first tab was renamed from the
+    // app's "Resumen" and the Plantel tab now carries the roster size the design prints.
+    expect(html).toContain(">Detalle</a>");
+    expect(html).toContain(">Plantel (5)</a>");
+    expect(html).toContain(">Partidos</a>");
+    expect(html).toContain(">Estadísticas</a>");
+    expect(html).not.toContain(">Resumen</a>");
+
+    // Design: the `.card-h` "Rendimiento <small>ÚLTIMOS 5</small>" card. Each badge carries
+    // its outcome as text before its colour, so the strip never depends on colour alone.
+    expect(html).toContain('data-testid="team-overview-performance"');
+    expect(html).toContain("Rendimiento");
+    expect(html).toContain("ÚLTIMOS 5");
+    expect(html).toContain('aria-label="Últimos resultados"');
+    for (const badge of ["EN VIVO 21-18", "V 3-1", "D 2-3", "PRÓXIMO"]) {
+      expect(html).toContain(badge);
+    }
+    // Real per-match averages derived from the team's own summary stats (482/6, 421/6, 248/6).
+    expect(html).toContain("Puntos a favor / partido");
+    expect(html).toContain("80.3");
+    expect(html).toContain("Puntos en contra / partido");
+    expect(html).toContain("70.2");
+    expect(html).toContain("Ataques punto / partido");
+    expect(html).toContain("41.3");
+  });
+
   it("keeps an honest overview when a known team has no canonical stats projection", () => {
     const team = PUBLIC_TEAMS.find((item) => item.id === "boca-juniors")!;
     const html = renderTeamDetail(team.id);

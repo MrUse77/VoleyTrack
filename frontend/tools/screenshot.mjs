@@ -472,6 +472,444 @@ const PROBE_SOURCE = `(() => {
     ? { header: describeNumericCell(numericHeader), body: describeNumericCell(numericBody) }
     : null;
 
+  // Additive only: no existing key, strategy order or shape above is renamed, reordered or
+  // redefined. The design's featured live card opens with the live pill
+  // (voleytrack.css:61: --danger fill, white ink, mono 10px/800) and the upcoming rows carry
+  // the design's state-pill states (voleytrack.css:84-87). Both are found through the
+  // accessible hooks the primitives already declare, not through a Tailwind class: the live
+  // pill is role="status" on the danger fill, and StatePill exposes data-status.
+  const describePill = (el) => {
+    if (!el) return null;
+
+    const cs = getComputedStyle(el);
+
+    return {
+      tag: el.tagName.toLowerCase(),
+      text: (el.innerText || el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40),
+      role: el.getAttribute("role"),
+      ariaLive: el.getAttribute("aria-live"),
+      status: el.getAttribute("data-status"),
+      backgroundColor: cs.backgroundColor,
+      color: cs.color,
+      fontFamily: cs.fontFamily,
+      fontSize: cs.fontSize,
+      fontWeight: cs.fontWeight,
+      borderRadius: cs.borderRadius,
+    };
+  };
+  const livePills = Array.from(
+    document.querySelectorAll('[role="status"][class*="bg-vt-danger"]'),
+  ).map(describePill);
+  const statePills = Array.from(document.querySelectorAll("[data-status]")).map(describePill);
+
+  // Additive only. The design's live grid is 1.6fr by .9fr with a 16px gap
+  // (voleytrack.css:79) and collapses to one column below 1100px
+  // (voleytrack-dashboard.css:3); its row-match is 140px 1fr 160px 170px 100px with a
+  // 12px gap and 14px 20px padding (voleytrack-dashboard.css:11). Reporting the resolved
+  // tracks plus each child's rendered box makes the split machine-readable without an image.
+  const describeGrid = (testId) => {
+    const el = document.querySelector('[data-testid="' + testId + '"]');
+    if (!el) return null;
+
+    const cs = getComputedStyle(el);
+
+    return {
+      selector: '[data-testid="' + testId + '"]',
+      present: true,
+      display: cs.display,
+      gridTemplateColumns: cs.gridTemplateColumns,
+      columnGap: cs.columnGap,
+      paddingTop: cs.paddingTop,
+      paddingRight: cs.paddingRight,
+      paddingBottom: cs.paddingBottom,
+      paddingLeft: cs.paddingLeft,
+      children: Array.from(el.children).map((child) => {
+        const r = child.getBoundingClientRect();
+        return { tag: child.tagName.toLowerCase(), width: round(r.width), height: round(r.height) };
+      }),
+    };
+  };
+  const liveGrid = describeGrid("dashboard-live-grid");
+  const upcomingRowGrid = describeGrid("dashboard-upcoming-row");
+  // Additive only, alongside (never replacing) the two dashboard grids above.
+  const matchesGrid = describeGrid("matches-grid");
+  const tournamentsGrid = describeGrid("tournaments-grid");
+
+  // Additive only. The structural card form puts its spacing in CardBody's .card-b padding
+  // (18px 20px, voleytrack.css:78) while the legacy transitional form is a uniform p-6 (24px),
+  // so the padding actually applied by CardBody is what distinguishes the two at the rendered
+  // level. Every CardBody in the tree is found through its -card-body test id hook.
+  const cardBodies = Array.from(document.querySelectorAll('[data-testid$="-card-body"]')).map(
+    (el) => {
+      const cs = getComputedStyle(el);
+
+      return {
+        testId: el.getAttribute("data-testid"),
+        paddingTop: cs.paddingTop,
+        paddingRight: cs.paddingRight,
+        paddingBottom: cs.paddingBottom,
+        paddingLeft: cs.paddingLeft,
+      };
+    },
+  );
+
+  // Additive only. The design's numeric treatment is the mono family with tabular figures
+  // (.num, voleytrack.css:100, primitive Num). The numericTreatment key above only
+  // inspects th/td cells, so a score or a time rendered outside a table is invisible to it;
+  // this reports the first element carrying the treatment anywhere on the page.
+  const tabularSampleElement = document.querySelector('[class*="tabular-nums"]');
+  const describeTabular = (el) => ({
+    tag: el.tagName.toLowerCase(),
+    text: (el.innerText || el.textContent || "")
+      .trim()
+      .replace(/\\s+/g, " ")
+      .slice(0, 40),
+    fontFamily: getComputedStyle(el).fontFamily,
+    fontVariantNumeric: getComputedStyle(el).fontVariantNumeric,
+    fontSize: getComputedStyle(el).fontSize,
+    fontWeight: getComputedStyle(el).fontWeight,
+  });
+  // Additive only, alongside (never replacing) tabularSample above: the single first match
+  // proves the treatment exists somewhere, and this list makes the specific elements it is
+  // applied to - a score, a clock, a fixture time - readable one by one.
+  const tabularSamples = Array.from(document.querySelectorAll('[class*="tabular-nums"]'))
+    .slice(0, 8)
+    .map(describeTabular);
+  const tabularSample = tabularSampleElement ? describeTabular(tabularSampleElement) : null;
+
+  // Additive only. The design's featured card is a two-layer background:
+  // linear-gradient(180deg,#162032,#111a2b) with a radial accent glow over it
+  // (voleytrack-dashboard.css:4-5), a single-vs-two-layer difference that no class-name
+  // assertion can see. Reporting the resolved background layers proves the design's two
+  // surface tones (--surface-2 to --surface) actually rendered.
+  const liveSurfaceElement = document.querySelector('[data-testid="dashboard-live-featured"]');
+  const highlightsElement = document.querySelector('[data-testid="dashboard-highlights"]');
+  const liveSurface = liveSurfaceElement
+    ? {
+        featuredBackgroundImage: getComputedStyle(liveSurfaceElement).backgroundImage,
+        featuredBackgroundColor: getComputedStyle(liveSurfaceElement).backgroundColor,
+        featuredBorderColor: getComputedStyle(liveSurfaceElement).borderTopColor,
+        featuredBorderRadius: getComputedStyle(liveSurfaceElement).borderRadius,
+        highlightsBackgroundColor: highlightsElement
+          ? getComputedStyle(highlightsElement).backgroundColor
+          : null,
+        highlightsBorderRadius: highlightsElement
+          ? getComputedStyle(highlightsElement).borderRadius
+          : null,
+      }
+    : null;
+
+  // Additive only: no existing key, strategy, order or shape above is renamed, reordered or
+  // redefined. The design's filter row is .filters with .filter / .filter.active
+  // (voleytrack.css:88-89, primitives FilterGroup/Filter), whose ACTIVE treatment is the
+  // inverted light pill: a --fg fill with --bg ink and a --fg border. Reading the pressed
+  // button's computed colours proves that inversion rendered, which no class assertion can.
+  const describeFilterGroup = (el) => {
+    if (!el) return null;
+
+    const active = el.querySelector('button[aria-pressed="true"]');
+    const activeStyle = active ? getComputedStyle(active) : null;
+
+    return {
+      label: el.getAttribute("aria-label"),
+      role: el.getAttribute("role"),
+      pillCount: el.querySelectorAll("button").length,
+      pressedCount: el.querySelectorAll('button[aria-pressed="true"]').length,
+      active: active && activeStyle
+        ? {
+            text: (active.innerText || active.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40),
+            backgroundColor: activeStyle.backgroundColor,
+            color: activeStyle.color,
+            borderColor: activeStyle.borderTopColor,
+            borderRadius: activeStyle.borderRadius,
+            height: activeStyle.height,
+            fontSize: activeStyle.fontSize,
+            fontWeight: activeStyle.fontWeight,
+          }
+        : null,
+    };
+  };
+  const filterGroups = Array.from(document.querySelectorAll('[role="group"][aria-label]'))
+    .map(describeFilterGroup);
+
+  // Additive only. The design's .mcard is 16px padding on a --surface fill with a 1px
+  // --border edge and a 16px radius (voleytrack-partidos.css:3), and the tournament card is
+  // the design's own padding:16px with a 52px right edge (voleytrack-torneos.html). Reporting it
+  // card's resolved box makes the card padding actually applied machine-readable.
+  const firstMatchCard = document.querySelector('[data-testid="public-match-card"]');
+  const matchCard = firstMatchCard
+    ? (() => {
+        const cs = getComputedStyle(firstMatchCard);
+        return {
+          backgroundColor: cs.backgroundColor,
+          borderColor: cs.borderTopColor,
+          borderRadius: cs.borderTopLeftRadius,
+          paddingTop: cs.paddingTop,
+          paddingRight: cs.paddingRight,
+          paddingBottom: cs.paddingBottom,
+          paddingLeft: cs.paddingLeft,
+        };
+      })()
+    : null;
+
+  // Additive only. The design's bracket (voleytrack-torneos.css:62-86) is a scrollable
+  // region holding a grid of 230px round columns at a 28px gap, each round a column of
+  // .bracket-match cards whose own box is 82px min-height, 9px 10px 8px padding, a 1px
+  // edge and a 3px --accent left edge. These keys report the rounds, their headings, the
+  // matches and the resolved box of the first match, so the widget's presence and layout are
+  // machine-readable instead of only visual.
+  const bracketElement = document.querySelector('[data-testid="tournament-bracket"]');
+  const bracketGrid = bracketElement ? bracketElement.querySelector("ol") : null;
+  const bracket = bracketElement
+    ? (() => {
+        const gridStyle = bracketGrid ? getComputedStyle(bracketGrid) : null;
+        const rounds = Array.from(bracketElement.querySelectorAll(":scope > ol > li"));
+        const firstMatch = bracketElement.querySelector("[data-bracket-match]");
+        const matchStyle = firstMatch ? getComputedStyle(firstMatch) : null;
+        // Additive: the design paints its LAST round's match with .bracket-match--final
+        // (accent edge and accent-soft fill), so the final's own box is reported next to the
+        // first round's plain --surface-2 box instead of leaving the two indistinguishable.
+        const lastMatch = Array.from(bracketElement.querySelectorAll("[data-bracket-match]")).at(-1);
+        const lastMatchStyle = lastMatch ? getComputedStyle(lastMatch) : null;
+        return {
+          present: true,
+          role: bracketElement.getAttribute("role"),
+          ariaLabel: bracketElement.getAttribute("aria-label"),
+          tabIndex: bracketElement.tabIndex,
+          overflowX: getComputedStyle(bracketElement).overflowX,
+          padding: getComputedStyle(bracketElement).padding,
+          gridTemplateColumns: gridStyle ? gridStyle.gridTemplateColumns : null,
+          columnGap: gridStyle ? gridStyle.columnGap : null,
+          roundCount: rounds.length,
+          rounds: rounds.map((round) => ({
+            heading: (round.querySelector("h3")?.textContent || "").trim(),
+            matches: round.querySelectorAll("[data-bracket-match]").length,
+          })),
+          matchCount: bracketElement.querySelectorAll("[data-bracket-match]").length,
+          matchAriaLabels: Array.from(bracketElement.querySelectorAll("[data-bracket-match]"))
+            .slice(0, 3)
+            .map((match) => match.getAttribute("aria-label")),
+          firstMatch: matchStyle
+            ? {
+                minHeight: matchStyle.minHeight,
+                paddingTop: matchStyle.paddingTop,
+                paddingRight: matchStyle.paddingRight,
+                paddingBottom: matchStyle.paddingBottom,
+                paddingLeft: matchStyle.paddingLeft,
+                borderLeftWidth: matchStyle.borderLeftWidth,
+                borderLeftColor: matchStyle.borderLeftColor,
+                borderRadius: matchStyle.borderTopLeftRadius,
+                backgroundColor: matchStyle.backgroundColor,
+              }
+            : null,
+          lastMatch: lastMatchStyle
+            ? {
+                minHeight: lastMatchStyle.minHeight,
+                borderLeftWidth: lastMatchStyle.borderLeftWidth,
+                borderLeftColor: lastMatchStyle.borderLeftColor,
+                borderTopColor: lastMatchStyle.borderTopColor,
+                backgroundColor: lastMatchStyle.backgroundColor,
+              }
+            : null,
+        };
+      })()
+    : null;
+
+  // Additive only. The design's public sidebar carries six destinations
+  // (frontend/design/html/voleytrack.html, its sidebar-public-nav group); the app adds them
+  // one at a
+  // time as each screen becomes real, so the rendered label list is what proves which
+  // destinations exist. Reading the label span rather than the whole anchor keeps the
+  // numeric icon prefix out of the value.
+  const navDestinations = Array.from(document.querySelectorAll("aside nav a")).map((link) => ({
+    label: (link.querySelector("span:last-child")?.textContent || "").trim(),
+    href: link.getAttribute("href"),
+    isActive: link.getAttribute("aria-current") === "page",
+  }));
+
+  // Additive only. The design's list tables are thead > tr > th cells
+  // (voleytrack.css:96) and the shared DataTable primitive renders every header as
+  // a scoped column header; this reports the header semantics actually rendered instead of the
+  // class names that produced them.
+  const tableHeaders = Array.from(document.querySelectorAll("table")).map((table) => ({
+    columnHeaders: table.querySelectorAll('th[scope="col"]').length,
+    rowHeaders: table.querySelectorAll('th[scope="row"]').length,
+    headers: Array.from(table.querySelectorAll('th[scope="col"]')).map((th) =>
+      (th.textContent || "").trim().replace(/\\s+/g, " "),
+    ),
+  }));
+
+  // Additive only. The team detail's tab strip is a labelled navigation whose entries are
+  // route links; reporting each entry's label plus the active entry's computed box proves the
+  // design's four-tab set (Detalle, Plantel (n), Partidos, Estadisticas) and its active
+  // treatment rendered.
+  const teamTabsElement = document.querySelector('[data-testid="team-tabs"]');
+  const teamTabs = teamTabsElement
+    ? Array.from(teamTabsElement.querySelectorAll("a")).map((tab) => {
+        const cs = getComputedStyle(tab);
+        return {
+          label: (tab.textContent || "").trim().replace(/\\s+/g, " "),
+          href: tab.getAttribute("href"),
+          isActive: tab.getAttribute("aria-current") === "page",
+          backgroundColor: cs.backgroundColor,
+          color: cs.color,
+          borderRadius: cs.borderRadius,
+          fontSize: cs.fontSize,
+          fontWeight: cs.fontWeight,
+        };
+      })
+    : null;
+
+  // Additive only. The design's .kpi-grid is four columns (two below 1200px,
+  // voleytrack-jugadores.css:3-4) and its .kpi-value is 32px/900 with line-height 1
+  // (lines 8-9). KpiGrid/Kpi declare role="list"/"listitem", so the grid is found
+  // through its accessible role and the resolved tracks and value typography are reported.
+  const kpiGridElement = document.querySelector('[role="list"]');
+  const kpiValueElement = kpiGridElement
+    ? kpiGridElement.querySelector('[role="listitem"] p:nth-of-type(2)')
+    : null;
+  const kpiGrid = kpiGridElement
+    ? (() => {
+        const cs = getComputedStyle(kpiGridElement);
+        const valueStyle = kpiValueElement ? getComputedStyle(kpiValueElement) : null;
+        return {
+          label: kpiGridElement.getAttribute("aria-label"),
+          childCount: kpiGridElement.querySelectorAll('[role="listitem"]').length,
+          gridTemplateColumns: cs.gridTemplateColumns,
+          columnGap: cs.columnGap,
+          value: valueStyle
+            ? {
+                text: (kpiValueElement.textContent || "").trim(),
+                fontSize: valueStyle.fontSize,
+                fontWeight: valueStyle.fontWeight,
+                lineHeight: valueStyle.lineHeight,
+                letterSpacing: valueStyle.letterSpacing,
+              }
+            : null,
+        };
+      })()
+    : null;
+
+  // Additive only: no key, strategy, order or shape above is renamed, reordered or
+  // redefined. The live match screen is the one screen whose whole content is a scoreboard,
+  // a court and a timeline, and the existing tabularSamples/cardBodies keys only see it
+  // through treatments it may or may not use. This key reports what the screen itself
+  // renders: the resolved box and fill of each region that survives on both sides of the
+  // live alignment, the typography actually applied to the current-set score, the court's
+  // structure and its per-position accessible names, and the timeline's element and item
+  // count. Every selector here exists on the pre-alignment screen too, so the same probe can
+  // measure before and after.
+  const describeLiveBox = (el) => {
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return {
+      testId: el.getAttribute("data-testid"),
+      tag: el.tagName.toLowerCase(),
+      paddingTop: cs.paddingTop,
+      paddingRight: cs.paddingRight,
+      paddingBottom: cs.paddingBottom,
+      paddingLeft: cs.paddingLeft,
+      borderRadius: cs.borderTopLeftRadius,
+      backgroundColor: cs.backgroundColor,
+      backgroundImage: cs.backgroundImage === "none" ? null : cs.backgroundImage,
+      gridTemplateColumns: cs.gridTemplateColumns,
+    };
+  };
+  const describeLiveText = (el) => {
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return {
+      tag: el.tagName.toLowerCase(),
+      text: (el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 48),
+      fontFamily: cs.fontFamily,
+      fontSize: cs.fontSize,
+      fontWeight: cs.fontWeight,
+      letterSpacing: cs.letterSpacing,
+      fontVariantNumeric: cs.fontVariantNumeric,
+    };
+  };
+  const liveRegionIds = [
+    "live-match-scoreboard",
+    "set-history-card",
+    "court-rotations",
+    "court-graphic",
+    "live-events",
+    "team-statistics",
+    "top-scorers",
+    "roster-grid",
+    "individual-stats",
+    "match-metadata",
+  ];
+  const liveCourtElement = document.querySelector('[data-testid="court-graphic"]');
+  const liveTimelineElement =
+    document.querySelector('[data-testid="live-event-list"]') ??
+    document.querySelector('[data-testid="live-events"] ol');
+  const liveEventItems = Array.from(document.querySelectorAll('[data-testid="live-event"]'));
+  const liveCourtPositions = Array.from(document.querySelectorAll('[data-testid="court-position"]'));
+  const liveScoreElement = document.querySelector('[data-testid="current-score-home"]');
+  const liveScoreboardElement = document.querySelector('[data-testid="live-match-scoreboard"]');
+  const liveScreen =
+    liveScoreboardElement || liveCourtElement || liveTimelineElement
+      ? {
+          scoreboard: describeLiveBox(liveScoreboardElement),
+          currentScore: describeLiveText(liveScoreElement),
+          currentScoreParent: describeLiveText(liveScoreElement?.parentElement ?? null),
+          court: liveCourtElement
+            ? (() => {
+                const courtRect = liveCourtElement.getBoundingClientRect();
+                const boxes = liveCourtPositions.map((el) => {
+                  const r = el.getBoundingClientRect();
+                  return {
+                    position: el.getAttribute("data-position"),
+                    left: round(r.left - courtRect.left),
+                    top: round(r.top - courtRect.top),
+                    width: round(r.width),
+                    height: round(r.height),
+                  };
+                });
+                const overflowing = boxes.filter(
+                  (box) =>
+                    box.left < 0 ||
+                    box.top < 0 ||
+                    box.left + box.width > round(courtRect.width) ||
+                    box.top + box.height > round(courtRect.height),
+                );
+
+                return {
+                  ...describeLiveBox(liveCourtElement),
+                  role: liveCourtElement.getAttribute("role"),
+                  ariaDescribedBy: liveCourtElement.getAttribute("aria-describedby"),
+                  netCount: liveCourtElement.querySelectorAll('[data-testid="volleyball-net"]').length,
+                  attackLineCount: liveCourtElement.querySelectorAll('[data-testid="attack-line"]').length,
+                  positionCount: document.querySelectorAll('[data-testid="court-position"]').length,
+                  positionLabels: liveCourtPositions
+                    .slice(0, 3)
+                    .map((el) => el.getAttribute("aria-label")),
+                  positionTexts: liveCourtPositions
+                    .slice(0, 3)
+                    .map((el) => (el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 40)),
+                  boxWidth: round(courtRect.width),
+                  boxHeight: round(courtRect.height),
+                  positionBoxes: boxes.slice(0, 4),
+                  overflowingPositionCount: overflowing.length,
+                };
+              })()
+            : null,
+          timeline: liveTimelineElement
+            ? {
+                tag: liveTimelineElement.tagName.toLowerCase(),
+                testId: liveTimelineElement.getAttribute("data-testid"),
+                itemCount: liveEventItems.length,
+                listItemTags: [...new Set(liveEventItems.map((el) => el.tagName.toLowerCase()))],
+              }
+            : null,
+          regions: liveRegionIds
+            .map((id) => document.querySelector('[data-testid="' + id + '"]'))
+            .filter(Boolean)
+            .map(describeLiveBox),
+        }
+      : null;
+
   const expected = __EXPECTED__;
   const innerText = document.body.innerText || "";
   const expectedStrings = expected.map((value) => ({ value, found: innerText.includes(value) }));
@@ -541,6 +979,30 @@ const PROBE_SOURCE = `(() => {
       navItem,
       pageHeading,
       numericTreatment,
+      // Additive keys: new names only, every key above is unchanged.
+      livePills,
+      statePills,
+      liveGrid,
+      upcomingRowGrid,
+      cardBodies,
+      tabularSample,
+      tabularSamples,
+      liveSurface,
+      // Additive keys: new names only, every key above is unchanged.
+      filterGroups,
+      matchesGrid,
+      tournamentsGrid,
+      matchCard,
+      bracket,
+      // Additive keys: new names only, every key above is unchanged. navDestinations
+      // reports which public sidebar destinations rendered, tableHeaders the column-header
+      // semantics of every table, teamTabs the team detail's tab set and active treatment,
+      // and kpiGrid the KPI grid's resolved columns and value typography.
+      navDestinations,
+      liveScreen,
+      tableHeaders,
+      teamTabs,
+      kpiGrid,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

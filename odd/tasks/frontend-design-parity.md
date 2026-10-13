@@ -769,15 +769,231 @@ readable against the completed record above; the carried-over items it lists wer
 
 ### Slice 2 — Public (spectator) screens
 
-- [ ] **T11 — Dashboard parity.** Hero-first live match card, "Próximos destacados / HOY" rail.
-- [ ] **T12 — Matches parity.** Filter panel, 6-card grid, state pills.
-- [ ] **T13 — Tournaments parity.** Card grid with type filters; detail with Clasificación TOP 5,
-  Llaves de playoffs, Equipos participantes and the bracket.
-- [ ] **T14 — Teams parity.** New `/teams` list (currently a placeholder) and a team detail with
-  the design's four tabs plus the "Rendimiento Últimos 5" badges.
-- [ ] **T15 — Players parity.** New `/players` list (currently a placeholder) and a player detail
-  with the design's KPI grid.
-- [ ] **T16 — Live match parity.** Timeline, court with positions, scoreboard.
+- [x] **T11 — Dashboard parity.** Done: the screen is now the design's three regions, and it is the
+  first visible design work of the whole feature.
+  - Structure: page head → `PageHeader`; the live grid → `grid min-[1100px]:grid-cols-[1.6fr_0.9fr]`;
+    the featured live match → `Card padded={false}` with `CardBody`, `LivePill`, `Chip`, `Num` for
+    the clock and scores, a 4px decorative progress rail and an accent link wearing the button
+    treatment; the highlights rail → `Card` with `CardHeader` ("Próximos destacados" plus a mono
+    `HOY`) and `CardBody` holding two tiles and a full-width dashed ghost link; the upcoming matches →
+    a `Card` with a head row and a real `<ul>` of rows using `StatePill` and `Num`.
+  - **Measured before and after**, which is the point of the harness. Before: heading "Dashboard
+    público", zero live pills, zero state pills, a 716/364 grid at 24px gap, no `CardBody` at all.
+    After: heading **"Dashboard espectador"** at 28px/900 with line-height 28px; **one live pill**
+    with `role="status"` and `aria-live="polite"` in mono 10px/800 on `rgb(239,68,68)`; **three
+    state pills**; the grid at **696.31 / 391.69 = exactly 1.6 / 0.9** with a 16px gap; `CardBody`
+    at 18px 20px; the score `2 : 1` in **JetBrains Mono 36px/800 tabular-nums**; row grid
+    140/444/160/170/100 with 12px gap and 14px 20px padding; and the featured card's radial accent
+    glow over the `#162032 → #111a2b` gradient.
+  - Copy removed because the design has no counterpart: a four-metric block, its "Partidos en vivo"
+    heading, "Última acción", an app-only "Confirmado", and the whole design-less coverage block
+    that lived in the sidebar (`COBERTURA`, "3 partidos en vivo", "Datos actualizados ahora").
+    Copy adopted from the design with line citations: the heading and description, "Próximos
+    destacados" / "HOY", "Próximos partidos" / "Ver todos", "Ver partido en vivo →", and the
+    team and best-of lines. The removal is proven at the rendered level: the captured `innerText`
+    went from containing `COBERTURA 3 partidos en vivo Datos actualizados ahora` to not containing
+    the string at all, and the two assertions that pinned it were **inverted into absence pins**,
+    which is the right shape for protecting a deletion.
+  - **Three corrections to the parent's own instructions, each decided by the design:**
+    1. I described the highlights rail's date-venue line as mono. `dashboard.html:57` declares only
+       margin, colour and 11px, so it inherits Inter. The worker followed the design over the prompt.
+    2. I attributed the design-less coverage copy to the dashboard; it actually lived in
+       `components/navigation/Sidebar.tsx`, verified by the parent with a grep before authorizing its
+       removal. My attribution was simply wrong.
+    3. I mandated `CardBody` while the prototype uses one-off inline padding for two boxes, so those
+       boxes are 2px and 4px/6px narrower than the prototype. Accepted deliberately and documented in
+       the card comment rather than forking the card system for it, since the agreed plan is to get
+       structure right across the screens first and polish afterwards.
+  - **Judgement the parent rates highly:** the design's call to action reads "Ver los 16 partidos →",
+    and our fixtures hold ten. The worker rendered "Ver todos los partidos →" and refused to print a
+    false count to match the prototype's wording, noting the number can return when a real total
+    exists. It also resolved a genuine inconsistency in the design itself — the same card uses two
+    mark fills with no rule — by adopting `--blue`, the design's own default team-mark fill in other
+    screens, rather than inventing a rule.
+  - New primitive surface, approved: `components/primitives/buttonClasses.ts` exporting the button
+    treatments so a link can wear `.btn` without duplicating the classes, with `Button` rendering
+    through the same module and a drift test between them; plus an optional `size` prop for the
+    design's 32px form. The design itself writes `<a class="btn accent">`, so this is the honest
+    shape and it prevents per-screen class duplication.
+  - `PUBLIC_DASHBOARD.metrics` was removed once it had zero consumers, and the three fixture fields
+    added from the design — `bestOf`, `clockLabel`, `refereeName` — are explicitly labelled
+    **PROTOTYPE DATA, NOT REAL**, to be replaced when the backend exposes real values. Worth noting:    the repo's own `src/boundary.ts` guard rejects the words `api` and `http` even inside comments,
+    so the label had to be reworded.
+  - Ratchets lowered as required: legacy-`Card` ceiling 66/21 → **62/20** with the all-`Card` floor
+    raised 66 → 70, and `vt-panel` 73/39 → **71/38**. Every `CardBody` usage moved a card onto the
+    structural form, which is exactly what the ratchet was for.
+  - Suite `44 files / 289 passed` in 3.50s, lint exit 0, build exit 0. One screenshot run exited 1
+    with no report while Vite was still compiling the first request; the immediate re-run was clean
+    and is the recorded measurement. The dev server was stopped with a single-PID kill and the port
+    released.
+  - Left for the shell work: `PublicShell.tsx` still passes the now-ignored `showCoverage` prop, which
+    should be dropped. Also found: `router.test.tsx` pinned the removed dashboard copy and a
+    tournament link that only the deleted metrics card rendered — the assertion was wrong, not the
+    screen, and it was updated with an explicit existence assertion before clicking so it cannot
+    silently become a no-op.
+- [x] **T12 — Matches parity.** Done. `/matches` is now a page head, a labelled `FilterGroup` of five status
+  pills, a result-count line announced through `aria-live`, and a responsive grid of match cards built
+  as a real list of links, each carrying a mono eyebrow, a state pill, team names, a `Num` score and a
+  venue/time/detail line, with `EmptyState` in a structural `Card` when the result set is empty.
+- [x] **T13 — Tournaments parity.** Done, list and detail, including the bracket.
+  - List: two labelled pill groups (type and stage), a count line, and a grid of structural `Card`s with
+    a chevron, a mono `LIGA · EN CURSO` eyebrow, the name, a detail line and badges.
+  - Detail: a shared shell with `PageHeader`, a `KpiGrid`, an `Información` card built from `InfoRow`s,
+    and a tab strip inside a structural `Card` wrapping each panel.
+  - **Tab reconciliation, deliberately reasoned.** `Resumen`, `Partidos` and `Estadísticas` were kept;
+    `Tabla` was renamed to the design's `Clasificación` and `Cuadro` to `Llaves`. The design's
+    `Participantes` tab was **not** added: it would need a sixth route in `src/router.tsx`, outside the
+    task's surfaces, and its `Torneo` column has no counterpart in our fixtures — so both of the
+    design's panels (`Clasificación TOP 5` and `Equipos participantes`) live on the standings route
+    instead. Recorded as an open item rather than quietly dropped.
+  - **The bracket is a real widget now**, and it was measured: `role="region"` with `tabindex=0` and a
+    labelled scroll container, an ordered list of rounds at 230px columns with a 28px gap, an `h3` per
+    round, ordered lists of matches inside each round at 82px minimum height with 9/10/8 padding and a
+    3px accent left edge on `--surface-2`, the final round in accent-soft, a 1px rule between team
+    lines, and a per-match `aria-label` of the form "QF-1: River Plate 3 — Once Unidos 0, Finalizado",
+    so it reads as content rather than as a decorative diagram. Measured: 3 rounds at 4/2/1, 7 matches,
+    grid `230px 230px 230px` with a 28px gap.
+  - **Measured before and after.** `/matches` went from no heading, zero state pills, zero filter groups
+    and no grid, to a 28px/900 heading, a labelled group of five pills with one pressed, the design's
+    inverted light active pill (`rgb(248,250,252)` fill with `rgb(11,18,32)` ink, 36px, fully rounded),
+    a three-column grid of 357.33px tracks with a 16px gap over ten cards, ten state pills, card padding
+    of 16px on `rgb(17,26,43)` with a 16px radius, and scores in JetBrains Mono 18px/900 tabular-nums.
+    Responsive behaviour confirmed at 1100px (two columns) and 700px (one). `/tournaments` went from
+    zero groups and no grid to two labelled groups of three and four pills and a three-column grid of
+    five cards. The standings route gained `Clasificación TOP 5` and `Equipos participantes`.
+  - **Seven places where the design overrode this document's brief**, each with the design line, and
+    the worker was right every time:
+    1. The brief described the matches design as having pill-shaped status filters. Its pills are
+       actually the *time window*, and its status filter is a `<select>` inside a collapsed panel. The
+       app's five statuses were placed in the pill treatment, which is a synthesis rather than a copy.
+    2. The tournaments type and stage filters are also `<select>`s in a collapsed panel, so they became
+       pill groups, following the standing rule that a filter is a real button with `aria-pressed`.
+       An `Equipos mínimos` filter was dropped because no fixture can drive it.
+    3. The brief said the design's tab set was the target. It is not one set: the tabs **differ per
+       tournament format** (`Clasificación` + `Playoffs` versus `Participantes` + `Llaves`), so a single
+       generic route set cannot mirror it. This is a real design characteristic, not an oversight.
+    4. The "roughly two dozen `.bracket-match` uses" in this document is the design's generated markup
+       across two data sets (7 + 15); our fixture renders 7.
+    5. The brief's `vt-panel` figure of 71/38 was wrong; the real starting measurement was **70/37**, one
+       occurrence of slack left in the previous ceiling. Corrected here.
+    6. `.bracket-status` uses an ink colour with no token (`#ffd0ad`), so the bracket status renders as an
+       accent `Badge`.
+    7. The design's `InfoRow` gives the **label** the emphasis while our primitive emphasises the value.
+       The primitive was kept rather than inverted for one screen, and the divergence is recorded.
+  - Also unmodelled and recorded, all fixture-blocked or polish: the design's stats fundamental
+    sub-tabs and `Equipos mínimos` filter need fixtures the app does not have; the design's collapsible
+    `Filtros` panel was not built on either screen; the venue pin emoji was dropped; the design's
+    "Jornada" KPI became "Rondas" and its "JORNADA 15" eyebrow became a match count, because no such
+    fixture exists; and the matches `EmptyState` branch is only reachable through `state=empty` with the
+    current fixtures.
+  - Ratchets lowered as required, substantially: `vt-panel` 71/38 → **61/31**, `vt-raised` 46/26 →
+    **36/21**, the legacy-`Card` ceiling 62/20 → **41/13** with the all-`Card` floor moving 70/21 →
+    55/19, and `vt-raised-border` unchanged at 9/7. Moving cards onto the structural form is exactly
+    what those ratchets were for, and the counts are falling for the right reason.
+  - Suite `44 files / 297 passed`, lint exit 0, build exit 0. Dev servers were stopped with single-PID
+    kills, both ports released, and another session's process left untouched.
+- [x] **T14 — Teams parity.** Done. `/teams` and its detail are real screens now, and the **Equipos**
+  destination was added to the public nav in the same change, so the nav only grows as a destination
+  becomes real.
+  - List: `PageHeader`, a labelled `FilterGroup`, a count line, and a structural `Card` wrapping the
+    shared `DataTable`, with `EmptyState` for the empty case.
+  - Detail: the design's four tabs implemented over the routes that already existed. `Resumen` was
+    renamed to the design's `Detalle`, the roster tab gained its count (`Plantel (5)`), and `Partidos`
+    and `Estadísticas` were kept unchanged; nothing was removed. The design's inverted active pill was
+    adopted for the tab strip.
+  - `Rendimiento ÚLTIMOS 5` was added, and its cards were moved onto structural `Card`/`CardHeader`/
+    `CardBody` with `vt-panel` replaced by `vt-surface-2`.
+- [x] **T15 — Players parity.** Done. `/players` and its detail are real screens, and the **Jugadores**
+  destination was added to the nav.
+  - List: the same composition as teams, with six columns including a per-row link to the player's file.
+  - Detail: moved onto the aligned `KpiGrid`/`Kpi`, with two cards converted to the structural form and
+    `vt-raised` replaced by design-backed border tokens.
+  - **En vivo was deliberately left out of the nav**, because it still has no route or screen; adding it
+    would put a link in the main navigation that leads nowhere. It arrives with T16.
+  - The placeholder wiring those two routes left behind was removed, while `PlaceholderPage` itself
+    survives because `/admin/settings` still uses it.
+  - **Measured before and after.** Before, both routes were `placeholderRoute` instances, and the
+    placeholder copy was proven live by capturing `/admin/settings` and finding its "screen is not
+    implemented" text. After: the nav renders five destinations (`Dashboard, Partidos, Torneos,
+    Equipos, Jugadores`) with no `En vivo`; the teams table has four `th[scope=col]` headers and the
+    players table six; the team tabs render `Detalle` (active) / `Plantel (5)` / `Partidos` /
+    `Estadísticas` with the active pill measured at `rgb(248,250,252)` fill and `rgb(11,18,32)` ink at
+    11px/700; the KPI grid measures four 264px tracks with a 16px gap and a KPI value at 32px/900 with
+    32px line-height and -0.64px tracking; and `CardBody` applies 18px 20px. Every capture returned
+    exit 0 with `problems: []`.
+  - **Design disagreements, each with its reasoning.** The design's collapsible `Filtros` select panels
+    again became pill groups, and the numeric `mínimos` selects remain unbuilt. Its prototype row
+    figures (`data-players="14" data-wins="8"`) were **not** copied: the screens derive those numbers
+    from `PUBLIC_TEAM_DETAILS` and the league standings, rendering an honest em dash where the data does
+    not exist. Its player KPI values and labels were adopted but labelled as prototype data in the
+    fixture, superseding the previous canonical pairs. Its `Rendimiento` rows were replaced by real
+    per-match averages, because the prototype's per-set metrics have no counterpart in our data, and
+    the block was placed full-width above the app's own grid.
+  - Ratchets lowered again: `vt-panel` 61/31 → **52/27**, `vt-raised` 36/21 → **29/18**, the legacy-`Card`
+    ceiling 41/13 → **35/12** with the all-`Card` floor rising 55/19 → 59/21 as new structural cards
+    appeared. `vt-raised-border` unchanged at 9/7.
+  - Suite `46 files / 309 passed`, lint exit 0, build exit 0. Dev server stopped with a single-PID kill,
+    port released, another session's process untouched.
+  - **Carried into the polish pass:** the two list screens render an honest em dash where fixtures hold
+    no tournament, record or height; the design's filter panels and per-set `Rendimiento` metrics remain
+    unbuilt; and `PlayerDetailPage.tsx` still carries the app's own artboard hero, breakdown and
+    recent-matches blocks with pre-existing raw colour usage (`text-white`, `bg-vt-panel`). That last
+    one is real debt, not a design decision, and it is not covered by the raw-colour guard because that
+    guard only covers the auth, layout and dashboard surfaces.
+- [x] **T16 — Live match parity and the sixth nav destination.** Done, and **slice 2 is now complete**:
+  all six public screens are aligned.
+  - `LiveMatchPresentation.tsx` is new and holds the shared presentation — scoreboard, set history,
+    court, timeline, team stats, top scorers, two rosters and a metadata panel. `LiveMatchPage` became a
+    focused shell over it, and a new `/live` route renders the same presentation inside the public shell.
+  - **The navigation tension was resolved with evidence, exactly as asked.** The design's live HTML
+    carries the same public sidebar group as every other screen, so the design does put live inside the
+    shell — but it is a one-page prototype whose nav click only toggles which section is visible, so it
+    **models no routing and cannot settle an href**. That was stated explicitly rather than assumed.
+    Resolution: `/live` inside `publicShellRoute` sharing the presentation, while `/matches/$id/live`
+    keeps its standalone focused behaviour and its test, measured as sidebar-absent before and after.
+    Rejected alternatives, each with its reason: pointing the nav at `/matches/$id/live` would delete the
+    navigation the user just clicked; pointing it at `/matches?status=live` would duplicate the matches
+    filter and leave the live screen unnavigable; and shelling the detail route would break a deliberate
+    tested decision. Flagged for the owner as a product call.
+  - **All six nav destinations now exist** (`Dashboard`, `Partidos`, `Torneos`, `Equipos`, `Jugadores`,
+    `En vivo`), where `/live` before had no route at all, and `router.test.tsx` asserts every nav href
+    resolves to a real route rather than merely counting labels.
+  - **Measured before and after.** Scoreboard padding 0 → 22px and a flat fill → the surface gradient,
+    grid none → `399px 220px 399px`. The set score went from Inter 56px/900 with normal numeric variant
+    to **JetBrains Mono 42px/900 plus a 13px/700 tabular sub-line**, which is the font and numeric work
+    from slice 1 finally paying off on a real score. The court went from `rgb(30,41,59)` with a two-column
+    grid and no role to `rgb(22,32,50)` at 14px with `role="group"` and an `aria-describedby`, markers
+    from 32×32 to 58×56 carrying visible `1 · SOSA #11` chips and **zero overflowing positions**. Card
+    padding went from 24px and 20–30px to the card system's `CardBody` 18px 20px.
+  - **The court reads for assistive technology.** A labelled group whose description names the net, each
+    side's formation (three in front of the three-metre line, three behind) and which side serves; twelve
+    list items each named `"{team}, posición n: name, número n"`; discs, chips, lines and the `RED` and
+    `3M` marks hidden as decorative; and team identity carried by side, ring tone and badges **restated in
+    words** rather than by colour alone.
+  - **Eleven design-over-prompt decisions**, each with a design line. The most consequential: the live
+    stylesheet does **not** use the design's KPI classes, so `Kpi`/`KpiGrid` were correctly not used — the
+    worker corrected this document's instruction. Prototype-only colours with no token were mapped onto
+    the system's own tokens (the scoreboard's `#1a2740` became the `surface-2 → surface` gradient, and the
+    court's literals became `label` variants, `background` and `accent-soft`). A "Ver historial completo"
+    modal was **not** rendered because no history fixture exists and it would have been a no-op. The
+    design's serving player is unknowable from our data, so the serving **team** is shown instead of an
+    invented name. And the design's own inconsistency about tinting the unforced-errors row was resolved
+    by dropping the app's danger tint rather than inventing a rule.
+  - Ratchets lowered again: `vt-panel` 52/27 → **45/26**, `vt-raised` 29/18 → **25/16**, `vt-raised-border`
+    9/7 → **7/5**, legacy `Card` 35/12 → **32/11**, with the all-`Card` floor rising 59/21 → 66/23.
+  - Suite `46 files / 313 passed`, lint exit 0, build exit 0. Both dev servers stopped with single-PID
+    kills, both ports free, the other session's process untouched.
+  - **Settled by the project owner after reviewing the captures:** the `/live` split stays as built.
+    The nav's `En vivo` destination leads to `/live` inside the public shell, so the navigation never
+    disappears under the user's own click, while `/matches/$id/live` remains the focused presentation
+    for a specific match. Sending the nav straight to the standalone full-screen view was considered
+    and declined. This is no longer an open item.
+  - **Carried into the polish pass:** the screen renders **three `role="status"` regions** (two static
+    pills plus the score), which is design-faithful but arguably noisy for a screen reader and worth a
+    decision, and the roster's points, attack, block and ace values are prototype data that must be
+    replaced when real values exist. The court's visual quality rests on measured geometry (a
+    583.6×291.8 box, ~58×56 markers, zero overflowing positions) rather than on anyone's eyes, because
+    image reading is disabled for the orchestrator.
 
 ### Slice 3 — Admin screens
 

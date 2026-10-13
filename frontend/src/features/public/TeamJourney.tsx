@@ -15,12 +15,27 @@ import {
 
 export type TeamRouteTab = "overview" | "roster" | "matches" | "stats";
 
-const teamTabs = [
-  { id: "overview", label: "Resumen", suffix: "", widthClass: "w-[92px]" },
-  { id: "roster", label: "Plantel", suffix: "/roster", widthClass: "w-[86px]" },
-  { id: "matches", label: "Partidos", suffix: "/matches", widthClass: "w-[92px]" },
-  { id: "stats", label: "Estadísticas", suffix: "/stats", widthClass: "w-[104px]" },
-] as const;
+/**
+ * Design: frontend/design/html/voleytrack-equipos.html, the team-detail tab row is
+ * `Detalle · Plantel (14) · Partidos · Estadísticas`. The app keeps one route per tab, so the
+ * strip is a labelled navigation whose current entry carries `aria-current="page"` rather
+ * than an in-place tablist (the same decision the tournament shell records).
+ *
+ * Reconciliation against the app's previous labels:
+ * - `overview` was "Resumen"; the design calls this tab **Detalle**, so it was renamed.
+ * - `roster` was "Plantel" with no count; the design prints the roster size, so the count
+ *   is appended when the team's detail projection is known.
+ * - `matches` and `stats` were already "Partidos" and "Estadísticas" and are unchanged.
+ * - Nothing was removed: the design's four tabs are the app's four routes.
+ */
+function teamTabs(rosterCount: number) {
+  return [
+    { id: "overview", label: "Detalle", suffix: "", widthClass: "w-[92px]" },
+    { id: "roster", label: `Plantel (${rosterCount})`, suffix: "/roster", widthClass: "w-[104px]" },
+    { id: "matches", label: "Partidos", suffix: "/matches", widthClass: "w-[92px]" },
+    { id: "stats", label: "Estadísticas", suffix: "/stats", widthClass: "w-[104px]" },
+  ] as const;
+}
 
 export type TeamJourneyContext = Readonly<{
   team: TeamFixture;
@@ -181,7 +196,7 @@ export function TeamJourney({ activeTab, children, detail, team }: TeamJourneyPr
             <div className="flex min-w-0 items-center gap-5 min-[1416px]:contents">
               <div
                 aria-hidden="true"
-                className="flex size-[84px] shrink-0 items-center justify-center rounded-2xl border border-vt-border bg-vt-panel text-2xl font-black text-vt-accent min-[1416px]:absolute min-[1416px]:left-6 min-[1416px]:top-[26px] min-[1416px]:rounded-[24px]"
+                className="flex size-[84px] shrink-0 items-center justify-center rounded-2xl border border-vt-border bg-vt-surface-2 text-2xl font-black text-vt-accent min-[1416px]:absolute min-[1416px]:left-6 min-[1416px]:top-[26px] min-[1416px]:rounded-[24px]"
               >
                 {initials}
               </div>
@@ -209,16 +224,16 @@ export function TeamJourney({ activeTab, children, detail, team }: TeamJourneyPr
 
         <nav
           aria-label="Navegación del equipo"
-          className="mt-6 min-h-[44px] rounded-[14px] border border-vt-border bg-vt-raised px-3 py-2 min-[1416px]:h-11"
+          className="mt-6 min-h-[44px] rounded-[14px] border border-vt-border bg-vt-surface-2 px-3 py-2 min-[1416px]:h-11"
           data-testid="team-tabs"
         >
           <div className="flex flex-wrap items-center gap-3">
-            {teamTabs.map((tab) => {
+            {teamTabs(detail ? detail.rosterStats.length : team.rosterPlayerIds.length).map((tab) => {
               const isActive = tab.id === activeTab;
               return (
                 <Link
                   aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex h-7 items-center justify-center rounded-full px-4 text-[11px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent ${tab.widthClass} ${isActive ? "bg-vt-accent text-vt-background" : "bg-vt-panel text-vt-muted hover:text-vt-text"}`}
+                  className={`inline-flex h-7 items-center justify-center rounded-full border px-4 text-[11px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent ${tab.widthClass} ${isActive ? "border-vt-text bg-vt-text text-vt-background" : "border-vt-border bg-vt-surface text-vt-muted hover:text-vt-text"}`}
                   key={tab.id}
                   to={`/teams/${team.id}${tab.suffix}` as string}
                 >
@@ -240,7 +255,7 @@ export function TeamJourney({ activeTab, children, detail, team }: TeamJourneyPr
 
 function HeroMetric({ accent = false, label, value }: { accent?: boolean; label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-vt-border bg-vt-panel px-3 py-3 text-center min-[1416px]:h-[82px] min-[1416px]:px-4 min-[1416px]:py-[14px] min-[1416px]:text-left">
+    <div className="rounded-xl border border-vt-border bg-vt-surface-2 px-3 py-3 text-center min-[1416px]:h-[82px] min-[1416px]:px-4 min-[1416px]:py-[14px] min-[1416px]:text-left">
       <dt className="text-[10px] font-bold leading-3 tracking-[0.08em] text-vt-muted">{label}</dt>
       <dd className={`mt-1 text-2xl font-black min-[1416px]:mt-2 min-[1416px]:text-[28px] min-[1416px]:leading-[34px] ${accent ? "text-vt-accent" : "text-vt-text"}`}>{value}</dd>
     </div>

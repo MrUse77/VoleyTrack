@@ -5,6 +5,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ARTBOARD_MANIFEST } from "./artboardManifest";
 import { LiveMatchPage } from "./features/public/LiveMatchPage";
+import { LiveNowPage } from "./features/public/LiveNowPage";
 import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
 import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 import { PointEntryPage } from "./features/scoring/PointEntryPage";
@@ -24,9 +25,11 @@ import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsP
 import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
 import { ADMIN, PUBLIC_DASHBOARD, PUBLIC_MATCHES, PUBLIC_PLAYERS, PUBLIC_TEAMS, PUBLIC_TOURNAMENTS } from "./fixtures";
 import { PlayerDetailPage } from "./features/public/PlayerDetailPage";
+import { PlayersPage } from "./features/public/PlayersPage";
 import { TeamMatchesPage } from "./features/public/TeamMatchesPage";
 import { TeamRosterPage } from "./features/public/TeamRosterPage";
 import { TeamStatsPage } from "./features/public/TeamStatsPage";
+import { TeamsPage } from "./features/public/TeamsPage";
 import { routeTree } from "./router";
 
 // Each test owns a fresh router. A mounted RouterProvider overwrites the
@@ -113,15 +116,24 @@ describe("router", () => {
     expect(publicPaths).toContain("players");
     expect(publicPaths).toContain("teams");
     expect(allPaths).not.toContain("/stats");
-    // The design defines /teams and /players, so they stay as PlaceholderPage routes until
-    // the tasks that build their real screens (T14/T15) land; only /stats had no design
-    // counterpart and no working screen, so it is the one that was removed.
+    // `/teams` and `/players` stopped being PlaceholderPage routes when their real screens
+    // landed (T14/T15): the routes stay, and these assertions now pin the real components
+    // rather than deleting the protection the placeholder assertions used to give them.
     expect(allPaths).toContain("/teams");
     expect(allPaths).toContain("/players");
     expect(publicPaths).not.toContain("matches/$id/live");
+    expect(publicPaths).toContain("live");
     expect(publicPaths).toContain("teams/$id");
     expect(publicPaths).toContain("teams/$id/roster");
     expect(publicPaths).toContain("teams/$id/stats");
+    const teamsRoute = publicChildren?.find(
+      (route) => route.fullPath === "/teams",
+    );
+    const playersRoute = publicChildren?.find(
+      (route) => route.fullPath === "/players",
+    );
+    expect(teamsRoute?.options?.component).toBe(TeamsPage);
+    expect(playersRoute?.options?.component).toBe(PlayersPage);
     const rosterRoute = publicChildren?.find(
       (route) => route.fullPath === "/teams/$id/roster",
     );
@@ -131,6 +143,10 @@ describe("router", () => {
     const liveMatchRoute = topLevelRoutes.find(
       (route) => route.fullPath === "/matches/$id/live",
     );
+    // The nav's `En vivo` destination is a separate route inside this public shell, pinned
+    // here next to the standalone `/matches/$id/live` so the two cannot collapse into one.
+    const liveRoute = publicChildren?.find((route) => route.fullPath === "/live");
+    expect(liveRoute?.options?.component).toBe(LiveNowPage);
     const statsRoute = publicChildren?.find(
       (route) => route.fullPath === "/teams/$id/stats",
     );
@@ -709,7 +725,7 @@ describe("router", () => {
   });
 
   it.each([
-    { route: "/", content: "Dashboard público", activeHref: "/", activeLabel: "Dashboard" },
+    { route: "/", content: "Dashboard espectador", activeHref: "/", activeLabel: "Dashboard" },
     { route: "/matches", content: "Todos", activeHref: "/matches", activeLabel: "Partidos" },
     { route: "/matches?status=live", content: "En vivo", activeHref: "/matches", activeLabel: "Partidos" },
     { route: "/matches?status=today", content: "Hoy", activeHref: "/matches", activeLabel: "Partidos" },
@@ -720,6 +736,9 @@ describe("router", () => {
     { route: "/tournaments?status=en-curso", content: "En curso", activeHref: "/tournaments", activeLabel: "Torneos" },
     { route: "/tournaments?status=proximos", content: "Próximos", activeHref: "/tournaments", activeLabel: "Torneos" },
     { route: "/tournaments?status=finalizados", content: "Finalizados", activeHref: "/tournaments", activeLabel: "Torneos" },
+    { route: "/teams", content: "PG / PP", activeHref: "/teams", activeLabel: "Equipos" },
+    { route: "/players", content: "Ver ficha →", activeHref: "/players", activeLabel: "Jugadores" },
+    { route: "/live", content: "Historial de sets", activeHref: "/live", activeLabel: "En vivo" },
   ])("renders public artboard route $route with its active sidebar navigation", async ({ route, content, activeHref, activeLabel }) => {
     const container = document.createElement("div");
     document.body.append(container);
@@ -735,6 +754,77 @@ describe("router", () => {
     expect(`${window.location.pathname}${window.location.search}`).toBe(route);
     expect(container.textContent).toContain(content);
     expect(container.querySelector(`a[aria-current="page"][href="${activeHref}"]`)?.textContent).toContain(activeLabel);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the live presentation at /live inside the public shell, with the nav still present", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/live" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    // The resolution of the nav tension: `En vivo` must not land on the standalone,
+    // chrome-less detail route, because that would delete the navigation the user just
+    // clicked. /live keeps the public shell and renders the same presentation.
+    expect(window.location.pathname).toBe("/live");
+    const sidebar = container.querySelector("aside");
+    expect(sidebar).not.toBeNull();
+    expect(container.querySelector('[aria-label="Navegación Público"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="live-now-content"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="live-match-scoreboard"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="set-history-card"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="court-rotations"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="live-events"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="match-metadata"]')).not.toBeNull();
+    expect(
+      container.querySelector('a[aria-current="page"][href="/live"]')?.textContent,
+    ).toContain("En vivo");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("exposes the design's six public destinations, including En vivo", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    // The design's sidebar-public-nav is Dashboard / Partidos / Torneos / Equipos /
+    // Jugadores / En vivo (frontend/design/html/voleytrack-live.html, which is the screen
+    // whose own markup carries the group). Equipos and Jugadores joined it with their real
+    // screens; `En vivo` is the last one, and it now points at `/live` rather than at the
+    // standalone `/matches/$id/live`, so no destination leads nowhere.
+    const labels = [...container.querySelectorAll("aside nav a")].map(
+      (link) => link.querySelector("span:last-child")?.textContent,
+    );
+    expect(labels).toEqual([
+      "Dashboard",
+      "Partidos",
+      "Torneos",
+      "Equipos",
+      "Jugadores",
+      "En vivo",
+    ]);
+    const liveLink = container.querySelector('aside nav a[href="/live"]');
+    expect(liveLink).not.toBeNull();
+    // Every destination resolves to a real route (no placeholder wiring left behind).
+    const publicPaths = routePaths(router.routeTree);
+    for (const href of [...container.querySelectorAll("aside nav a")].map((link) =>
+      link.getAttribute("href"),
+    )) {
+      expect(publicPaths).toContain(href);
+    }
 
     await act(async () => root.unmount());
     container.remove();
@@ -844,12 +934,19 @@ describe("router", () => {
     expect(`${window.location.pathname}${window.location.search}`).toBe("/matches?status=live");
     expect(container.textContent).toContain(PUBLIC_MATCHES.live[0].scheduledLabel);
 
+    // The dashboard's own tournament link left with the design-less metrics block; the
+    // tournaments list is the screen whose fixtures actually link to a tournament.
     await act(async () => {
-      await router.navigate({ to: "/" });
+      await router.navigate({ to: "/tournaments" });
     });
 
+    const tournamentLink = container.querySelector(
+      `a[href="/tournaments/${PUBLIC_TOURNAMENTS.all[0].id}"]`,
+    );
+    expect(tournamentLink).not.toBeNull();
+
     await act(async () => {
-      container.querySelector(`a[href="/tournaments/${PUBLIC_TOURNAMENTS.all[0].id}"]`)?.dispatchEvent(
+      tournamentLink?.dispatchEvent(
         new MouseEvent("click", { bubbles: true, cancelable: true }),
       );
     });

@@ -2,6 +2,8 @@ import type { HTMLAttributes } from "react";
 
 type BadgeVariant = "default" | "success" | "danger" | "accent" | "ok" | "warn";
 
+export type { BadgeVariant };
+
 type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
   variant?: BadgeVariant;
   tone?: BadgeVariant | "muted" | "neutral";

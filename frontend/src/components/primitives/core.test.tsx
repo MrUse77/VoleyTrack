@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Button } from "./Button";
+import { buttonClasses } from "./buttonClasses";
 import { Card, CardBody, CardHeader } from "./Card";
 import {
   Field,
@@ -201,6 +202,33 @@ describe("core primitives", () => {
     expect(iconVariant).toContain("w-10");
   });
 
+  it("keeps the design's pill treatment reusable for link-shaped buttons", () => {
+    // Design source: frontend/design/html/voleytrack-dashboard.html:63 and :71 render
+    // `<a class="btn accent">` and `<a class="btn" style="height:32px;font-size:12px">`,
+    // i.e. the design puts `.btn` on anchors wherever the control navigates. A `<button>`
+    // cannot carry an href, so the treatment is exported once for those anchors instead of
+    // being copied into each screen that needs one.
+    const primaryButton = renderToStaticMarkup(<Button>Ver partido en vivo</Button>);
+    const smallGhostLink = buttonClasses("ghost", "sm", "w-full justify-center border-dashed");
+
+    // The rendered button keeps the design's default `.btn` geometry (40px, 13px).
+    expect(primaryButton).toContain("h-10");
+    expect(primaryButton).toContain("text-[13px]");
+
+    // The one design form that is not 40px: the dashboard's 32px/12px "Ver todos".
+    expect(smallGhostLink).toContain("h-8");
+    expect(smallGhostLink).toContain("text-[12px]");
+    expect(smallGhostLink).toContain("bg-transparent");
+    expect(smallGhostLink).toContain("border-dashed");
+    expect(smallGhostLink).toContain("w-full");
+
+    // Sizes are exclusive: appending h-8/text-[12px] to a base that also declared
+    // h-10/text-[13px] would lose to the later utility in Tailwind's output, which is why
+    // the size is a parameter and not a caller-supplied override.
+    expect(smallGhostLink).not.toContain("h-10");
+    expect(smallGhostLink).not.toContain("text-[13px]");
+  });
+
   it("renders a surface card by default and raises it only when requested", () => {
     const defaultHtml = renderToStaticMarkup(<Card>Card content</Card>);
     const raisedHtml = renderToStaticMarkup(<Card variant="raised">Raised content</Card>);
@@ -293,10 +321,23 @@ describe("core primitives", () => {
     expect(cards.length).toBeGreaterThan(0);
 
     // Anti-under-count: a walk or comment stripper that silently dropped call sites would
-    // let the ceiling below pass while the tree moved underneath it. Lower this floor only
-    // when a Card is deliberately deleted.
+    // let the ceiling below pass while the tree moved underneath it. The dashboard slice
+    // (T11) deliberately deleted four uniform-padding call sites and added three structural
+    // ones, so the measured total moved from 71 to 70 and the floor moves with it. The
+    // matches and tournaments slices (T12/T13) rebuilt both public list screens, their
+    // detail routes and the bracket widget onto the structural form, which took the measured
+    // total to 55 across 19 production files. The teams and players slices (T14/T15) added
+    // the two new list screens and the design's `Rendimiento ÚLTIMOS 5` card, all structural,
+    // and converted the player detail's stat-breakdown and recent-matches cards onto the
+    // structural form, which took the measured total to 59 across 21 production files, so the
+    // floor moves to those values. T16 then aligned the public live screen, converting its
+    // three legacy uniform-padding Cards (unknown-match, scheduled-match and metadata) to the
+    // structural form and adding the design's own structural set (set history, court, event
+    // timeline, team statistics, top scorers, the two roster panels and the shared metadata
+    // panel), which took the measured total to 66 across 23 production files, so the floor
+    // moves to those values.
     expect(cards.length).toBeGreaterThanOrEqual(66);
-    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(21);
+    expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(23);
 
     // A JSX spread could inject `padded={false}` (or a shadowing prop) behind the
     // guard's back and the count would silently drift. Fail loudly instead of
@@ -319,9 +360,19 @@ describe("core primitives", () => {
     // Measured baseline: 66 `<Card>` call sites across 21 production files were written
     // against the uniform `p-6` box. Consumer migration happens per screen in the later
     // design-alignment slices; this guard only forbids the legacy form from growing.
-    // Fewer is progress (lower this ceiling in the same change).
-    expect(legacyCount).toBeLessThanOrEqual(66);
-    expect(legacyFiles.length).toBeLessThanOrEqual(21);
+    // Fewer is progress (lower this ceiling in the same change). T11 moved the public
+    // dashboard onto the structural form, which took the legacy form to 62 call sites in 20
+    // files. T12/T13 then rebuilt the public matches screen, the tournaments list and the
+    // five tournament detail routes onto the structural form, which took the legacy form to
+    // 41 call sites in 13 files. T14/T15 rebuilt the teams and players lists, added the
+    // `Rendimiento ÚLTIMOS 5` card and replaced the player detail's KPI cards with
+    // `KpiGrid`/`Kpi` while moving its two lower cards onto the structural form, which took
+    // the legacy form to 35 call sites in 12 files, so both ceilings were lowered to the
+    // measured values. T16 converted the live screen's three legacy Cards to the structural
+    // form (its new cards already are structural), which took the legacy form to 32 call
+    // sites in 11 files, so both ceilings were lowered to the measured values again.
+    expect(legacyCount).toBeLessThanOrEqual(32);
+    expect(legacyFiles.length).toBeLessThanOrEqual(11);
   });
 
   it("keeps a single form-field concept in the primitives layer", () => {
