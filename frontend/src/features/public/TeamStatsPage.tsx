@@ -1,94 +1,95 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { Card } from "../../components/primitives/Card";
-import { PUBLIC_TEAMS, type TeamFixture } from "../../fixtures";
-
-const teamTabs = [
-  { label: "Resumen", suffix: "" },
-  { label: "Plantel", suffix: "/roster" },
-  { label: "Partidos", suffix: "/matches" },
-  { label: "Estadísticas", suffix: "/stats" },
-] as const;
-
-type StatCard = {
-  label: string;
-  value: string;
-};
-
-const teamStats = Object.freeze([
-  { label: "Partidos jugados", value: "9" },
-  { label: "Victorias", value: "6" },
-  { label: "Derrotas", value: "3" },
-  { label: "Sets ganados", value: "21" },
-  { label: "Sets perdidos", value: "14" },
-  { label: "Puntos a favor", value: "742" },
-] satisfies readonly StatCard[]);
-
-function findTeam(id: string): TeamFixture | undefined {
-  return PUBLIC_TEAMS.find((team) => team.id === id);
-}
+import {
+  findTeamJourney,
+  TeamJourney,
+  TeamNotFound,
+  TeamPlayerName,
+  teamRosterRows,
+} from "./TeamJourney";
 
 export function TeamStatsPage() {
   const { id } = useParams({ strict: false }) as { id: string };
-  const team = findTeam(id);
+  const context = findTeamJourney(id);
 
-  if (!team) {
+  if (!context) return <TeamNotFound />;
+
+  if (!context.detail) {
     return (
-      <Card>
-        <h1 className="text-2xl font-bold text-vt-text">Equipo no encontrado</h1>
-        <Link className="mt-4 inline-block text-sm font-semibold text-vt-accent" to={"/teams" as string}>
-          ← Volver a equipos
-        </Link>
-      </Card>
+      <TeamJourney activeTab="stats" {...context}>
+        <Card>
+          <h2 className="text-xl font-black text-vt-text">Estadísticas del Equipo</h2>
+          <p className="mt-4 text-sm text-vt-muted">No hay estadísticas registradas para este equipo.</p>
+        </Card>
+      </TeamJourney>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <header>
-        <Link className="text-sm font-semibold text-vt-accent" to={"/teams" as string}>
-          ← Equipos
-        </Link>
-        <p className="mt-5 text-sm text-vt-muted">Equipos / {team.name}</p>
-        <h1 className="mt-2 text-3xl font-black text-vt-text">{team.name}</h1>
-        <p className="mt-2 text-sm text-vt-muted">{team.city} · {team.category}</p>
-      </header>
+  const roster = teamRosterRows(context);
 
-      <nav aria-label="Navegación del equipo" className="rounded-2xl border border-vt-border bg-vt-raised p-2">
-        <div className="flex flex-wrap gap-2">
-          {teamTabs.map((tab) => {
-            const isActive = tab.suffix === "/stats";
-            return (
-              <Link
-                aria-current={isActive ? "page" : undefined}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold ${isActive ? "bg-vt-accent text-vt-canvas" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
-                key={tab.label}
-                to={`/teams/${team.id}${tab.suffix}` as string}
-              >
-                {tab.label}
-              </Link>
-            );
-          })}
+  return (
+    <TeamJourney activeTab="stats" {...context}>
+      <section aria-labelledby="team-stats-title">
+        <h2 className="text-lg font-bold leading-6 text-vt-accent" id="team-stats-title">Estadísticas del Equipo</h2>
+
+        <div
+          aria-labelledby="team-stats-filter-label"
+          className="mt-4 rounded-2xl border border-vt-border bg-vt-raised px-[22px] py-3 min-[1416px]:h-[58px]"
+          data-testid="team-stats-filter"
+          role="group"
+        >
+          <div className="flex flex-col gap-3 min-[1416px]:h-[34px] min-[1416px]:flex-row min-[1416px]:items-center min-[1416px]:gap-3">
+            <p
+              className="text-[13px] font-black leading-4 text-vt-text min-[1416px]:w-[178px] min-[1416px]:shrink-0 min-[1416px]:-translate-y-px"
+              id="team-stats-filter-label"
+            >
+              Filtrar estadística
+            </p>
+            <ul className="flex flex-wrap gap-3">
+              {context.detail.statCategories.map((category, index) => (
+                <li key={category.id}>
+                  <span
+                    aria-current={index === 0 ? "true" : undefined}
+                    className={`inline-flex min-h-[34px] w-[132px] items-center justify-center rounded-full px-4 text-[11px] font-bold ${index === 0 ? "bg-vt-accent font-black text-vt-background" : "bg-vt-panel text-vt-muted"}`}
+                  >
+                    {category.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-      </nav>
 
-      <Card>
-        <h2 className="text-xl font-bold text-vt-accent">Estadísticas del equipo</h2>
-        <p className="mt-2 text-sm text-vt-muted">Temporada regular · {team.city} · {team.category}</p>
-        <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {teamStats.map((stat) => (
-            <StatTile key={stat.label} stat={stat} />
-          ))}
-        </dl>
-      </Card>
-    </div>
-  );
-}
-
-function StatTile({ stat }: { stat: StatCard }) {
-  return (
-    <div className="rounded-xl border border-vt-border bg-vt-panel p-4">
-      <dt className="text-[11px] font-bold uppercase tracking-[0.08em] text-vt-muted">{stat.label}</dt>
-      <dd className="mt-2 text-2xl font-black text-vt-text">{stat.value}</dd>
-    </div>
+        <Card
+          className="mt-7 overflow-hidden p-5 min-[1416px]:h-[534px] min-[1416px]:p-[22px] min-[1416px]:pt-5"
+          data-testid="team-stats-leaderboard"
+        >
+          <div className="flex h-[18px] items-center justify-between gap-4">
+            <h3 className="text-[15px] font-black leading-[18px] text-vt-text">Ranking de Jugadores · Puntos Totales</h3>
+            <p className="text-[11px] leading-[14px] text-vt-muted">Total del torneo</p>
+          </div>
+          <ol className="mt-5 space-y-5">
+            {roster.map(({ player, stats }, index) => (
+              <li
+                className="flex min-h-[72px] items-center rounded-xl bg-vt-panel px-5 min-[1416px]:h-[72px]"
+                key={player.id}
+              >
+                <span className={`ml-1 w-10 text-center text-sm font-black ${index === 0 ? "text-vt-accent" : "text-vt-muted"}`}>
+                  {index + 1}
+                </span>
+                <TeamPlayerName
+                  className="ml-9 inline-block w-[300px] shrink-0 font-black text-vt-text"
+                  player={player}
+                />
+                <span className="ml-[50px] w-[200px] text-xs text-vt-muted">{player.position}</span>
+                <span className={`ml-auto w-40 text-right text-xl font-black ${index === 0 ? "text-vt-accent" : "text-vt-text"}`}>
+                  {stats?.points ?? 0} pts
+                </span>
+              </li>
+            ))}
+          </ol>
+        </Card>
+      </section>
+    </TeamJourney>
   );
 }

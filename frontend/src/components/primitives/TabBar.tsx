@@ -22,7 +22,7 @@ export function TabBar({ "aria-label": ariaLabel, onChange, tabs, value }: TabBa
         return (
           <button
             aria-selected={isActive}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${isActive ? "bg-vt-accent text-vt-canvas" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
+            className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${isActive ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
             disabled={tab.disabled}
             key={tab.value}
             onClick={() => onChange(tab.value)}

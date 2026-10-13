@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Admin · Gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack-admin.css" />
+</head>
+<body>
+<div id="app" class="app" data-od-id="app-shell-admin">
+
+  <header class="topbar" data-od-id="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+        <div class="avatar">A</div>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+    <aside class="sidebar" data-od-id="sidebar-admin">
+      <div class="nav-group">
+        <p class="nav-title">Admin · Gestión</p>
+        <a class="nav-item active" href="voleytrack-admin-gestion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M20 21a8 8 0 1 0-16 0"/></svg> Staff & gestión</a>
+        <a class="nav-item" href="voleytrack-admin-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg> Partidos</a>
+        <a class="nav-item" href="voleytrack-admin-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" href="voleytrack-admin-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" href="voleytrack-admin-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+      </div>
+      <a class="nav-item" style="margin-top:10px;color:var(--muted)" href="voleytrack-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Cerrar sesión</a>
+    </aside>
+    <main class="main">
+<section class="view active" data-view="admin" data-od-id="view-admin">
+        <div class="page-head"><div><h1>Staff & gestión</h1><p>3.01 · Gestión del staff: planilleros y árbitros.</p></div><div class="head-actions"><button class="btn accent" onclick="newStaff()">+ Nuevo integrante</button></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Staff</th><th>Rol</th><th>Email</th><th>Torneo</th><th></th></tr></thead><tbody>
+          <tr><td><b>María Gómez</b></td><td>Planillero</td><td>maria@voleytrack.com</td><td>Liga A1</td><td><button class="btn" style="height:30px;font-size:11px" onclick="editStaff('María Gómez','Planillero','maria@voleytrack.com','Liga A1')">Editar</button></td></tr>
+          <tr><td><b>P. López</b></td><td>Árbitro</td><td>lopez@voleytrack.com</td><td>Todos</td><td><button class="btn" style="height:30px;font-size:11px" onclick="editStaff('P. López','Árbitro','lopez@voleytrack.com','Todos')">Editar</button></td></tr>
+          <tr><td><b>Ana Peralta</b></td><td>Planillero</td><td>ana@voleytrack.com</td><td>Copa Nacional</td><td><button class="btn" style="height:30px;font-size:11px" onclick="editStaff('Ana Peralta','Planillero','ana@voleytrack.com','Copa Nacional')">Editar</button></td></tr>
+        </tbody></table></div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="staff-overlay" data-od-id="staff-edit-modal" role="dialog" aria-modal="true" aria-labelledby="staff-edit-title">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="staff-edit-title">Editar integrante</h2>
+        <small id="staff-edit-sub">Datos del staff</small>
+      </div>
+      <button class="modal-close" aria-label="Cerrar" onclick="closeStaffModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full">
+          <label>Nombre completo</label>
+          <input type="text" id="edit-nombre" placeholder="Ej: Ana Peralta" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="edit-email" placeholder="ana@voleytrack.com" />
+        </div>
+        <div class="field">
+          <label>Rol</label>
+          <select id="edit-rol"><option>Planillero</option><option>Árbitro</option></select>
+        </div>
+        <div class="field full">
+          <label>Torneo asignado</label>
+          <select id="edit-torneo"><option>Liga A1</option><option>Copa Nacional</option><option>Todos</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeStaffModal()">Cancelar</button>
+      <button class="btn accent" id="staff-edit-save" onclick="saveStaff()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2200); }
+function newStaff(){
+  document.getElementById('edit-nombre').value = '';
+  document.getElementById('edit-email').value = '';
+  document.getElementById('edit-rol').selectedIndex = 0;
+  document.getElementById('edit-torneo').selectedIndex = 0;
+  document.getElementById('staff-edit-title').textContent = 'Nuevo integrante';
+  document.getElementById('staff-edit-sub').textContent = 'Alta de un miembro del staff';
+  document.getElementById('staff-edit-save').textContent = 'Guardar integrante';
+  document.getElementById('staff-overlay').classList.add('open');
+}
+function editStaff(nombre, rol, email, torneo){
+  document.getElementById('edit-nombre').value = nombre;
+  document.getElementById('edit-email').value = email;
+  document.getElementById('edit-rol').value = rol;
+  document.getElementById('edit-torneo').value = torneo;
+  document.getElementById('staff-edit-title').textContent = 'Editar integrante';
+  document.getElementById('staff-edit-sub').textContent = email;
+  document.getElementById('staff-edit-save').textContent = 'Guardar cambios';
+  document.getElementById('staff-overlay').classList.add('open');
+}
+function closeStaffModal(){ document.getElementById('staff-overlay').classList.remove('open'); }
+function saveStaff(){ toast('Guardado'); closeStaffModal(); }
+document.getElementById('staff-overlay').addEventListener('click', e=>{ if(e.target.id==='staff-overlay') closeStaffModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && document.getElementById('staff-overlay').classList.contains('open')) closeStaffModal(); });
+</script>
+</body>
+</html>

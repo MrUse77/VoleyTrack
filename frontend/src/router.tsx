@@ -5,8 +5,7 @@ import {
 	createRouter,
 	useLocation,
 } from "@tanstack/react-router";
-import { AppShell } from "./layouts/AppShell";
-import { AdminShell } from "./layouts/AdminShell";
+import { AdminShell, isScorerPath } from "./layouts/AdminShell";
 import { PublicShell } from "./layouts/PublicShell";
 import type { SidebarNavigationGroup } from "./components/navigation/Sidebar";
 import { LoginPage as AuthLoginPage } from "./features/auth/LoginPage";
@@ -50,40 +49,43 @@ const rootRoute = createRootRoute({
 	component: () => <Outlet />,
 });
 
-const shellRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	id: "shell",
-	component: AppShell,
-});
-
+// The design's public sidebar (frontend/design/html/voleytrack.html) is Dashboard / Partidos /
+// Torneos / Equipos / Jugadores / En vivo. Equipos, Jugadores and En vivo are deliberately
+// absent until the tasks that build their real screens land (T14/T15/T16 in
+// odd/tasks/frontend-design-parity.md): linking them now would point at PlaceholderPage routes.
+// The app-only "Estadísticas" entry was removed because it was the only entry point of
+// `placeholderRoute(publicShellRoute, "/stats")`, which rendered no screen — the real
+// statistics views live at /tournaments/$id/stats and /teams/$id/stats and stay reachable
+// from their own pages.
+// T10 then removed the app-only shell subtree (`/shell` and its `/results`, `/gallery` and
+// `/fantasy` PlaceholderPage children) together with the legacy shell it existed to feed.
 const publicNavigation: SidebarNavigationGroup[] = [
 	{
 		items: [
-			{ href: "/", icon: "D", label: "Dashboard" },
-			{ href: "/matches", icon: "M", label: "Matches" },
-			{ href: "/tournaments", icon: "T", label: "Tournaments" },
-		],
-	},
-	{
-		items: [
-			{ href: "/teams", icon: "T", label: "Teams" },
-			{ href: "/players", icon: "P", label: "Players" },
+			{ href: "/", icon: "01", label: "Dashboard" },
+			{ href: "/matches", icon: "02", label: "Partidos" },
+			{ href: "/tournaments", icon: "03", label: "Torneos" },
 		],
 	},
 ];
 
 const adminNavigation: SidebarNavigationGroup[] = [
 	{
+		label: "GESTIÓN DE COMPETICIÓN",
 		items: [
-			{ href: "/admin", icon: "D", label: "Overview" },
-			{ href: "/admin/matches", icon: "M", label: "Matches" },
-			{ href: "/admin/tournaments", icon: "T", label: "Tournaments" },
+			{ href: "/admin", icon: "📊", label: "Dashboard" },
+			{ href: "/admin/matches", icon: "📋", label: "Partidos" },
+			{ href: "/admin/tournaments", icon: "🏆", label: "Torneos" },
+			{ href: "/admin/teams", icon: "🛡️", label: "Equipos" },
+			{ href: "/admin/players", icon: "🏃", label: "Jugadores" },
 		],
 	},
 	{
+		label: "ADMINISTRACIÓN",
 		items: [
-			{ href: "/admin/teams", icon: "T", label: "Teams" },
-			{ href: "/admin/players", icon: "P", label: "Players" },
+			{ href: "/admin/staff/register", icon: "👥", label: "Staff / Planilleros" },
+			{ href: "/planillero", icon: "📝", label: "Panel de planillero" },
+			{ href: "/admin/settings", icon: "⚙️", label: "Configuración" },
 		],
 	},
 ];
@@ -96,7 +98,7 @@ function PublicRouteShell() {
 		<PublicShell
 			currentPath={pathname}
 			navigation={publicNavigation}
-			roleLabel="Public"
+			roleLabel="Público"
 		/>
 	);
 }
@@ -104,11 +106,12 @@ function PublicRouteShell() {
 // eslint-disable-next-line react-refresh/only-export-components
 function AdminRouteShell() {
 	const { pathname } = useLocation();
+	const isScorer = isScorerPath(pathname);
 	return (
 		<AdminShell
 			currentPath={pathname}
 			navigation={adminNavigation}
-			roleLabel="Admin"
+			roleLabel={isScorer ? "PLANILLERO" : "ADMIN"}
 		/>
 	);
 }
@@ -128,7 +131,7 @@ const adminShellRoute = createRoute({
 const placeholder = (title: string) => () => <PlaceholderPage title={title} />;
 
 function placeholderRoute(
-	parent: typeof shellRoute | typeof publicShellRoute | typeof adminShellRoute,
+	parent: typeof publicShellRoute | typeof adminShellRoute,
 	path: string,
 	title: string,
 ) {
@@ -140,13 +143,13 @@ function placeholderRoute(
 }
 
 const adminRoute = createRoute({
-	getParentRoute: () => shellRoute,
+	getParentRoute: () => adminShellRoute,
 	path: "/admin",
 	component: AdminPage,
 });
 
 const planilleroRoute = createRoute({
-	getParentRoute: () => shellRoute,
+	getParentRoute: () => adminShellRoute,
 	path: "/planillero",
 	component: PlanilleroPage,
 });
@@ -163,12 +166,9 @@ const changePasswordRoute = createRoute({
 	component: ChangePasswordPage,
 });
 
-const resultsRoute = placeholderRoute(shellRoute, "/results", "Results");
-const statsRoute = placeholderRoute(shellRoute, "/stats", "Stats");
-const galleryRoute = placeholderRoute(shellRoute, "/gallery", "Gallery");
-const fantasyRoute = placeholderRoute(shellRoute, "/fantasy", "Fantasy");
-const playersRoute = placeholderRoute(shellRoute, "/players", "Players");
-const teamsRoute = placeholderRoute(shellRoute, "/teams", "Teams");
+const playersRoute = placeholderRoute(publicShellRoute, "/players", "Jugadores");
+const teamsRoute = placeholderRoute(publicShellRoute, "/teams", "Equipos");
+const adminSettingsRoute = placeholderRoute(adminShellRoute, "/admin/settings", "Configuración");
 
 const publicDashboardRoute = createRoute({
 	getParentRoute: () => publicShellRoute,
@@ -231,7 +231,7 @@ const teamStatsRoute = createRoute({
 	component: TeamStatsPage,
 });
 const liveMatchRoute = createRoute({
-	getParentRoute: () => publicShellRoute,
+	getParentRoute: () => rootRoute,
 	path: "/matches/$id/live",
 	component: LiveMatchPage,
 });
@@ -297,8 +297,11 @@ const adminPlayerCreateRoute = createRoute({
 const adminTeamCreateRoute = createRoute({
 	getParentRoute: () => adminShellRoute,
 	path: "/admin/teams/create",
-	validateSearch: (search: Record<string, unknown>) =>
-		search.modal === "player" || search.modal === "assign-player" ? { modal: "player" } : {},
+	validateSearch: (search: Record<string, unknown>) => {
+		if (search.modal === "player") return { modal: "player" };
+		if (search.modal === "assign-player") return { modal: "assign-player" };
+		return {};
+	},
 	component: CreateTeamPage,
 });
 const adminTournamentCreateRoute = createRoute({
@@ -332,21 +335,17 @@ const adminPlayersRoute = createRoute({
   component: AdminPlayersPage,
 });
 
-const routeTree = rootRoute.addChildren([
+export const routeTree = rootRoute.addChildren([
 	loginRoute,
 	changePasswordRoute,
-	shellRoute.addChildren([
-		adminRoute,
-		planilleroRoute,
-		resultsRoute,
-		statsRoute,
-		galleryRoute,
-		fantasyRoute,
-		playersRoute,
-		teamsRoute,
-	]),
+	liveMatchRoute,
 	publicShellRoute.addChildren([
 		publicDashboardRoute,
+		// These two are PlaceholderPage routes on purpose: the design defines `/teams` and
+		// `/players` as real destinations, so T14/T15 replace their screens rather than
+		// removing the routes, unlike the removed `/stats` which had no design counterpart.
+		playersRoute,
+		teamsRoute,
 		matchesRoute,
 		tournamentsRoute,
 		tournamentDetailRoute,
@@ -358,10 +357,12 @@ const routeTree = rootRoute.addChildren([
 		teamRosterRoute,
 		teamMatchesRoute,
 		teamStatsRoute,
-		liveMatchRoute,
 		playerDetailRoute,
 	]),
 	adminShellRoute.addChildren([
+		adminRoute,
+		planilleroRoute,
+		adminSettingsRoute,
 		adminMatchSetupRoute,
 		adminScoringRoute,
 		adminPointEntryRoute,

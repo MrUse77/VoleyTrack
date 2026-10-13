@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Modal } from "../../components/primitives/Modal";
-import { PUBLIC_PLAYERS, PUBLIC_TEAMS } from "../../fixtures";
+import { PUBLIC_TEAMS, SCORING_ROSTER } from "../../fixtures";
 
 interface PlayerSelectionModalProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ export function PlayerSelectionModal({ isOpen, onClose }: PlayerSelectionModalPr
   const playersByTeam = useMemo(
     () => PUBLIC_TEAMS.map((team) => ({
       team,
-      players: PUBLIC_PLAYERS.filter((player) => player.teamId === team.id),
+      players: SCORING_ROSTER.filter((player) => player.teamId === team.id),
     })),
     [],
   );
@@ -55,7 +55,7 @@ export function PlayerSelectionModal({ isOpen, onClose }: PlayerSelectionModalPr
       <div className="mt-6 flex items-center justify-between gap-4">
         <span className="text-xs text-vt-muted">{selectedPlayerIds.length} seleccionados</span>
         <button
-          className="rounded-lg bg-vt-accent px-4 py-2 text-sm font-semibold text-slate-950 hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
+          className="rounded-lg bg-vt-accent px-4 py-2 text-sm font-semibold text-vt-background hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
           onClick={onClose}
           type="button"
         >

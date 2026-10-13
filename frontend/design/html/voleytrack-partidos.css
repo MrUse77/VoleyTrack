@@ -1,0 +1,30 @@
+/* VoleyTrack — sección PARTIDOS · estilos propios */
+
+.mcard{padding:16px;border-radius:16px;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:.15s}
+.mcard:hover{border-color:#2e4060;transform:translateY(-1px)}
+.mcard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.mcard-top small{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.mcard-teams{display:flex;align-items:center;gap:12px}
+.mcard-team{flex:1}
+.mcard-team b{font-size:14px}
+.mcard-score{font-family:var(--font-mono);font-weight:900;font-size:18px}
+.mcard-meta{margin-top:12px;padding-top:12px;border-top:1px solid var(--border-2);display:flex;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+.match-filters{max-height:0;overflow:hidden;opacity:0;visibility:hidden;margin-bottom:0;border:1px solid transparent;border-radius:var(--radius);background:var(--surface);transition:max-height .22s ease,opacity .18s ease,margin-bottom .22s ease,border-color .18s ease,visibility 0s linear .22s}
+.match-filters.open{max-height:360px;opacity:1;visibility:visible;margin-bottom:16px;border-color:var(--border);transition:max-height .22s ease,opacity .18s ease,margin-bottom .22s ease,border-color .18s ease,visibility 0s}
+.match-filters-inner{padding:18px 20px}
+.match-filter-grid{display:grid;grid-template-columns:repeat(3,minmax(140px,1fr));gap:12px}
+.match-filter-field label{display:block;margin-bottom:7px;color:#e2e8f0;font-size:12px;font-weight:700}
+.match-filter-field select{width:100%;min-height:44px;padding:0 36px 0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg);font:600 13px var(--font-body);outline:none}
+.match-filter-field select:hover{border-color:#2d3d5f}
+.match-filter-field select:focus-visible,.match-filters .btn:focus-visible,#matches-filter-button:focus-visible,.filter:focus-visible{border-color:var(--accent);outline:3px solid var(--accent-soft);outline-offset:2px}
+.match-filter-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border-2)}
+.match-results-count{margin:0;color:var(--muted);font-family:var(--font-mono);font-size:11px;font-weight:700}
+.match-results-count strong{color:var(--fg)}
+.match-filters .btn,#matches-filter-button{min-height:44px}
+.match-empty{display:none;padding:42px 20px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);text-align:center}
+.match-empty.visible{display:block}
+.match-empty h2{margin:0;font-size:16px}
+.match-empty p{margin:6px 0 0;color:var(--muted);font-size:13px}
+@media(max-width:1100px){.match-filter-grid{grid-template-columns:repeat(2,minmax(140px,1fr))}.match-filters.open{max-height:520px}}
+@media(max-width:560px){.match-filter-grid{grid-template-columns:1fr}.match-filter-footer{align-items:stretch;flex-direction:column}.match-filter-footer .btn{justify-content:center}.match-filters.open{max-height:760px}}
+@media(prefers-reduced-motion:reduce){.match-filters,.match-filters.open{transition:none}}

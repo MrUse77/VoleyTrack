@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es-ES">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Admin · Partidos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack-admin.css" />
+</head>
+<body>
+<div id="app" class="app" data-od-id="app-shell-admin">
+  <header class="topbar" data-od-id="topbar">
+    <div class="topbar-left"><div class="logo-mark"><img src="imagen.png" alt="Icono de VoleyTrack" /></div><div class="logo-type">VoleyTrack</div></div>
+    <div class="topbar-nav"><label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" aria-label="Buscar" /></label><div style="flex:1"></div><div class="top-icons"><button class="icon-btn" type="button" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button><div class="avatar">A</div></div></div>
+  </header>
+  <div class="shell">
+    <aside class="sidebar" data-od-id="sidebar-admin">
+      <div class="nav-group">
+        <p class="nav-title">Admin · Gestión</p>
+        <a class="nav-item" href="voleytrack-admin-gestion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M20 21a8 8 0 1 0-16 0"/></svg> Staff &amp; gestión</a>
+        <a class="nav-item active" href="voleytrack-admin-partidos.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg> Partidos</a>
+        <a class="nav-item" href="voleytrack-admin-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" href="voleytrack-admin-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" href="voleytrack-admin-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+      </div>
+      <a class="nav-item" style="margin-top:10px;color:var(--muted)" href="voleytrack-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Cerrar sesión</a>
+    </aside>
+    <main class="main" data-od-id="matches-main-region">
+      <section class="view active" data-od-id="matches-view">
+        <div class="page-head" data-od-id="matches-page-head"><div><h1 data-od-id="matches-title">Partidos</h1><p>Consulta la programación y gestiona los partidos creados.</p></div><div class="head-actions"><button class="btn" type="button" id="matches-filter-button" data-od-id="matches-filter-button" aria-expanded="false" aria-controls="matches-filter-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg> Filtros</button><a class="btn accent" href="voleytrack-admin-crear-partido.html" data-od-id="create-match-cta">Crear partido</a></div></div>
+        <div class="card match-filters" id="matches-filter-panel" data-od-id="matches-filters" aria-label="Filtros de partidos" hidden>
+          <div class="card-b"><div class="form-grid">
+            <div class="field"><label for="filter-tournament">Torneo</label><select id="filter-tournament" data-od-id="filter-tournament"><option value="">Todos los torneos</option><option value="liga-a1">Liga Argentina A1</option><option value="copa-nacional">Copa Nacional</option></select></div>
+            <div class="field"><label for="filter-team">Equipo</label><select id="filter-team" data-od-id="filter-team"><option value="">Todos los equipos</option></select></div>
+            <div class="field"><label for="filter-status">Estado</label><select id="filter-status" data-od-id="filter-status"><option value="">Todos los estados</option><option value="Programado">Programado</option><option value="En vivo">En vivo</option></select></div>
+          </div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;flex-wrap:wrap"><p class="hint" id="matches-count" aria-live="polite" style="margin:0"></p><button class="btn ghost" type="button" id="clear-match-filters" data-od-id="clear-match-filters">Limpiar filtros</button></div></div>
+        </div>
+        <div class="match-list" id="matches-list" data-od-id="matches-list"></div>
+        <div class="card empty-state" id="matches-empty" data-od-id="matches-empty-state" role="status" hidden><h2>No hay partidos para mostrar</h2><p>Cambia los filtros o crea un nuevo partido.</p></div>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+const MATCHES_KEY='voleytrack-admin-matches';
+const teams=[
+  {id:'upcn-san-juan',name:'UPCN San Juan'},{id:'bolivar-voley',name:'Bolívar Vóley'},{id:'ciudad-voley',name:'Ciudad Vóley'},
+  {id:'boca-juniors',name:'Boca Juniors'},{id:'river-plate',name:'River Plate'},{id:'obras-sj',name:'Obras SJ'}
+];
+const baseMatches=[
+  {id:'demo-liga-1',tournamentId:'liga-a1',tournamentName:'Liga Argentina A1',homeTeamId:'upcn-san-juan',homeTeamName:'UPCN San Juan',awayTeamId:'ciudad-voley',awayTeamName:'Ciudad Vóley',scheduledAt:'2026-03-17T21:00',status:'Programado',source:'Datos de referencia'},
+  {id:'demo-liga-2',tournamentId:'liga-a1',tournamentName:'Liga Argentina A1',homeTeamId:'bolivar-voley',homeTeamName:'Bolívar Vóley',awayTeamId:'boca-juniors',awayTeamName:'Boca Juniors',scheduledAt:'2026-03-17T19:00',status:'Programado',source:'Datos de referencia'},
+  {id:'demo-liga-3',tournamentId:'liga-a1',tournamentName:'Liga Argentina A1',homeTeamId:'river-plate',homeTeamName:'River Plate',awayTeamId:'upcn-san-juan',awayTeamName:'UPCN San Juan',scheduledAt:'2026-03-18T20:30',status:'Programado',source:'Datos de referencia'}
+];
+function readStoredMatches(){try{const value=JSON.parse(localStorage.getItem(MATCHES_KEY)||'[]');return Array.isArray(value)?value:[]}catch{return []}}
+function formatDate(value){const date=new Date(`${value}:00`);return new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(date)}
+const tournamentFilter=document.getElementById('filter-tournament');
+const teamFilter=document.getElementById('filter-team');
+const statusFilter=document.getElementById('filter-status');
+const matchesFilterButton=document.getElementById('matches-filter-button');
+const matchesFilterPanel=document.getElementById('matches-filter-panel');
+const list=document.getElementById('matches-list');
+const empty=document.getElementById('matches-empty');
+matchesFilterButton.addEventListener('click',()=>{
+  const open=matchesFilterPanel.hidden;
+  matchesFilterPanel.hidden=!open;
+  matchesFilterButton.setAttribute('aria-expanded',String(open));
+  if(open) tournamentFilter.focus();
+});
+teams.forEach(team=>teamFilter.add(new Option(team.name,team.id)));
+function renderMatches(){
+  const matches=[...baseMatches,...readStoredMatches().map(match=>({...match,source:'Creado en administración'}))].filter(match=>(!tournamentFilter.value||match.tournamentId===tournamentFilter.value)&&(!teamFilter.value||match.homeTeamId===teamFilter.value||match.awayTeamId===teamFilter.value)&&(!statusFilter.value||match.status===statusFilter.value)).sort((a,b)=>a.scheduledAt.localeCompare(b.scheduledAt));
+  list.replaceChildren(...matches.map(match=>{
+    const article=document.createElement('article');article.className='match-card';article.dataset.odId=`match-${match.id}`;
+    const info=document.createElement('div');const title=document.createElement('h2');title.textContent=`${match.homeTeamName} vs ${match.awayTeamName}`;const meta=document.createElement('p');meta.className='match-meta';meta.textContent=`${match.tournamentName} · ${formatDate(match.scheduledAt)}`;info.append(title,meta);
+    const source=document.createElement('span');source.className='match-source';source.textContent=match.source;
+    const status=document.createElement('span');status.className=`state-pill ${match.status==='En vivo'?'s-envivo':'s-programado'}`;status.textContent=match.status;
+    article.append(info,source,status);return article;
+  }));
+  list.hidden=matches.length===0;empty.hidden=matches.length!==0;document.getElementById('matches-count').textContent=`${matches.length} ${matches.length===1?'partido':'partidos'}`;
+}
+[tournamentFilter,teamFilter,statusFilter].forEach(control=>control.addEventListener('change',renderMatches));
+document.getElementById('clear-match-filters').addEventListener('click',()=>{tournamentFilter.value='';teamFilter.value='';statusFilter.value='';renderMatches();tournamentFilter.focus()});
+renderMatches();
+</script>
+</body>
+</html>

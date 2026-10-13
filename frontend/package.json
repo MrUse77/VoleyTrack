@@ -2,15 +2,19 @@
   "name": "voleytrack",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "pnpm@12.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "screenshot": "node tools/screenshot.mjs",
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-query": "^5.97.0",
     "@tanstack/react-router": "^1.168.13",
@@ -31,6 +35,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
+    "jsdom": "^30.0.1",
     "postcss": "^8.5.9",
     "tailwindcss": "^4.2.2",
     "typescript": "~6.0.2",

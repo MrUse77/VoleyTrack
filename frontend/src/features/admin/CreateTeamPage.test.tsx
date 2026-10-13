@@ -3,8 +3,22 @@ import { act, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { PUBLIC_PLAYERS } from "../../fixtures";
 import { CreateTeamPage } from "./CreateTeamPage";
+
+const fixtureOverride = vi.hoisted(() => ({
+  players: undefined as readonly unknown[] | undefined,
+}));
+
+vi.mock("../../fixtures", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../fixtures")>();
+
+  return {
+    ...actual,
+    get PUBLIC_PLAYERS() {
+      return fixtureOverride.players ?? actual.PUBLIC_PLAYERS;
+    },
+  };
+});
 
 const navigate = vi.fn();
 
@@ -63,6 +77,7 @@ describe("CreateTeamPage", () => {
     expect(html).toContain("Nombre del director técnico");
     expect(html).toContain("Aún no hay jugadores. Haz clic en &quot;Agregar Jugador&quot;.");
     expect(html).toContain("+ Agregar Jugador");
+    expect(html).toContain("+ Asignar Jugador Libre");
     expect(html).toContain("Registrar Equipo");
     expect(html).toContain("Cancelar");
   });
@@ -106,19 +121,37 @@ describe("CreateTeamPage", () => {
     }
   });
 
-  it("selects fixture players, confirms them into the local roster, and closes the canonical modal", () => {
+  it("validates and locally adds a new player from the add-player modal", () => {
     navigate.mockClear();
     window.history.replaceState({}, "", "/admin/teams/create?modal=player");
     const page = renderPage();
-    const player = PUBLIC_PLAYERS[0];
 
     try {
-      const checkbox = page.container.querySelector<HTMLInputElement>(`input[aria-label="Seleccionar ${player.fullName}"]`)!;
-      act(() => checkbox.click());
-      act(() => [...page.container.querySelectorAll("button")].find((button) => button.textContent === "Confirmar selección")?.click());
+      const dialog = page.container.querySelector('[role="dialog"]')!;
+      expect(dialog.textContent).toContain("Agregar Jugador al Equipo");
+      expect(dialog.textContent).toContain("Registra un nuevo jugador y sumalo directamente al plantel.");
 
-      expect(page.container.textContent).toContain(player.fullName);
-      expect(page.container.textContent).not.toContain("Aún no hay jugadores");
+      const fullName = getInputByLabel(page.container, "Nombre Completo");
+      const number = getInputByLabel(page.container, "Dorsal");
+      const position = getInputByLabel(page.container, "Posición");
+      const addButton = [...dialog.querySelectorAll("button")].find((button) => button.textContent === "Agregar al plantel")!;
+
+      act(() => addButton.click());
+
+      expect(fullName.getAttribute("aria-invalid")).toBe("true");
+      expect(number.getAttribute("aria-invalid")).toBe("true");
+      expect(position.getAttribute("aria-invalid")).toBe("true");
+      expect(dialog.textContent).toContain("Completá los campos obligatorios");
+
+      act(() => {
+        setInputValue(fullName, "Sofía Fernández");
+        setInputValue(number, "18");
+        setInputValue(position, "Central");
+      });
+      act(() => addButton.click());
+
+      expect(page.container.textContent).toContain("Sofía Fernández");
+      expect(page.container.textContent).toContain("Jugador \"Sofía Fernández\" agregado al plantel local.");
       expect(navigate).toHaveBeenCalledWith({ to: "/admin/teams/create", search: {} });
     } finally {
       act(() => page.root.unmount());
@@ -127,13 +160,53 @@ describe("CreateTeamPage", () => {
     }
   });
 
-  it("accepts the legacy assign-player modal URL as an alias", () => {
+  it("renders a distinct assign-player modal with accessible search and an honest empty state", () => {
     window.history.replaceState({}, "", "/admin/teams/create?modal=assign-player");
     const page = renderPage();
 
     try {
-      expect(page.container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador");
+      const dialog = page.container.querySelector('[role="dialog"]')!;
+      expect(dialog.textContent).toContain("Asignar Jugador Libre");
+      expect(dialog.textContent).toContain("Buscá en la base de datos a los jugadores que no tienen equipo.");
+      expect(dialog.textContent).not.toContain("Agregar Jugador al Equipo");
+
+      const search = getInputByLabel(page.container, "Buscar jugador libre");
+      expect(search.type).toBe("search");
+      expect(dialog.textContent).toContain("No hay jugadores libres para asignar.");
+
+      act(() => setInputValue(search, "Valentina"));
+      expect(dialog.textContent).toContain("No hay jugadores libres para asignar.");
     } finally {
+      act(() => page.root.unmount());
+      page.container.remove();
+      window.history.replaceState({}, "", "/");
+    }
+  });
+
+  it("does not show a free player again after assigning it to the local roster", () => {
+    fixtureOverride.players = [{
+      id: "free-player-1",
+      teamId: "",
+      fullName: "Lucía Libre",
+      number: 8,
+      position: "Central",
+      bio: "Jugadora disponible.",
+    }];
+    window.history.replaceState({}, "", "/admin/teams/create?modal=assign-player");
+    const page = renderPage();
+
+    try {
+      const dialog = page.container.querySelector('[role="dialog"]')!;
+      expect(dialog.textContent).toContain("Lucía Libre");
+      const assignButton = [...dialog.querySelectorAll("button")].find((button) => button.textContent === "Asignar")!;
+
+      act(() => assignButton.click());
+
+      expect(page.container.textContent).toContain('Jugador "Lucía Libre" asignado al plantel local.');
+      expect(dialog.textContent).not.toContain("Lucía Libre");
+      expect(dialog.textContent).toContain("No hay jugadores libres para asignar.");
+    } finally {
+      fixtureOverride.players = undefined;
       act(() => page.root.unmount());
       page.container.remove();
       window.history.replaceState({}, "", "/");
@@ -146,7 +219,7 @@ describe("CreateTeamPage", () => {
     const page = renderPage();
 
     try {
-      expect(page.container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador");
+      expect(page.container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador al Equipo");
       expect(page.container.querySelector('[role="dialog"]')?.getAttribute("aria-modal")).toBe("true");
       expect(page.container.querySelector('a[href="/admin/teams/create"]')?.textContent).toContain("Cancelar");
 
@@ -173,6 +246,8 @@ describe("CreateTeamPage", () => {
       expect(addPlayer?.getAttribute("href")).toBe("/admin/teams/create?modal=player");
       expect(page.container.querySelector('[role="dialog"]')).toBeNull();
       expect(page.container.textContent).toContain("Aún no hay jugadores");
+      const assignPlayer = [...page.container.querySelectorAll("a")].find((link) => link.textContent === "+ Asignar Jugador Libre");
+      expect(assignPlayer?.getAttribute("href")).toBe("/admin/teams/create?modal=assign-player");
       expect(submitSpy).not.toHaveBeenCalled();
     } finally {
       act(() => page.root.unmount());

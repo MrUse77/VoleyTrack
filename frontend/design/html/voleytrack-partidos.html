@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Partidos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack.css" />
+<link rel="stylesheet" href="voleytrack-partidos.css" />
+</head>
+<body>
+<div id="app" class="app active" data-od-id="app-shell-invitado">
+
+<header class="topbar" data-od-id="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+<aside class="sidebar" data-od-id="sidebar-public-nav">
+      <div class="nav-group">
+        <p class="nav-title">Invitado · Público</p>
+        <a class="nav-item" data-view="dashboard" href="voleytrack-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard</a>
+        <a class="nav-item active" data-view="matches" href="voleytrack-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg> Partidos <span class="count">16</span></a>
+        <a class="nav-item" data-view="tournaments" href="voleytrack-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+        <a class="nav-item" data-view="teams" href="voleytrack-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" data-view="players" href="voleytrack-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" data-view="live" href="voleytrack-live.html"><span class="live-dot" style="width:8px;height:8px;background:var(--danger);border-radius:999px"></span> En vivo</a>
+      </div>
+      <div class="divider"></div>
+    </aside>
+    <main class="main">
+<section class="view active" data-view="matches" data-od-id="view-matches">
+        <div class="page-head"><div><h1>Partidos</h1><p>Filtros, estados y acceso a detalle en vivo. Click en cualquier card abre el Live Detail (1.06).</p></div><div class="head-actions"><button class="btn" type="button" aria-expanded="false" aria-controls="matches-filter-panel" data-od-id="matches-filter-button" id="matches-filter-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg> Filtros</button></div></div>
+        <div class="filters" aria-label="Ventana temporal"><button class="filter active" type="button" data-time="" aria-pressed="true">Todos</button><button class="filter" type="button" data-time="today" aria-pressed="false">Hoy</button><button class="filter" type="button" data-time="upcoming" aria-pressed="false">Próximos</button></div>
+        <div class="match-filters" id="matches-filter-panel" data-od-id="matches-filter-panel" aria-hidden="true">
+          <div class="match-filters-inner">
+            <div class="match-filter-grid">
+              <div class="match-filter-field"><label for="matches-status-filter">Estado</label><select id="matches-status-filter" data-od-id="matches-status-filter"><option value="">Todos</option><option value="En vivo">En vivo</option><option value="Programado">Programado</option><option value="Finalizado">Finalizado</option></select></div>
+              <div class="match-filter-field"><label for="matches-tournament-filter">Torneo</label><select id="matches-tournament-filter" data-od-id="matches-tournament-filter"><option value="">Todos</option><option value="Liga A1">Liga A1</option><option value="Copa Nacional">Copa Nacional</option><option value="Liga Fem">Liga Fem</option></select></div>
+              <div class="match-filter-field"><label for="matches-team-filter">Equipo</label><select id="matches-team-filter" data-od-id="matches-team-filter"><option value="">Todos</option><option value="UPCN San Juan">UPCN San Juan</option><option value="Bolívar">Bolívar</option><option value="Boca Juniors">Boca Juniors</option><option value="Monteros">Monteros</option><option value="Ciudad Vóley">Ciudad Vóley</option><option value="Obras SJ">Obras SJ</option><option value="Ateneo">Ateneo</option><option value="Ferro">Ferro</option><option value="River Plate">River Plate</option><option value="Ciudad">Ciudad</option></select></div>
+            </div>
+            <div class="match-filter-footer">
+              <p class="match-results-count" id="matches-results-count" data-od-id="matches-results-count" aria-live="polite"><strong>5</strong> partidos</p>
+              <button class="btn ghost" type="button" id="matches-clear-filters" data-od-id="matches-clear-filters">Limpiar filtros</button>
+            </div>
+          </div>
+        </div>
+        <div class="cards-grid" data-od-id="matches-grid">
+          <a class="mcard" href="voleytrack-live.html" data-time="today" data-status="En vivo" data-tournament="Liga A1" data-team-home="UPCN San Juan" data-team-away="Bolívar"><div class="mcard-top"><small>LIGA A1 · EN VIVO</small><span class="state-pill s-envivo">Set 3 · 18-21</span></div><div class="mcard-teams"><div class="mcard-team"><b>UPCN San Juan</b><p style="color:var(--muted);font-size:11px;margin:2px 0 0">Local</p></div><div class="mcard-score">2:1</div><div class="mcard-team" style="text-align:right"><b>Bolívar</b><p style="color:var(--muted);font-size:11px;margin:2px 0 0">Visitante</p></div></div><div class="mcard-meta"><span>📍 Aldo Cantoni</span><span>· 21:42</span><span>· Ver detalle →</span></div></a>
+          <a class="mcard" href="voleytrack-live.html" data-time="today" data-status="Programado" data-tournament="Copa Nacional" data-team-home="Boca Juniors" data-team-away="Monteros"><div class="mcard-top"><small>COPA NACIONAL · PROGRAMADO</small><span class="state-pill s-programado">Hoy 21:00</span></div><div class="mcard-teams"><div class="mcard-team"><b>Boca Juniors</b></div><div class="mcard-score">—</div><div class="mcard-team" style="text-align:right"><b>Monteros</b></div></div><div class="mcard-meta"><span>📍 La Bombonerita</span><span>· Árb: M. Ruiz</span></div></a>
+          <div class="mcard" onclick="toast('Detalle — demo')" data-time="past" data-status="Finalizado" data-tournament="Liga A1" data-team-home="Ciudad Vóley" data-team-away="Obras SJ"><div class="mcard-top"><small>LIGA A1 · FINALIZADO</small><span class="state-pill s-finalizado">3-0</span></div><div class="mcard-teams"><div class="mcard-team"><b>Ciudad Vóley</b></div><div class="mcard-score">3:0</div><div class="mcard-team" style="text-align:right"><b>Obras SJ</b></div></div><div class="mcard-meta"><span>📍 Gorki Grana</span><span>· Sets 25-18, 25-21, 25-19</span></div></div>
+          <div class="mcard" onclick="toast('Detalle — demo')" data-time="upcoming" data-status="Programado" data-tournament="Liga Fem" data-team-home="Ateneo" data-team-away="Ferro"><div class="mcard-top"><small>LIGA FEM · PROGRAMADO</small><span class="state-pill s-programado">Sáb 19:00</span></div><div class="mcard-teams"><div class="mcard-team"><b>Ateneo</b></div><div class="mcard-score">—</div><div class="mcard-team" style="text-align:right"><b>Ferro</b></div></div><div class="mcard-meta"><span>📍 Ateneo</span></div></div>
+          <div class="mcard" onclick="toast('Detalle — demo')" data-time="upcoming" data-status="Programado" data-tournament="Liga A1" data-team-home="River Plate" data-team-away="Ciudad"><div class="mcard-top"><small>LIGA A1 · PROGRAMADO</small><span class="state-pill s-programado">Dom 18:00</span></div><div class="mcard-teams"><div class="mcard-team"><b>River Plate</b></div><div class="mcard-score">—</div><div class="mcard-team" style="text-align:right"><b>Ciudad</b></div></div><div class="mcard-meta"><span>📍 River</span></div></div>
+        </div>
+        <div class="match-empty" id="matches-empty-state" data-od-id="matches-empty-state" role="status"><h2>No hay partidos que coincidan</h2><p>Prueba a reducir los filtros o límpialos para ver todos los partidos.</p></div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function switchView(name){
+  const target = name==='team-detail' ? 'team-detail' : name==='player-detail' ? 'player-detail' : name;
+  document.querySelectorAll('.view').forEach(v=> v.classList.toggle('active', v.dataset.view===target));
+  document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(b=>{ const v=b.dataset.view; let active=v===target || (target==='team-detail'&&v==='teams') || (target==='player-detail'&&v==='players'); b.classList.toggle('active', active); });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2200); }
+
+const matchFilterButton=document.getElementById('matches-filter-button');
+const matchFilterPanel=document.getElementById('matches-filter-panel');
+const matchTimeFilters=[...document.querySelectorAll('[data-view="matches"] .filter[data-time]')];
+const matchFilterControls=[
+  document.getElementById('matches-status-filter'),
+  document.getElementById('matches-tournament-filter'),
+  document.getElementById('matches-team-filter')
+];
+const matchCards=[...document.querySelectorAll('[data-view="matches"] .cards-grid > .mcard')];
+const matchGrid=document.querySelector('[data-view="matches"] .cards-grid');
+const matchResultsCount=document.getElementById('matches-results-count');
+const matchEmptyState=document.getElementById('matches-empty-state');
+let activeMatchTime='';
+
+function toggleMatchFilters(forceOpen){
+  const open=typeof forceOpen==='boolean' ? forceOpen : !matchFilterPanel.classList.contains('open');
+  matchFilterPanel.classList.toggle('open',open);
+  matchFilterPanel.setAttribute('aria-hidden',String(!open));
+  matchFilterButton.setAttribute('aria-expanded',String(open));
+}
+
+function filterMatches(){
+  const [status,tournament,team]=matchFilterControls.map(control=>control.value);
+  let visibleCount=0;
+  matchCards.forEach(card=>{
+    const includesTeam=!team || card.dataset.teamHome===team || card.dataset.teamAway===team;
+    const visible=(!activeMatchTime || card.dataset.time===activeMatchTime) &&
+      (!status || card.dataset.status===status) &&
+      (!tournament || card.dataset.tournament===tournament) &&
+      includesTeam;
+    card.hidden=!visible;
+    if(visible) visibleCount+=1;
+  });
+  matchResultsCount.innerHTML=`<strong>${visibleCount}</strong> ${visibleCount===1 ? 'partido' : 'partidos'}`;
+  matchGrid.hidden=visibleCount===0;
+  matchEmptyState.classList.toggle('visible',visibleCount===0);
+}
+
+function selectMatchTime(button){
+  activeMatchTime=button.dataset.time;
+  matchTimeFilters.forEach(filter=>{
+    const active=filter===button;
+    filter.classList.toggle('active',active);
+    filter.setAttribute('aria-pressed',String(active));
+  });
+  filterMatches();
+}
+
+matchFilterButton.addEventListener('click',()=>toggleMatchFilters());
+matchTimeFilters.forEach(filter=>filter.addEventListener('click',()=>selectMatchTime(filter)));
+matchFilterControls.forEach(control=>control.addEventListener('change',filterMatches));
+document.getElementById('matches-clear-filters').addEventListener('click',()=>{
+  matchFilterControls.forEach(control=>{ control.value=''; });
+  selectMatchTime(matchTimeFilters[0]);
+});
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape' && matchFilterPanel.classList.contains('open')){
+    toggleMatchFilters(false);
+    matchFilterButton.focus();
+  }
+});
+</script>
+</body>
+</html>

@@ -51,7 +51,7 @@ export function TournamentDetailPage() {
         </div>
       </header>
 
-      <Card className="border-vt-border bg-vt-raised p-6">
+      <Card className="border-vt-border p-6" variant="raised">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <Badge variant={statusVariants[tournament.status]}>{tournament.statusLabel}</Badge>
@@ -71,7 +71,7 @@ export function TournamentDetailPage() {
           {tournamentTabs.map((tab, index) => (
             <Link
               aria-current={index === 0 ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${index === 0 ? "bg-vt-accent text-vt-canvas" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold ${index === 0 ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
               key={tab.label}
               to={`/tournaments/${tournament.id}${tab.suffix}` as string}
             >

@@ -65,7 +65,7 @@ export function TournamentMatchesPage() {
           {tournamentTabs.map((tab, index) => (
             <Link
               aria-current={index === 1 ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${index === 1 ? "bg-vt-accent text-vt-canvas" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold ${index === 1 ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
               key={tab.label}
               to={`/tournaments/${tournament.id}${tab.suffix}` as string}
             >
@@ -76,7 +76,7 @@ export function TournamentMatchesPage() {
         </div>
       </nav>
 
-      <Card className="border-vt-border bg-vt-raised p-5">
+      <Card className="border-vt-border p-5" variant="raised">
         <h2 className="text-xl font-bold text-vt-accent">Partidos del Torneo</h2>
         <div className="mt-5 space-y-3">
           {matches.map((match) => (

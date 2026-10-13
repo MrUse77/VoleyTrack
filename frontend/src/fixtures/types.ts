@@ -20,6 +20,73 @@ export type MatchFixture = Readonly<{
   score: MatchScore | null;
 }>;
 
+export type LiveSetFixture = Readonly<{
+  number: number;
+  home: number;
+  away: number;
+  status: "completed" | "current";
+}>;
+
+export type LiveRotationPositionFixture = Readonly<{
+  position: number;
+  playerName: string;
+  number: number;
+}>;
+
+export type LiveTeamRotationFixture = Readonly<{
+  teamId: string;
+  teamName: string;
+  positions: readonly LiveRotationPositionFixture[];
+}>;
+
+export type LiveMatchEventFixture = Readonly<{
+  id: string;
+  time: string;
+  eventType: string;
+  playerName: string;
+  teamId: string;
+  teamName: string;
+  matchContext: string;
+  outcome: "point" | "error";
+}>;
+
+export type LivePlayerStatFixture = Readonly<{
+  rank: number;
+  playerName: string;
+  teamId: string;
+  teamName: string;
+  points: number;
+}>;
+
+export type LiveTeamStatFixture = Readonly<{
+  label: "Ataques punto" | "Bloqueos punto" | "Saques punto" | "Errores no forzados";
+  home: number;
+  away: number;
+}>;
+
+export type PublicVisualSnapshotFixture = Readonly<{
+  artboard: string;
+  setNumber: number;
+  homeSetsWon: number;
+  awaySetsWon: number;
+  currentScore: MatchScore;
+}>;
+
+export type LiveMatchDetailFixture = Readonly<{
+  match: MatchFixture;
+  tournamentName: string;
+  servingTeamId: string;
+  currentScore: MatchScore;
+  homeSetsWon: number;
+  awaySetsWon: number;
+  sets: readonly LiveSetFixture[];
+  rotations: readonly [LiveTeamRotationFixture, LiveTeamRotationFixture];
+  events: readonly LiveMatchEventFixture[];
+  playerLeaders: readonly LivePlayerStatFixture[];
+  teamStats: readonly LiveTeamStatFixture[];
+  visualSnapshot?: PublicVisualSnapshotFixture;
+}>;
+
 export type TournamentFixture = Readonly<{
   id: string;
   name: string;
@@ -80,6 +147,53 @@ export type TeamFixture = Readonly<{
   rosterPlayerIds: readonly string[];
 }>;
 
+export type TeamSummaryStatFixture = Readonly<{
+  label: "PUNTOS A FAVOR" | "PUNTOS EN CONTRA" | "ATAQUES PUNTO" | "BLOQUEOS PUNTO";
+  value: number;
+}>;
+
+export type TeamRosterStatFixture = Readonly<{
+  id: string;
+  fullName: string;
+  number: number;
+  position: string;
+  playerDetailId?: string;
+  points: number;
+  attacks: number;
+  blocks: number;
+  aces: number;
+}>;
+
+export type TeamMatchReferenceFixture = Readonly<{
+  match: MatchFixture;
+  resultLabel: "EN VIVO" | "VICTORIA" | "DERROTA" | "PRÓXIMO";
+  contextLabel: string;
+}>;
+
+export type TeamStatCategoryFixture = Readonly<{
+  id: "points" | "attacks" | "blocks" | "aces";
+  label: "Puntos" | "Ataques" | "Bloqueos" | "Saques";
+  leaderPlayerId: string;
+  leaderValue: number;
+  unit: "pts" | "ataques" | "bloqueos" | "saques";
+}>;
+
+export type TeamDetailFixture = Readonly<{
+  teamId: string;
+  tournamentId: string;
+  tournamentName: string;
+  initials: string;
+  standingLabel: string;
+  matchesPlayed: number;
+  wins: number;
+  sets: string;
+  points: number;
+  summaryStats: readonly TeamSummaryStatFixture[];
+  rosterStats: readonly TeamRosterStatFixture[];
+  matches: readonly TeamMatchReferenceFixture[];
+  statCategories: readonly TeamStatCategoryFixture[];
+}>;
+
 export type PlayerFixture = Readonly<{
   id: string;
   teamId: string;
@@ -87,6 +201,37 @@ export type PlayerFixture = Readonly<{
   number: number;
   position: string;
   bio: string;
+}>;
+
+export type PlayerKpiFixture = Readonly<{
+  label: "Puntos Totales" | "Eficacia Ataque" | "Aces (Saques)" | "Bloqueos";
+  value: string;
+}>;
+
+export type PlayerStatBreakdownFixture = Readonly<{
+  id: "attack" | "block" | "serve" | "defense" | "reception";
+  label: "Ataque" | "Bloqueo" | "Saque" | "Defensa (Digs)" | "Recepción Perf.";
+  value: string;
+  barPercent: number;
+  tone: "attack" | "block" | "serve" | "defense" | "reception";
+}>;
+
+export type PlayerRecentMatchFixture = Readonly<{
+  match: MatchFixture;
+  tournamentName: string;
+  playerPoints: number;
+}>;
+
+export type PlayerDetailFixture = Readonly<{
+  playerId: string;
+  tournamentId: string;
+  tournamentName: string;
+  heightLabel: string;
+  weightLabel: string;
+  ageLabel: string;
+  kpis: readonly PlayerKpiFixture[];
+  statBreakdown: readonly PlayerStatBreakdownFixture[];
+  recentMatches: readonly PlayerRecentMatchFixture[];
 }>;
 
 export type PublicMatchFixtures = Readonly<{
@@ -121,9 +266,16 @@ export type ScoringPointStepFixture = Readonly<{ id: string; label: string; desc
 export type ScoringPointEntryFixture = Readonly<{
   id: string; matchId: string; title: string; steps: readonly ScoringPointStepFixture[];
 }>;
+export type ScoringSummaryMetricFixture = Readonly<{
+  id: string; label: string; home: number; away: number;
+}>;
+export type ScoringSummaryMvpFixture = Readonly<{
+  playerName: string; number: number; teamName: string; detail: string;
+}>;
 export type ScoringSummaryFixture = Readonly<{
   id: string; matchId: string; title: string; statusLabel: string; homeTeamName: string; awayTeamName: string;
   finalScore: MatchScore; sets: readonly ScoringSetFixture[];
+  stats?: readonly ScoringSummaryMetricFixture[]; mvp?: ScoringSummaryMvpFixture | null;
 }>;
 export type ScoringFixtures = Readonly<{
   matchSetup: ScoringSetupFixture; console: ScoringConsoleFixture; pointEntry: ScoringPointEntryFixture; summary: ScoringSummaryFixture;

@@ -1,105 +1,97 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { Badge } from "../../components/primitives/Badge";
 import { Card } from "../../components/primitives/Card";
-import { PUBLIC_MATCHES, PUBLIC_TEAMS, type MatchFixture, type TeamFixture } from "../../fixtures";
+import type { TeamMatchRow } from "./TeamJourney";
+import {
+  findTeamJourney,
+  TeamJourney,
+  teamMatchRows,
+  TeamNotFound,
+} from "./TeamJourney";
 
-const teamTabs = [
-  { label: "Resumen", suffix: "" },
-  { label: "Plantel", suffix: "/roster" },
-  { label: "Partidos", suffix: "/matches" },
-  { label: "Estadísticas", suffix: "/stats" },
+const matchRowGeometry = [
+  "min-[1416px]:h-[74px]",
+  "min-[1416px]:mt-4 min-[1416px]:h-[74px]",
+  "min-[1416px]:mt-8 min-[1416px]:h-16",
+  "min-[1416px]:mt-5 min-[1416px]:h-16",
 ] as const;
-
-const statusVariants = { finished: "default", live: "success", today: "accent", upcoming: "default" } as const;
-
-function findTeam(id: string): TeamFixture | undefined {
-  return PUBLIC_TEAMS.find((team) => team.id === id);
-}
-
-function findTeamMatches(id: string): readonly MatchFixture[] {
-  return [PUBLIC_MATCHES.live, PUBLIC_MATCHES.today, PUBLIC_MATCHES.upcoming, PUBLIC_MATCHES.finished]
-    .flat()
-    .filter((match) => match.homeTeamId === id || match.awayTeamId === id);
-}
 
 export function TeamMatchesPage() {
   const { id } = useParams({ strict: false }) as { id: string };
-  const team = findTeam(id);
+  const context = findTeamJourney(id);
 
-  if (!team) {
-    return (
-      <Card>
-        <h1 className="text-2xl font-bold text-vt-text">Equipo no encontrado</h1>
-        <Link className="mt-4 inline-block text-sm font-semibold text-vt-accent" to={"/teams" as string}>
-          ← Volver a equipos
-        </Link>
-      </Card>
-    );
-  }
+  if (!context) return <TeamNotFound />;
 
-  const matches = findTeamMatches(team.id);
+  const matches = teamMatchRows(context);
 
   return (
-    <div className="space-y-6">
-      <header>
-        <Link className="text-sm font-semibold text-vt-accent" to={"/teams" as string}>
-          ← Equipos
-        </Link>
-        <p className="mt-5 text-sm text-vt-muted">Equipos / {team.name}</p>
-        <h1 className="mt-2 text-3xl font-black text-vt-text">{team.name}</h1>
-        <p className="mt-2 text-sm text-vt-muted">{team.city} · {team.category}</p>
-      </header>
-
-      <nav aria-label="Navegación del equipo" className="rounded-2xl border border-vt-border bg-vt-raised p-2">
-        <div className="flex flex-wrap gap-2">
-          {teamTabs.map((tab) => {
-            const isActive = tab.suffix === "/matches";
-            return (
-              <Link
-                aria-current={isActive ? "page" : undefined}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold ${isActive ? "bg-vt-accent text-vt-canvas" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
-                key={tab.label}
-                to={`/teams/${team.id}${tab.suffix}` as string}
-              >
-                {tab.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
-      <Card>
-        <h2 className="text-xl font-bold text-vt-accent">Partidos del equipo</h2>
-        {matches.length > 0 ? (
-          <div className="mt-5 space-y-3">
-            {matches.map((match) => <MatchRow key={match.id} match={match} />)}
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-vt-muted">No hay partidos registrados para este equipo.</p>
-        )}
-      </Card>
-    </div>
+    <TeamJourney activeTab="matches" {...context}>
+      <section aria-labelledby="team-matches-title">
+        <h2 className="mb-4 text-lg font-bold leading-6 text-vt-accent" id="team-matches-title">Partidos del Equipo</h2>
+        <Card
+          className="p-5 min-[1416px]:h-[520px]"
+          data-testid="team-matches-panel"
+        >
+          {matches.length > 0 ? (
+            <ol>
+              {matches.map((row, index) => (
+                <MatchRow index={index} key={row.match.id} row={row} />
+              ))}
+            </ol>
+          ) : (
+            <p className="text-sm text-vt-muted">No hay partidos registrados para este equipo.</p>
+          )}
+        </Card>
+      </section>
+    </TeamJourney>
   );
 }
 
-function MatchRow({ match }: { match: MatchFixture }) {
-  return (
-    <Link
-      className="block rounded-xl border border-vt-border bg-vt-panel p-4 transition hover:border-vt-accent"
-      data-testid="team-match-row"
-      to={`/matches/${match.id}/live` as string}
-    >
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="flex min-w-[130px] items-center gap-2">
-          <Badge variant={statusVariants[match.status]}>{match.badgeLabel}</Badge>
-          <span className="text-xs font-semibold text-vt-muted">{match.scheduledLabel}</span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-black text-vt-text">{match.homeTeamName} vs {match.awayTeamName}</p>
-          <p className="mt-1 text-xs text-vt-muted">{match.venue}</p>
-        </div>
-        <p className="text-base font-black text-vt-text">{match.score ? `${match.score.home} - ${match.score.away}` : "Programado"}</p>
+function MatchRow({ index, row }: { index: number; row: TeamMatchRow }) {
+  const { match } = row;
+  const geometry = matchRowGeometry[index] ?? "min-[1416px]:mt-5 min-[1416px]:h-16";
+  const content = (
+    <div className="grid min-h-16 gap-3 rounded-xl bg-vt-panel p-4 min-[1416px]:h-full min-[1416px]:min-h-0 min-[1416px]:grid-cols-[110px_minmax(0,1fr)_120px_100px] min-[1416px]:items-center">
+      <div>
+        <Badge variant={resultVariant(row.resultLabel)}>{row.resultLabel}</Badge>
       </div>
-    </Link>
+      <div className="min-w-0">
+        <p className="text-sm font-black text-vt-text">{match.homeTeamName} vs {match.awayTeamName}</p>
+        <p className="mt-1 text-xs text-vt-muted">
+          {row.contextLabel}{row.contextLabel.includes(match.venue) ? "" : ` · ${match.venue}`}
+        </p>
+      </div>
+      <p className="text-lg font-black text-vt-text">
+        {match.score ? `${match.score.home} - ${match.score.away}` : "Programado"}
+      </p>
+      <p className="text-xs font-bold text-vt-muted min-[1416px]:text-right">
+        {match.status === "live" ? "Ver en vivo" : match.badgeLabel}
+      </p>
+    </div>
   );
+
+  return (
+    <li
+      data-row-index={index + 1}
+      className={geometry}
+      data-testid="team-match-row"
+    >
+      {match.status === "live" ? (
+        <Link
+          aria-label={`Ver en vivo: ${match.homeTeamName} vs ${match.awayTeamName}`}
+          className="block rounded-xl transition hover:ring-1 hover:ring-vt-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent min-[1416px]:h-full"
+          to={`/matches/${match.id}/live` as string}
+        >
+          {content}
+        </Link>
+      ) : content}
+    </li>
+  );
+}
+
+function resultVariant(label: string): "accent" | "danger" | "default" | "success" {
+  if (label === "EN VIVO" || label === "VICTORIA") return "success";
+  if (label === "DERROTA") return "danger";
+  if (label === "PRÓXIMO") return "accent";
+  return "default";
 }

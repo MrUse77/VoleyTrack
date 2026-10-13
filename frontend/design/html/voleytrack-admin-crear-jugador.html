@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="es-ES">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Admin · Crear jugador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack-admin.css" />
+</head>
+<body>
+<div id="app" class="app" data-od-id="app-shell-admin">
+  <header class="topbar" data-od-id="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="Icono de VoleyTrack" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" aria-label="Buscar" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" type="button" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+        <div class="avatar">A</div>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+    <aside class="sidebar" data-od-id="sidebar-admin">
+      <div class="nav-group">
+        <p class="nav-title">Admin · Gestión</p>
+        <a class="nav-item" href="voleytrack-admin-gestion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M20 21a8 8 0 1 0-16 0"/></svg> Staff & gestión</a>
+        <a class="nav-item" href="voleytrack-admin-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg> Partidos</a>
+        <a class="nav-item" href="voleytrack-admin-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item active" href="voleytrack-admin-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" href="voleytrack-admin-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+      </div>
+      <a class="nav-item" style="margin-top:10px;color:var(--muted)" href="voleytrack-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Cerrar sesión</a>
+    </aside>
+    <main class="main" data-od-id="create-player-main-region">
+      <section class="view active" data-od-id="create-player-view">
+        <div class="page-head">
+          <div>
+            <h1 id="player-form-title" data-od-id="create-player-title">Crear jugador</h1>
+            <p id="player-form-copy">Completa los datos deportivos para incorporar al jugador al equipo.</p>
+          </div>
+        </div>
+        <div class="card form-card">
+          <div class="card-h">Datos del jugador <small>Estado automático: Activo</small></div>
+          <form class="card-b" id="create-player-form" data-od-id="create-player-form" novalidate>
+            <div id="form-status" class="form-status success" role="status" aria-live="polite" tabindex="-1" hidden></div>
+            <div class="form-grid">
+              <div class="field">
+                <label for="player-name">Nombre</label>
+                <input id="player-name" name="name" type="text" autocomplete="given-name" required data-od-id="create-player-name" aria-describedby="player-name-error" />
+                <p class="field-error" id="player-name-error"></p>
+              </div>
+              <div class="field">
+                <label for="player-surname">Apellido</label>
+                <input id="player-surname" name="surname" type="text" autocomplete="family-name" required data-od-id="create-player-surname" aria-describedby="player-surname-error" />
+                <p class="field-error" id="player-surname-error"></p>
+              </div>
+              <div class="field">
+                <label for="player-birth-date">Fecha de nacimiento</label>
+                <input id="player-birth-date" name="birthDate" type="date" required data-od-id="create-player-birth-date" aria-describedby="player-birth-date-hint player-birth-date-error" />
+                <span class="hint" id="player-birth-date-hint" hidden>No hay una fecha registrada; puedes completarla más adelante.</span>
+                <p class="field-error" id="player-birth-date-error"></p>
+              </div>
+              <div class="field">
+                <label for="player-position">Posición</label>
+                <select id="player-position" name="position" required data-od-id="create-player-position" aria-describedby="player-position-error">
+                  <option value="">Seleccionar posición</option>
+                  <option value="Armador">Armador</option>
+                  <option value="Central">Central</option>
+                  <option value="Líbero">Líbero</option>
+                  <option value="Opuesto">Opuesto</option>
+                  <option value="Punta">Punta</option>
+                </select>
+                <p class="field-error" id="player-position-error"></p>
+              </div>
+              <div class="field">
+                <label for="player-team">Equipo</label>
+                <select id="player-team" name="team" required data-od-id="create-player-team" aria-describedby="player-team-hint player-team-error">
+                  <option value="">Seleccionar equipo</option>
+                  <option value="UPCN San Juan">UPCN San Juan</option>
+                  <option value="Bolívar Vóley">Bolívar Vóley</option>
+                  <option value="Ciudad Vóley">Ciudad Vóley</option>
+                  <option value="Boca Juniors">Boca Juniors</option>
+                </select>
+                <span class="hint" id="player-team-hint">El dorsal debe ser único dentro del equipo seleccionado.</span>
+                <p class="field-error" id="player-team-error"></p>
+              </div>
+              <div class="field">
+                <label for="player-jersey">Dorsal</label>
+                <input id="player-jersey" name="jerseyNumber" type="number" inputmode="numeric" min="1" max="99" required data-od-id="create-player-jersey" aria-describedby="player-jersey-error" />
+                <p class="field-error" id="player-jersey-error"></p>
+              </div>
+            </div>
+            <div class="form-actions">
+              <a class="btn ghost" id="player-form-cancel" href="voleytrack-admin-jugadores.html" data-od-id="create-player-cancel">Cancelar</a>
+              <button class="btn accent" id="player-form-submit" type="submit" data-od-id="create-player-submit">Crear jugador</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+const form=document.getElementById('create-player-form');
+const statusMessage=document.getElementById('form-status');
+const isEditMode=new URLSearchParams(window.location.search).get('modo')==='editar';
+const defaultMartinPlayer={name:'Martín',surname:'Fernández',birthDate:'',position:'Punta',team:'Bolívar Vóley',jerseyNumber:7,status:'Activo'};
+const martinPlayer={...defaultMartinPlayer,...JSON.parse(localStorage.getItem('voleytrack-admin-martin-fernandez') || '{}')};
+const occupiedJerseys={'UPCN San Juan':[10,6],'Bolívar Vóley':[],'Ciudad Vóley':[],'Boca Juniors':[]};
+
+if(isEditMode){
+  document.title='VoleyTrack — Admin · Editar jugador';
+  document.getElementById('player-form-title').textContent='Editar jugador';
+  document.getElementById('player-form-copy').textContent='Actualiza los datos deportivos de Martín Fernández.';
+  document.getElementById('player-form-submit').textContent='Guardar cambios';
+  document.getElementById('player-form-cancel').href='voleytrack-admin-jugadores.html?vista=martin';
+  document.getElementById('player-birth-date').required=false;
+  document.getElementById('player-birth-date-hint').hidden=false;
+  Object.entries(martinPlayer).forEach(([name,value])=>{
+    const field=form.elements.namedItem(name);
+    if(field) field.value=value;
+  });
+}
+
+const fields=[...form.querySelectorAll('[required]')];
+const validationFields=[...form.querySelectorAll('input, select')];
+
+document.getElementById('player-birth-date').max=new Date().toISOString().split('T')[0];
+
+function setError(field,message){
+  field.setAttribute('aria-invalid','true');
+  document.getElementById(`${field.id}-error`).textContent=message;
+}
+
+function clearError(field){
+  field.removeAttribute('aria-invalid');
+  document.getElementById(`${field.id}-error`).textContent='';
+}
+
+validationFields.forEach(field=>{
+  field.addEventListener(field.tagName==='SELECT' ? 'change' : 'input',()=>clearError(field));
+});
+
+form.addEventListener('submit',event=>{
+  event.preventDefault();
+  validationFields.forEach(clearError);
+
+  const incompleteFields=fields.filter(field=>!field.value.trim());
+  if(incompleteFields.length){
+    incompleteFields.forEach(field=>setError(field,'Este campo es obligatorio.'));
+    incompleteFields[0].focus();
+    return;
+  }
+
+  const firstInvalid=validationFields.find(field=>!field.checkValidity());
+  if(firstInvalid){
+    setError(firstInvalid,'Introduce un valor válido.');
+    firstInvalid.focus();
+    return;
+  }
+
+  const data=Object.fromEntries(new FormData(form));
+  const storedPlayers=JSON.parse(localStorage.getItem('voleytrack-admin-players') || '[]');
+  const occupied=[
+    ...(occupiedJerseys[data.team] || []),
+    ...storedPlayers.filter(player=>player.team===data.team).map(player=>Number(player.jerseyNumber)),
+    ...(!isEditMode && martinPlayer.team===data.team ? [Number(martinPlayer.jerseyNumber)] : [])
+  ];
+
+  if(occupied.includes(Number(data.jerseyNumber))){
+    const jerseyField=document.getElementById('player-jersey');
+    setError(jerseyField,'Dorsal duplicado, ingresar otro valor');
+    jerseyField.focus();
+    return;
+  }
+
+  if(isEditMode){
+    localStorage.setItem('voleytrack-admin-martin-fernandez',JSON.stringify({...data,jerseyNumber:Number(data.jerseyNumber),status:'Activo'}));
+  }else{
+    storedPlayers.push({...data,jerseyNumber:Number(data.jerseyNumber),status:'Activo'});
+    localStorage.setItem('voleytrack-admin-players',JSON.stringify(storedPlayers));
+  }
+  statusMessage.textContent=isEditMode ? 'Cambios guardados. Volviendo a la ficha…' : 'Jugador creado con estado Activo. Volviendo al listado…';
+  statusMessage.hidden=false;
+  form.querySelectorAll('input, select, button, a').forEach(control=>{
+    if('disabled' in control) control.disabled=true;
+    control.setAttribute('aria-disabled','true');
+  });
+  statusMessage.focus();
+  window.setTimeout(()=>{ window.location.href=isEditMode ? 'voleytrack-admin-jugadores.html?vista=martin&actualizado=1' : 'voleytrack-admin-jugadores.html?creado=1'; },1200);
+});
+</script>
+</body>
+</html>

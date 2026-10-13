@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Admin · Ver Copa Nacional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack-admin.css" />
+</head>
+<body>
+<div id="app" class="app" data-od-id="app-shell-admin">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" aria-label="Buscar" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+        <div class="avatar">A</div>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+    <aside class="sidebar">
+      <div class="nav-group">
+        <p class="nav-title">Admin · Gestión</p>
+        <a class="nav-item" href="voleytrack-admin-gestion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M20 21a8 8 0 1 0-16 0"/></svg> Staff & gestión</a>
+        <a class="nav-item" href="voleytrack-admin-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg> Partidos</a>
+        <a class="nav-item" href="voleytrack-admin-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" href="voleytrack-admin-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" href="voleytrack-admin-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+      </div>
+      <a class="nav-item" style="margin-top:10px;color:var(--muted)" href="voleytrack-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Cerrar sesión</a>
+    </aside>
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1>Copa Nacional <span class="badge warn">Programado</span></h1>
+          <p>Detalle del torneo · Eliminación directa · Temporada 2026</p>
+        </div>
+        <div class="head-actions">
+          <a class="btn ghost" href="voleytrack-admin-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg> Volver</a>
+          <a class="btn" href="voleytrack-admin-editar-torneo.html">Editar torneo</a>
+          <a class="btn accent" href="voleytrack-admin-crear-partido.html?torneo=copa-nacional" data-od-id="create-cup-match-cta">Crear partido</a>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">Equipos</div><div class="kpi-value">16</div><div class="kpi-sub">Inscritos</div></div>
+        <div class="kpi"><div class="kpi-label">Partidos</div><div class="kpi-value">15</div><div class="kpi-sub">Eliminación directa</div></div>
+        <div class="kpi"><div class="kpi-label">Fase</div><div class="kpi-value">8vos</div><div class="kpi-sub">Ronda inicial</div></div>
+        <div class="kpi"><div class="kpi-label">Finaliza</div><div class="kpi-value">30 nov</div><div class="kpi-sub">Temporada 2026</div></div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="card" data-od-id="info-copa">
+          <div class="card-h">Información <small>DATOS GENERALES</small></div>
+          <div class="card-b">
+            <div class="info-row"><b>Nombre</b><span>Copa Nacional</span></div>
+            <div class="info-row"><b>Temporada</b><span>2026</span></div>
+            <div class="info-row"><b>Sistema</b><span>Eliminación directa</span></div>
+            <div class="info-row"><b>Equipos</b><span>16</span></div>
+            <div class="info-row"><b>Estado</b><span>Programado</span></div>
+            <div class="info-row"><b>Inicio</b><span>23 jun 2026</span></div>
+            <div class="info-row"><b>Final</b><span>30 nov 2026</span></div>
+          </div>
+        </div>
+
+        <div class="card" data-od-id="formato">
+          <div class="card-h">Formato <small>RONDAS</small></div>
+          <div class="card-b">
+            <div class="info-row"><b>Octavos de final</b><span>16 equipos</span></div>
+            <div class="info-row"><b>Cuartos de final</b><span>8 equipos</span></div>
+            <div class="info-row"><b>Semifinales</b><span>4 equipos</span></div>
+            <div class="info-row"><b>Final</b><span>Partido único</span></div>
+          </div>
+        </div>
+      </div>
+
+      <section class="card tournament-content" data-od-id="competencia-copa-nacional">
+        <div class="detail-tabs tournament-tabs" role="tablist" aria-label="Contenido de Copa Nacional" data-od-id="tabs-copa-nacional">
+          <button class="detail-tab active" type="button" role="tab" id="tab-participantes" aria-selected="true" aria-controls="panel-participantes" tabindex="0" data-od-id="tab-participantes">Participantes</button>
+          <button class="detail-tab" type="button" role="tab" id="tab-llaves" aria-selected="false" aria-controls="panel-llaves" tabindex="-1" data-od-id="tab-llaves">Llaves</button>
+        </div>
+
+        <div class="tab-panel active" id="panel-participantes" role="tabpanel" aria-labelledby="tab-participantes" data-od-id="panel-participantes">
+          <div class="card-h">Equipos participantes <small>6 CONFIRMADOS · 16 CUPOS</small></div>
+          <div class="table-wrap" style="border:0;border-radius:0;background:transparent">
+            <table>
+              <thead><tr><th>#</th><th>Equipo</th><th class="num">Torneo</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><b>UPCN San Juan</b></td><td class="num">Liga A1</td></tr>
+                <tr><td>2</td><td><b>Bolívar Vóley</b></td><td class="num">Liga A1</td></tr>
+                <tr><td>3</td><td><b>Boca Juniors</b></td><td class="num">Liga A1</td></tr>
+                <tr><td>4</td><td><b>Ciudad Vóley</b></td><td class="num">Liga A1</td></tr>
+                <tr><td>5</td><td><b>River Plate</b></td><td class="num">Liga A1</td></tr>
+                <tr><td>6</td><td><b>Obras SJ</b></td><td class="num">Liga A1</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-llaves" role="tabpanel" aria-labelledby="tab-llaves" hidden data-od-id="panel-llaves">
+          <div class="card-h" data-od-id="llaves-copa-encabezado">
+            <span>Llaves de eliminación directa</span>
+            <small>16 EQUIPOS · PROGRAMADO</small>
+          </div>
+          <div class="bracket-intro" data-od-id="llaves-copa-estado">
+            <span class="bracket-status">Programado</span>
+            <p>Los cruces se completarán cuando se confirmen todos los participantes.</p>
+          </div>
+          <div class="bracket-scroll" data-od-id="llaves-copa-tablero" tabindex="0" aria-label="Llaves de la Copa Nacional. Desplazá horizontalmente para ver todas las rondas.">
+            <div class="bracket bracket--four-rounds">
+              <div class="bracket-round" data-od-id="copa-octavos">
+                <h3>Octavos</h3>
+                <div class="bracket-match" data-od-id="copa-llave-1"><small>Llave 1</small><span>UPCN San Juan</span><span class="is-pending">Por definir</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-2"><small>Llave 2</small><span>Bolívar Vóley</span><span class="is-pending">Por definir</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-3"><small>Llave 3</small><span>Boca Juniors</span><span class="is-pending">Por definir</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-4"><small>Llave 4</small><span>Ciudad Vóley</span><span class="is-pending">Por definir</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-5"><small>Llave 5</small><span>River Plate</span><span class="is-pending">Por definir</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-6"><small>Llave 6</small><span>Obras SJ</span><span class="is-pending">Por definir</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-7"><small>Llave 7</small><span class="is-pending">Por definir</span><span class="is-pending">Por definir</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-8"><small>Llave 8</small><span class="is-pending">Por definir</span><span class="is-pending">Por definir</span></div>
+              </div>
+              <div class="bracket-round" data-od-id="copa-cuartos">
+                <h3>Cuartos</h3>
+                <div class="bracket-match" data-od-id="copa-llave-9"><small>Llave 9</small><span>Ganador llave 1</span><span>Ganador llave 2</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-10"><small>Llave 10</small><span>Ganador llave 3</span><span>Ganador llave 4</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-11"><small>Llave 11</small><span>Ganador llave 5</span><span>Ganador llave 6</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-12"><small>Llave 12</small><span>Ganador llave 7</span><span>Ganador llave 8</span></div>
+              </div>
+              <div class="bracket-round" data-od-id="copa-semifinales">
+                <h3>Semifinales</h3>
+                <div class="bracket-match" data-od-id="copa-llave-13"><small>Llave 13</small><span>Ganador llave 9</span><span>Ganador llave 10</span></div>
+                <div class="bracket-match" data-od-id="copa-llave-14"><small>Llave 14</small><span>Ganador llave 11</span><span>Ganador llave 12</span></div>
+              </div>
+              <div class="bracket-round" data-od-id="copa-final">
+                <h3>Final</h3>
+                <div class="bracket-match bracket-match--final" data-od-id="copa-llave-15"><small>Llave 15</small><span>Ganador llave 13</span><span>Ganador llave 14</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="card" style="margin-top:16px" data-od-id="cup-scheduled-matches">
+        <div class="card-h">Partidos programados <small>CREADOS EN ADMINISTRACIÓN</small></div>
+        <div class="match-list card-b" id="cup-matches-list"></div>
+        <div class="empty-state" id="cup-matches-empty" role="status"><h2>Aún no hay partidos programados</h2><p>Crea el primer partido de la Copa Nacional.</p></div>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+document.querySelectorAll('[role="tablist"]').forEach((tablist) => {
+  const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  const selectTab = (tab) => {
+    tabs.forEach((item) => {
+      const selected = item === tab;
+      item.classList.toggle('active', selected);
+      item.setAttribute('aria-selected', String(selected));
+      item.tabIndex = selected ? 0 : -1;
+      const panel = document.getElementById(item.getAttribute('aria-controls'));
+      panel.classList.toggle('active', selected);
+      panel.hidden = !selected;
+    });
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => selectTab(tab));
+    tab.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      const step = event.key === 'ArrowRight' ? 1 : -1;
+      const next = tabs[(index + step + tabs.length) % tabs.length];
+      selectTab(next);
+      next.focus();
+    });
+  });
+});
+function readCupMatches(){try{const value=JSON.parse(localStorage.getItem('voleytrack-admin-matches')||'[]');return Array.isArray(value)?value.filter(match=>match.tournamentId==='copa-nacional'):[]}catch{return []}}
+const cupMatches=readCupMatches().sort((a,b)=>a.scheduledAt.localeCompare(b.scheduledAt));const cupList=document.getElementById('cup-matches-list');const cupEmpty=document.getElementById('cup-matches-empty');
+cupMatches.forEach(match=>{const article=document.createElement('article');article.className='match-card';const info=document.createElement('div');const title=document.createElement('h3');title.textContent=`${match.homeTeamName} vs ${match.awayTeamName}`;const meta=document.createElement('p');meta.className='match-meta';meta.textContent=new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(`${match.scheduledAt}:00`));const status=document.createElement('span');status.className=`state-pill ${match.status==='En vivo'?'s-envivo':'s-programado'}`;status.textContent=match.status;info.append(title,meta);article.append(info,status);cupList.append(article)});cupList.hidden=cupMatches.length===0;cupEmpty.hidden=cupMatches.length!==0;
+</script>
+</body>
+</html>

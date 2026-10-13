@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Admin · Torneos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack-admin.css" />
+</head>
+<body>
+<div id="app" class="app" data-od-id="app-shell-admin">
+
+  <header class="topbar" data-od-id="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+        <div class="avatar">A</div>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+    <aside class="sidebar" data-od-id="sidebar-admin">
+      <div class="nav-group">
+        <p class="nav-title">Admin · Gestión</p>
+        <a class="nav-item" href="voleytrack-admin-gestion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M20 21a8 8 0 1 0-16 0"/></svg> Staff & gestión</a>
+        <a class="nav-item" href="voleytrack-admin-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg> Partidos</a>
+        <a class="nav-item" href="voleytrack-admin-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" href="voleytrack-admin-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item active" href="voleytrack-admin-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+      </div>
+      <a class="nav-item" style="margin-top:10px;color:var(--muted)" href="voleytrack-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Cerrar sesión</a>
+    </aside>
+    <main class="main">
+<section class="view active" data-view="tournaments" data-od-id="view-tournaments">
+        <div class="page-head"><div><h1>Torneos</h1><p>1.03 + Z.07–Z.09 — Exploratorio futuro. V1 muestra listado básico; tabs detalle/tab están modelados pero fuera de scope.</p></div><div class="head-actions"><button class="btn" type="button" id="tournaments-filter-button" data-od-id="tournaments-filter-button" aria-expanded="false" aria-controls="tournaments-filter-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg> Filtros</button><button class="btn accent">Crear torneo</button></div></div>
+        <div class="card" id="tournaments-filter-panel" data-od-id="tournaments-filter-panel" style="margin-bottom:16px" hidden>
+          <div class="card-b">
+            <div class="form-grid">
+              <div class="field"><label for="tournaments-type-filter">Tipo</label><select id="tournaments-type-filter"><option value="">Todos los tipos</option><option value="Liga">Liga</option><option value="Copa">Copa</option></select></div>
+              <div class="field"><label for="tournaments-status-filter">Estado</label><select id="tournaments-status-filter"><option value="">Todos los estados</option><option value="En curso">En curso</option><option value="Programado">Programado</option><option value="Finalizado">Finalizado</option></select></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px"><p class="hint" id="tournaments-results-count" aria-live="polite" style="margin:0">2 torneos</p><button class="btn ghost" type="button" id="tournaments-clear-filters">Limpiar filtros</button></div>
+          </div>
+        </div>
+        <div class="cards-grid" id="tournaments-grid">
+          <a class="card clickable tournament-card" href="voleytrack-admin-ver-torneo.html" data-type="Liga" data-status="En curso" style="padding:16px"><small style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:800">LIGA A1 · EN CURSO</small><h3 style="margin:8px 0 6px">Liga Argentina A1 25/26</h3><p style="color:var(--muted);font-size:13px;margin:0">18 equipos · 132 partidos · Finaliza 12 dic</p><div style="display:flex;gap:8px;margin-top:12px"><span class="badge ok">En curso</span><span class="badge">132 partidos</span></div></a>
+          <a class="card clickable tournament-card" href="voleytrack-admin-ver-copa.html" data-type="Copa" data-status="Programado" style="padding:16px"><small style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:800">COPA · PROGRAMADO</small><h3 style="margin:8px 0 6px">Copa Nacional</h3><p style="color:var(--muted);font-size:13px;margin:0">16 equipos · Eliminación directa</p><div style="display:flex;gap:8px;margin-top:12px"><span class="badge warn">Programado</span></div></a>
+          <div class="card" id="tournaments-future-card" style="padding:16px;opacity:.6"><small style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:800">Z.18 BRACKET — FUTURO</small><h3 style="margin:8px 0 6px">Bracket interactivo</h3><p style="color:var(--muted);font-size:13px;margin:0">Diseño exploratorio, no en V1</p></div>
+        </div>
+        <div class="card" id="tournaments-empty-state" role="status" hidden><div class="card-b" style="text-align:center"><h2 style="font-size:18px;margin:0 0 6px">No se encontraron torneos</h2><p class="hint" style="margin:0">Prueba con otro tipo o estado.</p></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2200); }
+
+const tournamentsFilterButton=document.getElementById('tournaments-filter-button');
+const tournamentsFilterPanel=document.getElementById('tournaments-filter-panel');
+const tournamentsTypeFilter=document.getElementById('tournaments-type-filter');
+const tournamentsStatusFilter=document.getElementById('tournaments-status-filter');
+const tournamentCards=[...document.querySelectorAll('.tournament-card')];
+const tournamentsFutureCard=document.getElementById('tournaments-future-card');
+const tournamentsGrid=document.getElementById('tournaments-grid');
+const tournamentsEmptyState=document.getElementById('tournaments-empty-state');
+const tournamentsResultsCount=document.getElementById('tournaments-results-count');
+
+tournamentsFilterButton.addEventListener('click',()=>{
+  const open=tournamentsFilterPanel.hidden;
+  tournamentsFilterPanel.hidden=!open;
+  tournamentsFilterButton.setAttribute('aria-expanded',String(open));
+  if(open) tournamentsTypeFilter.focus();
+});
+
+function filterTournaments(){
+  const type=tournamentsTypeFilter.value;
+  const status=tournamentsStatusFilter.value;
+  let visibleCount=0;
+  tournamentCards.forEach(card=>{
+    const visible=(!type || card.dataset.type===type) && (!status || card.dataset.status===status);
+    card.hidden=!visible;
+    if(visible) visibleCount+=1;
+  });
+  tournamentsFutureCard.hidden=Boolean(type || status);
+  tournamentsResultsCount.textContent=`${visibleCount} ${visibleCount===1 ? 'torneo' : 'torneos'}`;
+  tournamentsGrid.hidden=visibleCount===0;
+  tournamentsEmptyState.hidden=visibleCount!==0;
+}
+
+tournamentsTypeFilter.addEventListener('change',filterTournaments);
+tournamentsStatusFilter.addEventListener('change',filterTournaments);
+document.getElementById('tournaments-clear-filters').addEventListener('click',()=>{
+  tournamentsTypeFilter.value='';
+  tournamentsStatusFilter.value='';
+  filterTournaments();
+  tournamentsTypeFilter.focus();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Equipos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack.css" />
+<link rel="stylesheet" href="voleytrack-equipos.css" />
+</head>
+<body>
+<div id="app" class="app active" data-od-id="app-shell-invitado">
+
+<header class="topbar" data-od-id="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+<aside class="sidebar" data-od-id="sidebar-public-nav">
+      <div class="nav-group">
+        <p class="nav-title">Invitado · Público</p>
+        <a class="nav-item" data-view="dashboard" href="voleytrack-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard</a>
+        <a class="nav-item" data-view="matches" href="voleytrack-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg> Partidos <span class="count">16</span></a>
+        <a class="nav-item" data-view="tournaments" href="voleytrack-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+        <a class="nav-item active" data-view="teams" href="voleytrack-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" data-view="players" href="voleytrack-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" data-view="live" href="voleytrack-live.html"><span class="live-dot" style="width:8px;height:8px;background:var(--danger);border-radius:999px"></span> En vivo</a>
+      </div>
+      <div class="divider"></div>
+    </aside>
+    <main class="main">
+<section class="view active" data-view="teams" data-od-id="view-teams">
+        <div class="page-head"><div><h1>Equipos</h1><p>1.05 · Detail / Roster / Matches / Stats — 4 tabs modeladas.</p></div><div class="head-actions"><button class="btn" type="button" aria-expanded="false" aria-controls="teams-filter-panel" data-od-id="teams-filter-button" id="teams-filter-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg> Filtros</button></div></div>
+        <div class="team-filters" id="teams-filter-panel" data-od-id="teams-filter-panel" aria-hidden="true">
+          <div class="team-filters-inner">
+            <div class="team-filter-grid">
+              <div class="team-filter-field"><label for="teams-tournament-filter">Torneo</label><select id="teams-tournament-filter" data-od-id="teams-tournament-filter"><option value="">Todos</option><option value="Liga A1">Liga A1</option><option value="Copa Nacional">Copa Nacional</option></select></div>
+              <div class="team-filter-field"><label for="teams-players-filter">Jugadores mínimos</label><select id="teams-players-filter" data-od-id="teams-players-filter"><option value="">Cualquier cantidad</option><option value="12">12</option><option value="13">13</option><option value="14">14</option></select></div>
+              <div class="team-filter-field"><label for="teams-wins-filter">Partidos ganados mínimos</label><select id="teams-wins-filter" data-od-id="teams-wins-filter"><option value="">Cualquier cantidad</option><option value="5">5</option><option value="7">7</option><option value="8">8</option><option value="9">9</option></select></div>
+            </div>
+            <div class="team-filter-footer">
+              <p class="team-results-count" id="teams-results-count" data-od-id="teams-results-count" aria-live="polite"><strong>4</strong> equipos</p>
+              <button class="btn ghost" type="button" id="teams-clear-filters" data-od-id="teams-clear-filters">Limpiar filtros</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Equipo</th><th>Torneo</th><th>Jugadores</th><th class="num">PG / PP</th></tr></thead><tbody>
+          <tr onclick="switchView('team-detail')" style="cursor:pointer" data-tournament="Liga A1" data-players="14" data-wins="8"><td><b>UPCN San Juan</b> <small style="color:var(--muted)">· SJ</small></td><td>Liga A1</td><td>14</td><td class="num">8 / 2</td></tr>
+          <tr data-tournament="Liga A1" data-players="14" data-wins="7"><td><b>Bolívar Vóley</b></td><td>Liga A1</td><td>14</td><td class="num">7 / 3</td></tr>
+          <tr data-tournament="Liga A1" data-players="13" data-wins="9"><td><b>Ciudad Vóley</b></td><td>Liga A1</td><td>13</td><td class="num">9 / 1</td></tr>
+          <tr data-tournament="Copa Nacional" data-players="12" data-wins="5"><td><b>Boca Juniors</b></td><td>Copa Nacional</td><td>12</td><td class="num">5 / 4</td></tr>
+        </tbody></table></div>
+        <div class="team-empty" id="teams-empty-state" data-od-id="teams-empty-state" role="status"><h2>No hay equipos que coincidan</h2><p>Prueba a reducir los filtros o límpialos para ver todos los equipos.</p></div>
+      </section>
+<section class="view" data-view="team-detail" data-od-id="view-team-detail">
+        <div class="page-head"><div><h1 style="display:flex;align-items:center;gap:12px"><span style="width:42px;height:42px;border-radius:12px;background:#3b82f6;display:grid;place-items:center;font-weight:900">U</span> UPCN San Juan <span class="badge ok">LIGA A1</span></h1><p>1.05 — Plantel, partidos y estadísticas. Tabs: Detalle · Plantel · Partidos · Estadísticas.</p></div><div class="head-actions"><button class="btn" onclick="switchView('teams')">← Equipos</button><button class="btn accent">Editar equipo</button></div></div>
+        <div style="display:flex;gap:8px;margin-bottom:16px"><button class="filter active">Detalle</button><button class="filter">Plantel (14)</button><button class="filter">Partidos</button><button class="filter">Estadísticas</button></div>
+        <div style="display:grid;grid-template-columns:320px 1fr;gap:16px">
+          <div class="card" style="padding:18px"><h3 style="margin:0 0 12px">Plantel</h3><div style="display:flex;flex-direction:column;gap:10px"><div style="display:flex;gap:10px;align-items:center"><img src="https://i.pravatar.cc/100?img=12" style="width:36px;height:36px;border-radius:999px"><div><b style="font-size:13px">Fernández · #7</b><p style="margin:0;color:var(--muted);font-size:11px">Punta · 1,96m</p></div><span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;background:var(--accent);color:#0b1220;padding:4px 8px;border-radius:999px;font-weight:800">Titular</span></div><div style="display:flex;gap:10px;align-items:center"><img src="https://i.pravatar.cc/100?img=15" style="width:36px;height:36px;border-radius:999px"><div><b style="font-size:13px">López · #10</b><p style="margin:0;color:var(--muted);font-size:11px">Central · 2,01m</p></div></div><div style="display:flex;gap:10px;align-items:center"><img src="https://i.pravatar.cc/100?img=32" style="width:36px;height:36px;border-radius:999px"><div><b style="font-size:13px">Sosa · #3</b><p style="margin:0;color:var(--muted);font-size:11px">Líbero · 1,78m</p></div></div></div></div>
+          <div class="card"><div class="card-h">Rendimiento <small>ÚLTIMOS 5</small></div><div class="card-b"><div style="display:flex;gap:8px;margin-bottom:14px"><span class="badge ok">V 3-0</span><span class="badge ok">V 3-1</span><span class="badge" style="background:var(--danger);color:white;border-color:var(--danger)">D 1-3</span><span class="badge ok">V 3-0</span><span class="badge ok">V 3-2</span></div><table><tr><td>Ataque efectivo</td><td class="num">47%</td></tr><tr><td>Bloqueos / set</td><td class="num">2.4</td></tr><tr><td>Errores no forzados</td><td class="num">11.2</td></tr></table></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function switchView(name){
+  const target = name==='team-detail' ? 'team-detail' : name==='player-detail' ? 'player-detail' : name;
+  document.querySelectorAll('.view').forEach(v=> v.classList.toggle('active', v.dataset.view===target));
+  document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(b=>{ const v=b.dataset.view; let active=v===target || (target==='team-detail'&&v==='teams') || (target==='player-detail'&&v==='players'); b.classList.toggle('active', active); });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function setFilter(el){ el.parentElement.querySelectorAll('.filter').forEach(f=> f.classList.remove('active')); el.classList.add('active'); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2200); }
+
+const teamFilterButton=document.getElementById('teams-filter-button');
+const teamFilterPanel=document.getElementById('teams-filter-panel');
+const teamFilterControls=[
+  document.getElementById('teams-tournament-filter'),
+  document.getElementById('teams-players-filter'),
+  document.getElementById('teams-wins-filter')
+];
+const teamRows=[...document.querySelectorAll('[data-view="teams"] tbody tr')];
+const teamTable=document.querySelector('[data-view="teams"] .table-wrap');
+const teamResultsCount=document.getElementById('teams-results-count');
+const teamEmptyState=document.getElementById('teams-empty-state');
+
+function toggleTeamFilters(forceOpen){
+  const open=typeof forceOpen==='boolean' ? forceOpen : !teamFilterPanel.classList.contains('open');
+  teamFilterPanel.classList.toggle('open',open);
+  teamFilterPanel.setAttribute('aria-hidden',String(!open));
+  teamFilterButton.setAttribute('aria-expanded',String(open));
+}
+
+function filterTeams(){
+  const [tournament,minPlayers,minWins]=teamFilterControls.map(control=>control.value);
+  let visibleCount=0;
+  teamRows.forEach(row=>{
+    const visible=(!tournament || row.dataset.tournament===tournament) &&
+      (!minPlayers || Number(row.dataset.players)>=Number(minPlayers)) &&
+      (!minWins || Number(row.dataset.wins)>=Number(minWins));
+    row.hidden=!visible;
+    if(visible) visibleCount+=1;
+  });
+  teamResultsCount.innerHTML=`<strong>${visibleCount}</strong> ${visibleCount===1 ? 'equipo' : 'equipos'}`;
+  teamTable.hidden=visibleCount===0;
+  teamEmptyState.classList.toggle('visible',visibleCount===0);
+}
+
+teamFilterButton.addEventListener('click',()=>toggleTeamFilters());
+teamFilterControls.forEach(control=>control.addEventListener('change',filterTeams));
+document.getElementById('teams-clear-filters').addEventListener('click',()=>{
+  teamFilterControls.forEach(control=>{ control.value=''; });
+  filterTeams();
+});
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape' && teamFilterPanel.classList.contains('open')){
+    toggleTeamFilters(false);
+    teamFilterButton.focus();
+  }
+});
+</script>
+</body>
+</html>

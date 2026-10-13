@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es-ES">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Admin · Crear partido</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack-admin.css" />
+</head>
+<body>
+<div id="app" class="app" data-od-id="app-shell-admin">
+  <header class="topbar" data-od-id="topbar"><div class="topbar-left"><div class="logo-mark"><img src="imagen.png" alt="Icono de VoleyTrack" /></div><div class="logo-type">VoleyTrack</div></div><div class="topbar-nav"><label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" aria-label="Buscar" /></label><div style="flex:1"></div><div class="top-icons"><button class="icon-btn" type="button" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button><div class="avatar">A</div></div></div></header>
+  <div class="shell">
+    <aside class="sidebar" data-od-id="sidebar-admin"><div class="nav-group"><p class="nav-title">Admin · Gestión</p>
+      <a class="nav-item" href="voleytrack-admin-gestion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M20 21a8 8 0 1 0-16 0"/></svg> Staff &amp; gestión</a>
+      <a class="nav-item active" href="voleytrack-admin-partidos.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg> Partidos</a>
+      <a class="nav-item" href="voleytrack-admin-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+      <a class="nav-item" href="voleytrack-admin-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+      <a class="nav-item" href="voleytrack-admin-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+      </div>
+      <a class="nav-item" style="margin-top:10px;color:var(--muted)" href="voleytrack-login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Cerrar sesión</a>
+    </aside>
+    <main class="main" data-od-id="create-match-main-region"><section class="view active" data-od-id="create-match-view">
+      <div class="page-head"><div><h1 data-od-id="create-match-title">Crear partido</h1><p>Programa un encuentro entre dos equipos activos.</p></div></div>
+      <div class="card form-card" data-od-id="create-match-card"><div class="card-h">Datos del partido <small>Estado automático: Programado</small></div>
+        <form class="card-b" id="create-match-form" data-od-id="create-match-form" novalidate>
+          <div id="form-status" class="form-status success" role="status" aria-live="polite" tabindex="-1" hidden></div>
+          <div class="form-grid">
+            <div class="field full"><label for="match-tournament">Torneo</label><select id="match-tournament" name="tournamentId" required data-od-id="match-tournament" aria-describedby="match-tournament-hint match-tournament-error"><option value="">Seleccionar torneo</option><option value="liga-a1">Liga Argentina A1</option><option value="copa-nacional">Copa Nacional</option></select><span class="hint" id="match-tournament-hint"></span><p class="field-error" id="match-tournament-error"></p></div>
+            <div class="field"><label for="match-home-team">Equipo local</label><select id="match-home-team" name="homeTeamId" required disabled data-od-id="match-home-team" aria-describedby="match-home-team-error"><option value="">Seleccionar equipo local</option></select><p class="field-error" id="match-home-team-error"></p></div>
+            <div class="field"><label for="match-away-team">Equipo visitante</label><select id="match-away-team" name="awayTeamId" required disabled data-od-id="match-away-team" aria-describedby="match-away-team-error"><option value="">Seleccionar equipo visitante</option></select><p class="field-error" id="match-away-team-error"></p></div>
+            <div class="field full"><div class="team-summary" id="team-summary" data-od-id="selected-teams-summary" aria-live="polite" hidden></div></div>
+            <div class="field"><label for="match-date">Fecha</label><input id="match-date" name="date" type="date" required disabled data-od-id="match-date" aria-describedby="match-date-hint match-date-error" /><span class="hint" id="match-date-hint">Selecciona dos equipos diferentes para habilitar la fecha.</span><p class="field-error" id="match-date-error"></p></div>
+            <div class="field"><label for="match-time">Horario disponible</label><select id="match-time" name="time" required disabled data-od-id="match-time" aria-describedby="match-time-hint match-time-error"><option value="">Seleccionar horario</option></select><span class="hint" id="match-time-hint">Selecciona una fecha para consultar la disponibilidad.</span><p class="field-error" id="match-time-error"></p></div>
+          </div>
+          <div class="form-actions"><a class="btn ghost" href="voleytrack-admin-partidos.html" data-od-id="create-match-cancel">Cancelar</a><button class="btn accent" type="submit" data-od-id="create-match-submit">Crear partido</button></div>
+        </form>
+      </div>
+    </section></main>
+  </div>
+</div>
+<script>
+const MATCHES_KEY='voleytrack-admin-matches';
+const tournaments={
+  'liga-a1':{id:'liga-a1',name:'Liga Argentina A1'},
+  'copa-nacional':{id:'copa-nacional',name:'Copa Nacional'}
+};
+const teams=[
+  {id:'upcn-san-juan',name:'UPCN San Juan',status:'Activo'},{id:'bolivar-voley',name:'Bolívar Vóley',status:'Activo'},
+  {id:'ciudad-voley',name:'Ciudad Vóley',status:'Activo'},{id:'boca-juniors',name:'Boca Juniors',status:'Activo'}
+];
+const slots=['18:00','19:30','21:00'];
+const baseMatches=[
+  {tournamentId:'liga-a1',scheduledAt:'2026-03-17T21:00'},
+  {tournamentId:'liga-a1',scheduledAt:'2026-03-17T19:00'},
+  {tournamentId:'liga-a1',scheduledAt:'2026-03-18T20:30'}
+];
+const form=document.getElementById('create-match-form');
+const tournamentField=document.getElementById('match-tournament');
+const homeField=document.getElementById('match-home-team');
+const awayField=document.getElementById('match-away-team');
+const dateField=document.getElementById('match-date');
+const timeField=document.getElementById('match-time');
+const summary=document.getElementById('team-summary');
+const statusMessage=document.getElementById('form-status');
+function readMatches(){try{const value=JSON.parse(localStorage.getItem(MATCHES_KEY)||'[]');return Array.isArray(value)?value:[]}catch{return []}}
+function teamById(id){return teams.find(team=>team.id===id)}
+function setError(field,message){field.setAttribute('aria-invalid','true');document.getElementById(`${field.id}-error`).textContent=message}
+function clearError(field){field.removeAttribute('aria-invalid');document.getElementById(`${field.id}-error`).textContent=''}
+teams.filter(team=>team.status==='Activo').forEach(team=>{homeField.add(new Option(team.name,team.id));awayField.add(new Option(team.name,team.id))});
+const contextTournament=new URLSearchParams(window.location.search).get('torneo');
+if(tournaments[contextTournament]){tournamentField.value=contextTournament;tournamentField.disabled=true;document.getElementById('match-tournament-hint').textContent=`Contexto fijado desde ${tournaments[contextTournament].name}.`}
+const today=new Date();
+dateField.min=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+function resetSchedule(){
+  dateField.value='';dateField.disabled=true;timeField.value='';timeField.disabled=true;timeField.replaceChildren(new Option('Seleccionar horario',''));
+  clearError(dateField);clearError(timeField);
+  document.getElementById('match-time-hint').textContent='Selecciona una fecha para consultar la disponibilidad.';
+}
+function updateTeams(){
+  const home=teamById(homeField.value);const away=teamById(awayField.value);const ready=Boolean(tournamentField.value&&home&&away&&home.id!==away.id);
+  summary.hidden=!ready;summary.replaceChildren();
+  if(ready){[ ['Local',home],['Visitante',away] ].forEach(([role,team])=>{const item=document.createElement('div');item.className='team-summary-item';item.innerHTML=`<small>${role}</small><b></b><span>Activo</span>`;item.querySelector('b').textContent=team.name;summary.append(item)})}
+  dateField.disabled=!ready;document.getElementById('match-date-hint').textContent=ready?'Selecciona la fecha del encuentro.':'Selecciona dos equipos diferentes para habilitar la fecha.';
+}
+function validateDifferentTeams(){
+  clearError(awayField);
+  if(homeField.value&&homeField.value===awayField.value){setError(awayField,'Un equipo no puede jugar contra sí mismo');awayField.focus();return false}
+  return true;
+}
+function occupiedMatches(){return [...baseMatches,...readMatches()]}
+function updateSlots(){
+  timeField.replaceChildren(new Option('Seleccionar horario',''));
+  if(!dateField.value){timeField.disabled=true;document.getElementById('match-time-hint').textContent='Selecciona una fecha para consultar la disponibilidad.';return}
+  const occupied=new Set(occupiedMatches().filter(match=>match.tournamentId===tournamentField.value&&match.scheduledAt.startsWith(`${dateField.value}T`)).map(match=>match.scheduledAt.slice(11,16)));
+  const available=slots.filter(slot=>!occupied.has(slot));available.forEach(slot=>timeField.add(new Option(slot,slot)));timeField.disabled=available.length===0;
+  document.getElementById('match-time-hint').textContent=available.length?'Solo se muestran horarios disponibles.':'No quedan horarios disponibles para este torneo y fecha.';
+}
+[tournamentField,homeField,awayField,dateField,timeField].forEach(field=>field.addEventListener(field.tagName==='INPUT'?'input':'change',()=>clearError(field)));
+tournamentField.addEventListener('change',()=>{homeField.value='';awayField.value='';clearError(homeField);clearError(awayField);homeField.disabled=!tournamentField.value;awayField.disabled=!tournamentField.value;resetSchedule();updateTeams()});
+homeField.addEventListener('change',()=>{resetSchedule();updateTeams();validateDifferentTeams()});
+awayField.addEventListener('change',()=>{resetSchedule();updateTeams();validateDifferentTeams()});
+dateField.addEventListener('change',()=>{timeField.value='';updateSlots()});
+form.addEventListener('submit',event=>{
+  event.preventDefault();[tournamentField,homeField,awayField,dateField,timeField].forEach(clearError);
+  const values={tournamentId:tournamentField.value,homeTeamId:homeField.value,awayTeamId:awayField.value,date:dateField.value,time:timeField.value};
+  const ordered=[tournamentField,homeField,awayField,dateField,timeField];
+  if(values.homeTeamId&&values.homeTeamId===values.awayTeamId){setError(awayField,'Un equipo no puede jugar contra sí mismo');awayField.focus();return}
+  const missing=ordered.filter(field=>!values[field.name]);
+  if(missing.length){missing.forEach(field=>setError(field,'Este campo es obligatorio.'));missing[0].focus();return}
+  if(values.date<dateField.min){setError(dateField,'Selecciona una fecha válida a partir de hoy.');dateField.focus();return}
+  if(!slots.includes(values.time)){setError(timeField,'Selecciona un horario disponible.');timeField.focus();return}
+  const home=teamById(values.homeTeamId);const away=teamById(values.awayTeamId);const tournament=tournaments[values.tournamentId];
+  if(!home||!away||home.status!=='Activo'||away.status!=='Activo'||!tournament){setError(home?awayField:homeField,'Selecciona una opción válida.');(home?awayField:homeField).focus();return}
+  const scheduledAt=`${values.date}T${values.time}`;
+  if(occupiedMatches().some(match=>match.tournamentId===values.tournamentId&&match.scheduledAt===scheduledAt)){setError(timeField,'Este horario ya no está disponible.');updateSlots();timeField.focus();return}
+  const matches=readMatches();matches.push({id:globalThis.crypto?.randomUUID?.()||`match-${Date.now()}`,tournamentId:tournament.id,tournamentName:tournament.name,homeTeamId:home.id,homeTeamName:home.name,awayTeamId:away.id,awayTeamName:away.name,scheduledAt,status:'Programado',createdAt:new Date().toISOString()});localStorage.setItem(MATCHES_KEY,JSON.stringify(matches));
+  statusMessage.textContent='Partido creado con estado Programado. Volviendo al listado…';statusMessage.hidden=false;form.querySelectorAll('input, select, button, a').forEach(control=>{if('disabled'in control)control.disabled=true;control.setAttribute('aria-disabled','true')});statusMessage.focus();setTimeout(()=>{window.location.href='voleytrack-admin-partidos.html?creado=1'},1000);
+});
+homeField.disabled=!tournamentField.value;awayField.disabled=!tournamentField.value;resetSchedule();updateTeams();
+</script>
+</body>
+</html>

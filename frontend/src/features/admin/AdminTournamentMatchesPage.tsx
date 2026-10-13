@@ -61,7 +61,7 @@ export function AdminTournamentMatchesPage() {
           {tournamentTabs.map((tab) => (
             <Link
               aria-current={tab.suffix === "/matches" ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab.suffix === "/matches" ? "bg-vt-accent text-vt-canvas" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab.suffix === "/matches" ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
               key={tab.label}
               to={`/admin/tournaments/${tournament.id}${tab.suffix}` as string}
             >
@@ -71,7 +71,7 @@ export function AdminTournamentMatchesPage() {
         </div>
       </nav>
 
-      <Card className="border-vt-border bg-vt-raised p-5">
+      <Card className="border-vt-border p-5" variant="raised">
         <h2 className="text-xl font-bold text-vt-accent">Partidos del torneo</h2>
         <div className="mt-5 space-y-3">
           {matches.length === 0 ? (

@@ -65,7 +65,7 @@ export function TournamentBracketPage() {
         }
       />
 
-      <Card className="border-vt-border bg-vt-raised p-6">
+      <Card className="border-vt-border p-6" variant="raised">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <Badge variant={statusVariants[tournament.status]}>{tournament.statusLabel}</Badge>
@@ -85,7 +85,7 @@ export function TournamentBracketPage() {
           {tournamentTabs.map((tab, index) => (
             <Link
               aria-current={index === 4 ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${index === 4 ? "bg-vt-accent text-vt-canvas" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold ${index === 4 ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
               key={tab.label}
               to={`/tournaments/${tournament.id}${tab.suffix}` as string}
             >
@@ -117,7 +117,7 @@ export function TournamentBracketPage() {
 
 function BracketMatchCard({ match }: { match: TournamentBracketMatchFixture }) {
   return (
-    <Card className="border-vt-border bg-vt-raised p-4">
+    <Card className="border-vt-border p-4" variant="raised">
       <div className="flex items-center justify-between">
         <Badge variant={matchStatusVariants[match.status]}>{matchStatusLabel[match.status]}</Badge>
         {match.matchId ? <Link className="text-[11px] font-semibold uppercase tracking-[0.08em] text-vt-muted hover:text-vt-text" to={`/matches/${match.matchId}/live` as string}>ID {match.displayId}</Link> : <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-vt-muted">ID {match.displayId}</span>}

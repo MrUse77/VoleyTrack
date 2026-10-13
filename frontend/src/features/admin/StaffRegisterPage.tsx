@@ -1,66 +1,209 @@
-import { useState } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "../../components/primitives/Button";
-import { FormField } from "../../components/primitives/FormField";
+import { Field, fieldControlClasses } from "../../components/primitives/Field";
 import { SectionShell } from "../../components/ui/SectionShell";
 
 type StaffRole = "scorer" | "assistant" | "coordinator";
 
 type StaffForm = {
-  fullName: string;
+  firstName: string;
+  lastName: string;
+  dni: string;
+  phone: string;
   email: string;
   role: StaffRole;
 };
 
+type StaffField = keyof StaffForm;
+type StaffErrors = Partial<Record<StaffField, string>>;
+
 const initialForm: StaffForm = {
-  fullName: "",
+  firstName: "",
+  lastName: "",
+  dni: "",
+  phone: "",
   email: "",
   role: "scorer",
 };
 
+const fieldIds: Record<StaffField, string> = {
+  firstName: "staff-first-name",
+  lastName: "staff-last-name",
+  dni: "staff-dni",
+  phone: "staff-phone",
+  email: "staff-email",
+  role: "staff-role",
+};
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateStaffForm(form: StaffForm): StaffErrors {
+  const errors: StaffErrors = {};
+
+  if (!form.firstName.trim()) {
+    errors.firstName = "Ingresá el nombre.";
+  }
+
+  if (!form.lastName.trim()) {
+    errors.lastName = "Ingresá el apellido.";
+  }
+
+  if (!form.dni.trim()) {
+    errors.dni = "Ingresá el DNI.";
+  }
+
+  if (!form.phone.trim()) {
+    errors.phone = "Ingresá el teléfono.";
+  }
+
+  if (!form.email.trim()) {
+    errors.email = "Ingresá el email.";
+  } else if (!emailPattern.test(form.email.trim())) {
+    errors.email = "Ingresá un email válido.";
+  }
+
+  return errors;
+}
+
+/**
+ * `Field` renders an optional hint and an optional error as two separate slots, so the
+ * old single-message field has to choose one: passing both would put two ids in
+ * `aria-describedby`. The error keeps its `role="alert"` wrapper, and `Field` derives
+ * `aria-invalid` from `error` being present.
+ */
+function feedbackProps(error: string | undefined, hint: string): { error?: ReactNode; hint?: ReactNode } {
+  return error ? { error: <span role="alert">{error}</span> } : { hint };
+}
+
 export function StaffRegisterPage() {
   const [form, setForm] = useState<StaffForm>(initialForm);
+  const [errors, setErrors] = useState<StaffErrors>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const updateField = <Field extends keyof StaffForm>(field: Field, value: StaffForm[Field]) => {
+  const updateField = <Field extends StaffField>(field: Field, value: StaffForm[Field]) => {
     setForm((current) => ({ ...current, [field]: value }));
+    setErrors((current) => {
+      if (!current[field]) {
+        return current;
+      }
+
+      const nextErrors = { ...current };
+      delete nextErrors[field];
+      return nextErrors;
+    });
     setIsSubmitted(false);
   };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const nextErrors = validateStaffForm(form);
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setIsSubmitted(false);
+      const firstInvalidField = Object.keys(nextErrors)[0] as StaffField;
+      event.currentTarget.querySelector<HTMLElement>(`#${fieldIds[firstInvalidField]}`)?.focus();
+      return;
+    }
+
+    setIsSubmitted(true);
+  };
+
+  const hasErrors = Object.keys(errors).length > 0;
 
   return (
     <SectionShell
       description="Completá los datos para preparar el registro del personal de planilla."
       eyebrow="Administración"
-      title="Registrar planillero"
+      title="Registrar Nuevo Planillero"
     >
       <form
         className="max-w-2xl rounded-2xl border border-vt-border bg-vt-raised p-6"
-        onSubmit={(event) => {
-          event.preventDefault();
-          setIsSubmitted(true);
-        }}
+        noValidate
+        onSubmit={handleSubmit}
       >
-        <div className="grid gap-5">
-          <FormField
-            id="staff-full-name"
-            label="Nombre completo"
-            onChange={(event) => updateField("fullName", event.target.value)}
-            placeholder="Nombre y apellido"
-            value={form.fullName}
-          />
-          <FormField
-            id="staff-email"
-            label="Correo electrónico"
-            onChange={(event) => updateField("email", event.target.value)}
-            placeholder="correo@ejemplo.com"
-            type="email"
-            value={form.email}
-          />
+        {hasErrors ? (
+          <p
+            aria-live="assertive"
+            className="mb-5 rounded-lg border border-vt-danger/60 bg-vt-danger/10 px-4 py-3 text-sm text-vt-danger"
+            role="alert"
+          >
+            Revisá los campos marcados antes de continuar.
+          </p>
+        ) : null}
+
+        <fieldset className="grid gap-5 rounded-xl border border-vt-border p-4">
+          <legend className="px-2 text-sm font-bold text-vt-text">Datos personales</legend>
+          <Field id={fieldIds.firstName} label="Nombre" {...feedbackProps(errors.firstName, "Nombre de pila")}>
+            <input
+              autoComplete="given-name"
+              className={fieldControlClasses}
+              name="firstName"
+              onChange={(event) => updateField("firstName", event.target.value)}
+              placeholder="Ej. Juan"
+              required
+              value={form.firstName}
+            />
+          </Field>
+          <Field id={fieldIds.lastName} label="Apellido" {...feedbackProps(errors.lastName, "Apellido de la persona")}>
+            <input
+              autoComplete="family-name"
+              className={fieldControlClasses}
+              name="lastName"
+              onChange={(event) => updateField("lastName", event.target.value)}
+              placeholder="Ej. Pérez"
+              required
+              value={form.lastName}
+            />
+          </Field>
+          <Field id={fieldIds.dni} label="DNI" {...feedbackProps(errors.dni, "Sin puntos ni espacios")}>
+            <input
+              className={fieldControlClasses}
+              inputMode="numeric"
+              name="dni"
+              onChange={(event) => updateField("dni", event.target.value)}
+              placeholder="Ej. 32123456"
+              required
+              value={form.dni}
+            />
+          </Field>
+          <Field id={fieldIds.phone} label="Teléfono" {...feedbackProps(errors.phone, "Código de área + número")}>
+            <input
+              autoComplete="tel"
+              className={fieldControlClasses}
+              name="phone"
+              onChange={(event) => updateField("phone", event.target.value)}
+              placeholder="Ej. 1123456789"
+              required
+              type="tel"
+              value={form.phone}
+            />
+          </Field>
+          <Field id={fieldIds.email} label="Email" {...feedbackProps(errors.email, "correo@ejemplo.com")}>
+            <input
+              autoComplete="email"
+              className={fieldControlClasses}
+              name="email"
+              onChange={(event) => updateField("email", event.target.value)}
+              placeholder="correo@ejemplo.com"
+              required
+              type="email"
+              value={form.email}
+            />
+          </Field>
+        </fieldset>
+
+        <fieldset className="mt-5 grid gap-5 rounded-xl border border-vt-border p-4">
+          <legend className="px-2 text-sm font-bold text-vt-text">Perfil operativo</legend>
           <div className="grid gap-2">
-            <label className="text-sm font-medium text-vt-text" htmlFor="staff-role">Rol</label>
+            <label className="text-sm font-medium text-vt-text" htmlFor={fieldIds.role}>Rol</label>
             <select
+              aria-invalid={Boolean(errors.role)}
               className="h-10 rounded-lg border border-vt-border bg-vt-panel px-3 text-sm text-vt-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
-              id="staff-role"
+              id={fieldIds.role}
+              name="role"
               onChange={(event) => updateField("role", event.target.value as StaffRole)}
+              required
               value={form.role}
             >
               <option value="scorer">Planillero</option>
@@ -68,10 +211,15 @@ export function StaffRegisterPage() {
               <option value="coordinator">Coordinador</option>
             </select>
           </div>
-        </div>
-        <div className="mt-6 flex items-center gap-4">
+        </fieldset>
+
+        <div className="mt-6 flex flex-wrap items-center gap-4">
           <Button type="submit">Registrar planillero</Button>
-          {isSubmitted ? <p className="text-sm text-vt-success" role="status">Registro preparado localmente</p> : null}
+          {isSubmitted ? (
+            <p className="text-sm text-vt-success" role="status">
+              Registro preparado localmente. No se enviaron datos al servidor.
+            </p>
+          ) : null}
         </div>
       </form>
     </SectionShell>

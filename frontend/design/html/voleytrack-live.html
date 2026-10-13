@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — En vivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack.css" />
+<link rel="stylesheet" href="voleytrack-live.css" />
+</head>
+<body>
+<div id="app" class="app active" data-od-id="app-shell-invitado">
+
+<header class="topbar" data-od-id="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" aria-label="Buscar" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+<aside class="sidebar" data-od-id="sidebar-public-nav">
+      <div class="nav-group">
+        <p class="nav-title">Invitado · Público</p>
+        <a class="nav-item" data-view="dashboard" href="voleytrack-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard</a>
+        <a class="nav-item" data-view="matches" href="voleytrack-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg> Partidos <span class="count">16</span></a>
+        <a class="nav-item" data-view="tournaments" href="voleytrack-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+        <a class="nav-item" data-view="teams" href="voleytrack-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item" data-view="players" href="voleytrack-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item active" data-view="live" href="voleytrack-live.html"><span class="live-dot" style="width:8px;height:8px;background:var(--danger);border-radius:999px"></span> En vivo</a>
+      </div>
+      <div class="divider"></div>
+    </aside>
+    <main class="main">
+<section class="view active" data-view="live" data-od-id="view-live-detail">
+        <div class="page-head"><div><h1 id="live-match-title">Live — Detalle del partido</h1><p id="live-match-context">1.06 · Scoreboard, rotaciones de cancha, eventos y estadísticas. Es el corazón del producto.</p></div><div class="head-actions"><a class="btn" href="voleytrack-partidos.html">← Volver</a></div></div>
+          <div class="scoreboard" data-od-id="scoreboard">
+            <div style="text-align:center"><div id="live-home-initial" style="width:56px;height:56px;border-radius:14px;background:#3b82f6;display:grid;place-items:center;font-weight:900;margin:0 auto">U</div><b id="live-home-name" style="display:block;margin-top:8px">UPCN San Juan</b><small style="color:var(--muted)">Local</small></div>
+            <div style="text-align:center"><div id="live-score" style="font-family:var(--font-mono);font-size:42px;font-weight:900;letter-spacing:-0.04em">2 : 1 <span id="live-set-score" style="font-size:13px;color:var(--muted);font-weight:700;display:block">SET 3 · 18-21</span></div><div class="progress" style="width:220px;margin:10px auto 0"><i id="live-progress" style="width:58%"></i></div></div>
+            <div style="text-align:center"><div id="live-away-initial" style="width:56px;height:56px;border-radius:14px;background:var(--accent);display:grid;place-items:center;font-weight:900;color:#0b1220;margin:0 auto">B</div><b id="live-away-name" style="display:block;margin-top:8px">Bolívar Vóley</b><small id="live-away-role" style="color:var(--muted)">Visitante · Saque</small></div>
+          </div>
+          <div class="set-history-card" data-od-id="set-history-card">
+            <div class="set-history-head"><div><h2 class="set-history-title">Historial de sets</h2><p class="set-history-sub" id="live-matchup">Resultado del partido · UPCN San Juan vs Bolívar Vóley</p></div><span class="live-pill" id="live-set-status"><span class="live-dot"></span> SET 3 EN VIVO</span></div>
+           <div class="set-history-grid" id="live-set-grid">
+            <div class="set-result"><div class="set-result-top"><span>Set 1</span><span class="set-result-status">Finalizado</span></div><div class="set-result-score">25 <small>—</small> 21</div></div>
+            <div class="set-result"><div class="set-result-top"><span>Set 2</span><span class="set-result-status">Finalizado</span></div><div class="set-result-score">22 <small>—</small> 25</div></div>
+            <div class="set-result current"><div class="set-result-top"><span>Set 3</span><span class="set-result-status">En vivo</span></div><div class="set-result-score">18 <small>—</small> 21</div></div>
+          </div>
+         </div>
+          <div id="demo-match-detail">
+          <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:16px">
+          <div>
+            <div class="card" style="padding:16px" data-od-id="cancha-voley"><div class="card-h" style="padding:0 0 12px">Cancha — UPCN vs Bolívar <small>12 jugadores en posición · sin rotación operativa</small></div>
+              <div style="position:relative;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;overflow:hidden;aspect-ratio:18/9;padding:10px">
+                <!-- perímetro -->
+                <div style="position:absolute;inset:10px;border:2px solid rgba(226,232,240,.65);border-radius:4px;pointer-events:none"></div>
+                <!-- red central (net) -->
+                <div style="position:absolute;left:50%;top:10px;bottom:10px;width:3px;background:var(--accent);transform:translateX(-1.5px);box-shadow:0 0 8px rgba(255,140,66,.45);z-index:2"></div>
+                <div style="position:absolute;left:50%;top:8px;transform:translateX(-50%);background:var(--accent);color:#0b1220;font-family:var(--font-mono);font-size:7px;font-weight:900;letter-spacing:.08em;padding:2px 6px;border-radius:999px;z-index:3">RED</div>
+                <!-- líneas de 3 metros — verticales a 3m de la red (33% y 66%) -->
+                <div style="position:absolute;left:33%;top:10px;bottom:10px;width:2px;background:rgba(226,232,240,.45);transform:translateX(-1px);pointer-events:none"></div>
+                <div style="position:absolute;right:33%;top:10px;bottom:10px;width:2px;background:rgba(226,232,240,.45);transform:translateX(1px);pointer-events:none"></div>
+                <div style="position:absolute;left:33%;top:6px;transform:translateX(-50%);background:rgba(226,232,240,.9);color:#0b1220;font-family:var(--font-mono);font-size:6px;font-weight:900;letter-spacing:.06em;padding:1px 4px;border-radius:999px">3M</div>
+                <div style="position:absolute;right:33%;top:6px;transform:translateX(50%);background:rgba(226,232,240,.9);color:#0b1220;font-family:var(--font-mono);font-size:6px;font-weight:900;letter-spacing:.06em;padding:1px 4px;border-radius:999px">3M</div>
+                <!-- UPCN — izquierda: 3 delanteros (entre red y 3m) / 3 zagueros (detrás 3m) · filas alineadas 20/50/80 -->
+                <div style="position:absolute;left:40%;top:20%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=12" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">4 · FERNÁNDEZ #7</span></div>
+                <div style="position:absolute;left:40%;top:50%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=15" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">3 · LÓPEZ #10</span></div>
+                <div style="position:absolute;left:40%;top:80%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=32" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">2 · MARTÍNEZ #11</span></div>
+                <div style="position:absolute;left:18%;top:20%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=20" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">5 · GÓMEZ #6</span></div>
+                <div style="position:absolute;left:18%;top:50%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=33" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">6 · SOSA #3</span></div>
+                <div style="position:absolute;left:18%;top:80%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=8" style="width:40px;height:40px;border-radius:999px;border:2px solid #ff8c42;box-shadow:0 0 0 3px rgba(255,140,66,.35), 0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:var(--accent);color:#0b1220;font-size:8px;font-weight:900;padding:2px 5px;border-radius:999px">1 · PÉREZ #9 · SAQUE</span></div>
+                <!-- BOLÍVAR — derecha: espejo, también 6 con fotos -->
+                <div style="position:absolute;right:40%;top:20%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=14" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">4 · ROJAS #9</span></div>
+                <div style="position:absolute;right:40%;top:50%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=16" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">3 · SILVA #5</span></div>
+                <div style="position:absolute;right:40%;top:80%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=22" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">2 · CASTRO #11</span></div>
+                <div style="position:absolute;right:18%;top:20%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=18" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">5 · MORALES #7</span></div>
+                <div style="position:absolute;right:18%;top:50%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=26" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">6 · TORRES #13</span></div>
+                <div style="position:absolute;right:18%;top:80%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%)"><img src="https://i.pravatar.cc/100?img=30" style="width:40px;height:40px;border-radius:999px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);object-fit:cover"><span style="background:rgba(0,0,0,.78);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.2)">1 · DÍAZ #1</span></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><span class="badge ok">12 jugadores</span><span class="badge">UPCN: 3 delante 3m · 3 detrás</span><span class="badge">Bolívar: 3 delante 3m · 3 detrás</span><span class="badge" style="background:var(--accent);color:#0b1220;border-color:var(--accent)">Saque: Pérez #9</span></div>
+            </div>
+           </div>
+           <div>
+           <div class="card" style="display:flex;flex-direction:column;height:100%"><div class="card-h">Eventos en vivo <span class="live-pill" style="font-size:10px">AUTO · 2s</span></div><div class="card-b" style="flex:1;display:flex;flex-direction:column"><div class="timeline" style="flex:1">
+             <div class="tl-item"><span class="tl-dot"></span><div><small>21:41 · Set 3</small><p style="margin:2px 0 0;font-size:13px"><b>Remate</b> — Fernández #7 (UPCN) · Punto 21</p></div><span style="margin-left:auto;font-family:var(--font-mono);font-weight:800;color:var(--accent)">18-21</span></div>
+            <div class="tl-item"><span class="tl-dot" style="background:var(--muted)"></span><div><small>21:40 · Set 3</small><p style="margin:2px 0 0;font-size:13px">Bloqueo — López #10 (UPCN)</p></div><span style="margin-left:auto;font-family:var(--font-mono);font-weight:800">18-20</span></div>
+            <div class="tl-item"><span class="tl-dot" style="background:var(--blue)"></span><div><small>21:38 · Set 3</small><p style="margin:2px 0 0;font-size:13px">Saque ace — Pérez #9 (UPCN)</p></div><span style="margin-left:auto;font-family:var(--font-mono);font-weight:800">17-19</span></div>
+            <div class="tl-item"><span class="tl-dot" style="background:var(--muted)"></span><div><small>21:35 · Set 3</small><p style="margin:2px 0 0;font-size:13px">Error no forzado — Gómez #6</p></div><span style="margin-left:auto;font-family:var(--font-mono);font-weight:800">16-19</span></div>
+            </div><button class="btn" style="width:100%;justify-content:center;margin-top:10px" onclick="openHistory()">Ver historial completo</button></div></div>
+           </div>
+         </div>
+         <div class="insights-grid" style="margin-top:16px" data-od-id="match-insights">
+           <div class="card insight-card" data-od-id="team-statistics-card">
+             <div class="insight-head"><div><h3 class="insight-title">Estadísticas por equipo</h3><p class="insight-sub">Comparativa del partido · Set 3</p></div><div class="team-legend"><span><i class="legend-dot"></i> UPCN</span><span><i class="legend-dot away"></i> BOL</span></div></div>
+             <div class="stat-row"><span class="stat-value">42%</span><div><div class="stat-label">Ataque</div><div class="stat-track"><i style="width:42%"></i><i class="away" style="width:48%"></i></div></div><span class="stat-value away">48%</span></div>
+             <div class="stat-row"><span class="stat-value">6</span><div><div class="stat-label">Bloqueos</div><div class="stat-track"><i style="width:40%"></i><i class="away" style="width:60%"></i></div></div><span class="stat-value away">9</span></div>
+             <div class="stat-row"><span class="stat-value">3</span><div><div class="stat-label">Saques ace</div><div class="stat-track"><i style="width:38%"></i><i class="away" style="width:62%"></i></div></div><span class="stat-value away">5</span></div>
+            <div class="stat-row"><span class="stat-value">11</span><div><div class="stat-label">Errores no forzados</div><div class="stat-track"><i style="width:58%"></i><i class="away" style="width:42%"></i></div></div><span class="stat-value away">8</span></div>
+            <div class="stat-row"><span class="stat-value">4</span><div><div class="stat-label">Errores de saque</div><div class="stat-track"><i style="width:50%"></i><i class="away" style="width:50%"></i></div></div><span class="stat-value away">4</span></div>
+            <div class="stat-row"><span class="stat-value">66</span><div><div class="stat-label">Total</div><div class="stat-track"><i style="width:47%"></i><i class="away" style="width:53%"></i></div></div><span class="stat-value away">75</span></div>
+           </div>
+           <div class="card insight-card" data-od-id="top-scorers-card">
+             <div class="insight-head"><div><h3 class="insight-title">Top anotadores</h3><p class="insight-sub">Puntos acumulados</p></div><span class="badge" style="color:var(--accent);border-color:color-mix(in oklch,var(--accent) 45%,var(--border));background:var(--accent-soft)">TOP 3</span></div>
+             <div class="scorer-list">
+               <div class="scorer"><span class="scorer-rank">01</span><img src="https://i.pravatar.cc/100?img=12" alt="Fernández"><div><div class="scorer-name">Fernández #7</div><div class="scorer-team">UPCN · PUNTA</div></div><div class="scorer-points">18 <small>PTS</small></div></div>
+               <div class="scorer"><span class="scorer-rank">02</span><img src="https://i.pravatar.cc/100?img=15" alt="López"><div><div class="scorer-name">López #10</div><div class="scorer-team">UPCN · CENTRAL</div></div><div class="scorer-points">15 <small>PTS</small></div></div>
+               <div class="scorer"><span class="scorer-rank">03</span><img src="https://i.pravatar.cc/100?img=32" alt="Martínez"><div><div class="scorer-name">Martínez #11</div><div class="scorer-team">UPCN · OPUESTO</div></div><div class="scorer-points">12 <small>PTS</small></div></div>
+             </div>
+           </div>
+         </div>
+          <div class="roster-section" data-od-id="player-statistics-section" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+            <div class="insight-head"><div><h2 class="insight-title">Estadísticas individuales</h2><p class="insight-sub">Rendimiento del partido · PTS, ATA, BLQ y ACE</p></div><span class="badge">12 JUGADORES</span></div>
+            <div class="roster-grid">
+              <div class="card roster-team upcn" data-od-id="upcn-player-statistics">
+                <div class="roster-team-head"><div class="roster-team-title"><i></i> UPCN San Juan</div><span class="roster-team-meta">6 jugadores</span></div>
+                <div class="roster-list">
+                  <div class="roster-player" style="border:0;background:transparent;padding:0 9px;color:var(--muted);font-family:var(--font-mono);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em"><span></span><span>Jugador</span><span style="text-align:center">PTS</span><span style="text-align:center">ATA</span><span style="text-align:center">BLQ</span><span style="text-align:center">ACE</span></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=12" alt="Fernández"><div class="roster-player-name">Fernández #7<span class="roster-player-role">Punta</span></div><div class="roster-stat">15<small>PTS</small></div><div class="roster-stat">42%<small>ATA</small></div><div class="roster-stat">1<small>BLQ</small></div><div class="roster-stat">1<small>ACE</small></div></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=15" alt="López"><div class="roster-player-name">López #10<span class="roster-player-role">Central</span></div><div class="roster-stat">15<small>PTS</small></div><div class="roster-stat">46%<small>ATA</small></div><div class="roster-stat">3<small>BLQ</small></div><div class="roster-stat">0<small>ACE</small></div></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=32" alt="Martínez"><div class="roster-player-name">Martínez #11<span class="roster-player-role">Opuesto</span></div><div class="roster-stat">9<small>PTS</small></div><div class="roster-stat">39%<small>ATA</small></div><div class="roster-stat">1<small>BLQ</small></div><div class="roster-stat">1<small>ACE</small></div></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=20" alt="Gómez"><div class="roster-player-name">Gómez #6<span class="roster-player-role">Punta</span></div><div class="roster-stat">7<small>PTS</small></div><div class="roster-stat">44%<small>ATA</small></div><div class="roster-stat">1<small>BLQ</small></div><div class="roster-stat">0<small>ACE</small></div></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=33" alt="Sosa"><div class="roster-player-name">Sosa #3<span class="roster-player-role">Líbero</span></div><div class="roster-stat">2<small>PTS</small></div><div class="roster-stat">50%<small>ATA</small></div><div class="roster-stat">0<small>BLQ</small></div><div class="roster-stat">0<small>ACE</small></div></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=8" alt="Pérez"><div class="roster-player-name">Pérez #9<span class="roster-player-role">Armador</span></div><div class="roster-stat">4<small>PTS</small></div><div class="roster-stat">33%<small>ATA</small></div><div class="roster-stat">0<small>BLQ</small></div><div class="roster-stat">1<small>ACE</small></div></div>
+                </div>
+              </div>
+              <div class="card roster-team bolivar" data-od-id="bolivar-player-statistics">
+                <div class="roster-team-head"><div class="roster-team-title"><i></i> Bolívar Vóley</div><span class="roster-team-meta">6 jugadores</span></div>
+                <div class="roster-list">
+                  <div class="roster-player" style="border:0;background:transparent;padding:0 9px;color:var(--muted);font-family:var(--font-mono);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em"><span></span><span>Jugador</span><span style="text-align:center">PTS</span><span style="text-align:center">ATA</span><span style="text-align:center">BLQ</span><span style="text-align:center">ACE</span></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=14" alt="Rojas"><div class="roster-player-name">Rojas #9<span class="roster-player-role">Central</span></div><div class="roster-stat">10<small>PTS</small></div><div class="roster-stat">45%<small>ATA</small></div><div class="roster-stat">2<small>BLQ</small></div><div class="roster-stat">1<small>ACE</small></div></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=16" alt="Silva"><div class="roster-player-name">Silva #5<span class="roster-player-role">Punta</span></div><div class="roster-stat">8<small>PTS</small></div><div class="roster-stat">41%<small>ATA</small></div><div class="roster-stat">1<small>BLQ</small></div><div class="roster-stat">1<small>ACE</small></div></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=22" alt="Castro"><div class="roster-player-name">Castro #11<span class="roster-player-role">Opuesto</span></div><div class="roster-stat">7<small>PTS</small></div><div class="roster-stat">38%<small>ATA</small></div><div class="roster-stat">1<small>BLQ</small></div><div class="roster-stat">0<small>ACE</small></div></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=18" alt="Morales"><div class="roster-player-name">Morales #7<span class="roster-player-role">Punta</span></div><div class="roster-stat">6<small>PTS</small></div><div class="roster-stat">43%<small>ATA</small></div><div class="roster-stat">0<small>BLQ</small></div><div class="roster-stat">1<small>ACE</small></div></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=26" alt="Torres"><div class="roster-player-name">Torres #13<span class="roster-player-role">Líbero</span></div><div class="roster-stat">1<small>PTS</small></div><div class="roster-stat">50%<small>ATA</small></div><div class="roster-stat">0<small>BLQ</small></div><div class="roster-stat">0<small>ACE</small></div></div>
+                  <div class="roster-player"><img src="https://i.pravatar.cc/100?img=30" alt="Díaz"><div class="roster-player-name">Díaz #1<span class="roster-player-role">Armador</span></div><div class="roster-stat">3<small>PTS</small></div><div class="roster-stat">36%<small>ATA</small></div><div class="roster-stat">0<small>BLQ</small></div><div class="roster-stat">2<small>ACE</small></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </section>
+    </main>
+  </div>
+</div>
+<div class="modal-overlay" id="history-overlay" data-od-id="history-modal" role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
+  <div class="history-modal">
+    <div class="history-head">
+      <div>
+        <h2 class="history-title" id="history-modal-title">Historial completo del partido</h2>
+        <p class="history-sub">UPCN San Juan vs Bolívar Vóley · Cada punto registrado, set por set</p>
+      </div>
+      <button class="modal-close" aria-label="Cerrar" onclick="closeHistory()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+    </div>
+    <div class="history-sets" id="history-sets" data-od-id="history-set-tabs"></div>
+    <div class="history-body" id="history-body" data-od-id="history-events"></div>
+    <div class="history-foot">
+      <span class="history-sum">SET 3 EN VIVO · 18-21</span>
+      <button class="btn accent" onclick="closeHistory()" data-od-id="history-close-cta">Cerrar</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const SELECTED_MATCH_KEY='voleytrack-planillero-selected-match';
+const ADMIN_MATCHES_KEY='voleytrack-admin-matches';
+function readSelectedMatch(){
+  try{
+    const selectedId=localStorage.getItem(SELECTED_MATCH_KEY);
+    const matches=JSON.parse(localStorage.getItem(ADMIN_MATCHES_KEY)||'[]');
+    if(!selectedId||!Array.isArray(matches))return null;
+    const match=matches.find(item=>item&&item.id===selectedId);
+    if(!match||match.status!=='En vivo'||typeof match.homeTeamName!=='string'||typeof match.awayTeamName!=='string'||typeof match.tournamentName!=='string'||typeof match.scheduledAt!=='string')return null;
+    return match;
+  }catch{return null}
+}
+function applySelectedMatch(match){
+  const homeName=match.homeTeamName.trim();const awayName=match.awayTeamName.trim();
+  if(!homeName||!awayName)return;
+  document.title=`VoleyTrack — ${homeName} vs ${awayName}`;
+  document.getElementById('live-match-title').textContent=`En vivo — ${homeName} vs ${awayName}`;
+  const scheduledDate=new Date(`${match.scheduledAt}:00`);
+  const dateLabel=Number.isNaN(scheduledDate.getTime())?'':` · ${new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(scheduledDate)}`;
+  document.getElementById('live-match-context').textContent=`${match.tournamentName}${dateLabel}`;
+  document.getElementById('live-home-initial').textContent=homeName.charAt(0).toLocaleUpperCase('es-ES');
+  document.getElementById('live-away-initial').textContent=awayName.charAt(0).toLocaleUpperCase('es-ES');
+  document.getElementById('live-home-name').textContent=homeName;document.getElementById('live-away-name').textContent=awayName;document.getElementById('live-away-role').textContent='Visitante';
+  document.getElementById('live-score').firstChild.textContent='0 : 0 ';
+  document.getElementById('live-set-score').textContent='SET 1 · 0-0';document.getElementById('live-progress').style.width='0%';
+  document.getElementById('live-matchup').textContent=`Resultado del partido · ${homeName} vs ${awayName}`;
+  document.getElementById('live-set-status').lastChild.textContent=' SET 1 EN VIVO';
+  document.getElementById('live-set-grid').innerHTML='<div class="set-result current"><div class="set-result-top"><span>Set 1</span><span class="set-result-status">En vivo</span></div><div class="set-result-score">0 <small>—</small> 0</div></div>';
+  document.getElementById('demo-match-detail').hidden=true;
+}
+const selectedMatch=readSelectedMatch();if(selectedMatch)applySelectedMatch(selectedMatch);
+const HISTORY_PLAYERS = {
+  upcn:['Fernández #7','López #10','Martínez #11','Gómez #6','Pérez #9','Sosa #3'],
+  bol:['Rojas #9','Silva #5','Castro #11','Morales #7','Díaz #1','Torres #13']
+};
+function historySeed(n){ let x = n; return function(){ x = (x*9301+49297)%233280; return x/233280; }; }
+function buildSetEvents(upcn, bol, seed){
+  const rnd = historySeed(seed);
+  const pts = [];
+  let u=0, b=0;
+  while(u<upcn || b<bol){
+    const homeAvail = u<upcn, awayAvail = b<bol;
+    const who = (homeAvail&&awayAvail) ? (rnd()<0.5?'home':'away') : (homeAvail?'home':'away');
+    let type, txt, p;
+    if(who==='home'){ u++; type='home'; p=HISTORY_PLAYERS.upcn[Math.floor(rnd()*5)]; const r=rnd(); txt = r<0.18?'Saque ace': r<0.34?'Bloqueo':'Remate'; }
+    else { b++; type='away'; p=HISTORY_PLAYERS.bol[Math.floor(rnd()*5)]; const r=rnd(); txt = r<0.18?'Saque ace': r<0.34?'Bloqueo':'Remate'; }
+    pts.push({type, txt, p, score: u+'-'+b});
+  }
+  return pts;
+}
+const HISTORY = [
+  {set:1, label:'Set 1', state:'Finalizado', upcn:25, bol:21, winner:'UPCN', start:'18:04', end:'18:24', events: buildSetEvents(25,21,7)},
+  {set:2, label:'Set 2', state:'Finalizado', upcn:22, bol:25, winner:'BOL', start:'18:34', end:'18:58', events: buildSetEvents(22,25,13)},
+  {set:3, label:'Set 3', state:'En vivo', upcn:18, bol:21, winner:null, live:true, start:'21:30', end:'21:47', events: buildSetEvents(18,21,19)}
+];
+let historySet = 0;
+function openHistory(){
+  historySet = HISTORY.length - 1;
+  renderHistoryTabs();
+  renderHistorySet(HISTORY.length - 1);
+  document.getElementById('history-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeHistory(){
+  document.getElementById('history-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function renderHistoryTabs(){
+  const wrap = document.getElementById('history-sets');
+  wrap.innerHTML = HISTORY.map((s,i)=>`
+    <button type="button" class="history-set-tab${i===historySet?' active':''}" onclick="selectSet(${i})" role="tab" aria-selected="${i===historySet}" data-od-id="history-tab-set-${s.set}">
+      <b>${s.label}</b><span>${s.upcn} — ${s.bol}</span>
+    </button>`).join('');
+}
+function selectSet(i){ historySet = i; renderHistoryTabs(); renderHistorySet(i); }
+function stepTime(base, i){
+  const [h,m] = base.split(':').map(Number);
+  const total = h*60+m + Math.round(i*0.9);
+  return String(Math.floor(total/60)%24).padStart(2,'0') + ':' + String(total%60).padStart(2,'0');
+}
+function renderHistorySet(i){
+  const s = HISTORY[i];
+  const body = document.getElementById('history-body');
+  body.innerHTML = `<div class="history-group">
+    <div class="history-group-title"><b>${s.label}</b><span>${s.state}${s.winner? ' · Ganador '+s.winner : ''} · ${s.upcn} — ${s.bol}</span></div>
+    <div class="history-tl">
+      ${s.events.map((ev,idx)=>{
+        const team = ev.type==='home' ? 'UPCN San Juan' : 'Bolívar Vóley';
+        const cls = ev.type==='home' ? '' : ' away';
+        const last = idx===s.events.length-1;
+        return `<div class="history-ev${cls}${last?' last':''}">
+          <div><time>${stepTime(s.start,idx)} · ${s.label}</time><p><b>${ev.txt}</b> — ${ev.p}</p><div class="ev-team">${team}</div></div>
+          <div class="history-score">${ev.score}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+  body.scrollTop = 0;
+}
+document.getElementById('history-overlay').addEventListener('click', e=>{ if(e.target.id==='history-overlay') closeHistory(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && document.getElementById('history-overlay').classList.contains('open')) closeHistory(); });
+function switchView(name){
+  const target = name==='team-detail' ? 'team-detail' : name==='player-detail' ? 'player-detail' : name;
+  document.querySelectorAll('.view').forEach(v=> v.classList.toggle('active', v.dataset.view===target));
+  document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(b=>{ const v=b.dataset.view; let active=v===target || (target==='team-detail'&&v==='teams') || (target==='player-detail'&&v==='players'); b.classList.toggle('active', active); });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function setFilter(el){ el.parentElement.querySelectorAll('.filter').forEach(f=> f.classList.remove('active')); el.classList.add('active'); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2200); }
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoleyTrack — Jugadores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="imagen.png" />
+<link rel="stylesheet" href="voleytrack.css" />
+<link rel="stylesheet" href="voleytrack-jugadores.css" />
+</head>
+<body>
+<div id="app" class="app active" data-od-id="app-shell-invitado">
+
+<header class="topbar" data-od-id="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark"><img src="imagen.png" alt="VoleyTrack icono" /></div>
+      <div class="logo-type">VoleyTrack</div>
+    </div>
+    <div class="topbar-nav">
+      <label class="search" data-od-id="search-bar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20L16 16"/></svg><input placeholder="Buscar equipo, jugador, torneo…" /></label>
+      <div style="flex:1"></div>
+      <div class="top-icons">
+        <button class="icon-btn" aria-label="Notificaciones"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9"/><path d="M10 18h4"/></svg><span class="dot"></span></button>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+
+<aside class="sidebar" data-od-id="sidebar-public-nav">
+      <div class="nav-group">
+        <p class="nav-title">Invitado · Público</p>
+        <a class="nav-item" data-view="dashboard" href="voleytrack-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard</a>
+        <a class="nav-item" data-view="matches" href="voleytrack-partidos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg> Partidos <span class="count">16</span></a>
+        <a class="nav-item" data-view="tournaments" href="voleytrack-torneos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13c0 3 2 5 6 5s6-2 6-5l-6-7-6 7z"/><path d="M9 13h6"/></svg> Torneos</a>
+        <a class="nav-item" data-view="teams" href="voleytrack-equipos.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11v2"/><path d="M17 11v2"/></svg> Equipos</a>
+        <a class="nav-item active" data-view="players" href="voleytrack-jugadores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Jugadores</a>
+        <a class="nav-item" data-view="live" href="voleytrack-live.html"><span class="live-dot" style="width:8px;height:8px;background:var(--danger);border-radius:999px"></span> En vivo</a>
+      </div>
+      <div class="divider"></div>
+    </aside>
+    <main class="main">
+<section class="view active" data-view="players" data-od-id="view-players">
+        <div class="page-head"><div><h1>Jugadores</h1><p>1.07 · Listado y ficha individual con bio, métricas y partidos.</p></div><div class="head-actions"><button class="btn" type="button" aria-expanded="false" aria-controls="players-filter-panel" data-od-id="players-filter-button" id="players-filter-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg> Filtros</button></div></div>
+        <div class="player-filters" id="players-filter-panel" data-od-id="players-filter-panel" aria-hidden="true">
+          <div class="player-filters-inner">
+            <div class="player-filter-grid">
+              <div class="player-filter-field"><label for="players-team-filter">Equipo</label><select id="players-team-filter" data-od-id="players-team-filter"><option value="">Todos los equipos</option><option value="Bolívar">Bolívar</option><option value="UPCN">UPCN</option></select></div>
+              <div class="player-filter-field"><label for="players-position-filter">Posición</label><select id="players-position-filter" data-od-id="players-position-filter"><option value="">Todas las posiciones</option><option value="Punta">Punta</option><option value="Central">Central</option><option value="Opuesto">Opuesto</option></select></div>
+              <div class="player-filter-field"><label for="players-height-filter">Altura mínima</label><select id="players-height-filter" data-od-id="players-height-filter"><option value="">Cualquier altura</option><option value="191">1,91 m</option><option value="196">1,96 m</option><option value="201">2,01 m</option></select></div>
+              <div class="player-filter-field"><label for="players-points-filter">Puntos mínimos</label><select id="players-points-filter" data-od-id="players-points-filter"><option value="">Cualquier puntuación</option><option value="96">96 puntos</option><option value="118">118 puntos</option><option value="142">142 puntos</option></select></div>
+            </div>
+            <div class="player-filter-footer">
+              <p class="player-results-count" id="players-results-count" data-od-id="players-results-count" aria-live="polite"><strong>3</strong> jugadores</p>
+              <button class="btn ghost" type="button" id="players-clear-filters" data-od-id="players-clear-filters">Limpiar filtros</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Jugador</th><th>Equipo</th><th>Posición</th><th>Altura</th><th>Pts</th><th></th></tr></thead><tbody>
+          <tr style="cursor:pointer" onclick="switchView('player-detail')" data-team="Bolívar" data-position="Punta" data-height="196" data-points="142"><td style="display:flex;gap:10px;align-items:center"><img src="https://i.pravatar.cc/100?img=12" style="width:32px;height:32px;border-radius:999px"><b>Fernández, M. #7</b></td><td>Bolívar</td><td>Punta</td><td>1,96m</td><td class="num">142</td><td><span style="color:var(--accent);font-weight:700;font-size:12px">Ver ficha →</span></td></tr>
+          <tr data-team="UPCN" data-position="Central" data-height="201" data-points="118"><td style="display:flex;gap:10px;align-items:center"><img src="https://i.pravatar.cc/100?img=15" style="width:32px;height:32px;border-radius:999px"><b>López, J. #10</b></td><td>UPCN</td><td>Central</td><td>2,01m</td><td class="num">118</td><td></td></tr>
+          <tr data-team="UPCN" data-position="Opuesto" data-height="191" data-points="96"><td style="display:flex;gap:10px;align-items:center"><img src="https://i.pravatar.cc/100?img=20" style="width:32px;height:32px;border-radius:999px"><b>Gómez, L. #6</b></td><td>UPCN</td><td>Opuesto</td><td>1,91m</td><td class="num">96</td><td></td></tr>
+        </tbody></table></div>
+        <div class="player-empty" id="players-empty-state" data-od-id="players-empty-state" role="status"><h2>No hay jugadores que coincidan</h2><p>Prueba a reducir los filtros o límpialos para ver todos los jugadores.</p></div>
+      </section>
+<section class="view" data-view="player-detail" data-od-id="view-player-detail">
+        <div class="page-head"><div><h1 style="display:flex;gap:14px;align-items:center"><img src="https://i.pravatar.cc/100?img=12" style="width:48px;height:48px;border-radius:999px;border:2px solid var(--accent)"> Fernández, Martín · #7 <span class="badge">PUNTA · Bolívar</span></h1><p>1.07 · Ficha completa. Responsive auditado a 1428px (fix P1 aplicado).</p></div><div class="head-actions"><button class="btn" onclick="switchView('players')">← Volver</button></div></div>
+        <div style="display:grid;grid-template-columns:340px 1fr;gap:16px">
+          <div class="card" style="padding:20px;text-align:center"><img src="https://i.pravatar.cc/200?img=12" style="width:96px;height:96px;border-radius:999px;margin:0 auto;border:3px solid var(--border)"><h3 style="margin:12px 0 4px">Martín Fernández</h3><p style="color:var(--muted);font-size:13px;margin:0">Punta · Bolívar Vóley · Dorsal 7</p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;text-align:center"><div><b style="font-size:20px">1,96m</b><p style="font-size:11px;color:var(--muted);margin:0">Altura</p></div><div><b style="font-size:20px">92kg</b><p style="font-size:11px;color:var(--muted);margin:0">Peso</p></div><div><b style="font-size:20px">24</b><p style="font-size:11px;color:var(--muted);margin:0">Edad</p></div></div><button class="btn accent" style="width:100%;margin-top:16px;justify-content:center">Ver partidos</button></div>
+          <div style="display:flex;flex-direction:column;gap:16px"><div class="kpi-grid" style="margin:0"><div class="kpi"><div class="kpi-label">Puntos</div><div class="kpi-value">142</div><div class="kpi-sub">3.8 / set · 1º del torneo</div></div><div class="kpi"><div class="kpi-label">Ataque</div><div class="kpi-value">49%</div><div class="kpi-sub">Efectividad</div></div><div class="kpi"><div class="kpi-label">Bloqueo</div><div class="kpi-value">18</div><div class="kpi-sub">0.5 / set</div></div><div class="kpi"><div class="kpi-label">Saque ace</div><div class="kpi-value">11</div><div class="kpi-sub">Top 3 liga</div></div></div><div class="card"><div class="card-h">Últimos partidos</div><div class="card-b" style="padding-top:12px"><table><tr><td>vs UPCN (V 3-1)</td><td class="num">18 pts</td><td><span class="badge ok">MVP</span></td></tr><tr><td>vs Ciudad (D 1-3)</td><td class="num">12 pts</td><td></td></tr><tr><td>vs Boca (V 3-0)</td><td class="num">15 pts</td><td></td></tr></table></div></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function switchView(name){
+  const target = name==='team-detail' ? 'team-detail' : name==='player-detail' ? 'player-detail' : name;
+  document.querySelectorAll('.view').forEach(v=> v.classList.toggle('active', v.dataset.view===target));
+  document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(b=>{ const v=b.dataset.view; let active=v===target || (target==='team-detail'&&v==='teams') || (target==='player-detail'&&v==='players'); b.classList.toggle('active', active); });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function setFilter(el){ el.parentElement.querySelectorAll('.filter').forEach(f=> f.classList.remove('active')); el.classList.add('active'); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2200); }
+
+const playerFilterButton=document.getElementById('players-filter-button');
+const playerFilterPanel=document.getElementById('players-filter-panel');
+const playerFilterControls=[
+  document.getElementById('players-team-filter'),
+  document.getElementById('players-position-filter'),
+  document.getElementById('players-height-filter'),
+  document.getElementById('players-points-filter')
+];
+const playerRows=[...document.querySelectorAll('[data-view="players"] tbody tr')];
+const playerTable=document.querySelector('[data-view="players"] .table-wrap');
+const playerResultsCount=document.getElementById('players-results-count');
+const playerEmptyState=document.getElementById('players-empty-state');
+
+function togglePlayerFilters(forceOpen){
+  const open=typeof forceOpen==='boolean' ? forceOpen : !playerFilterPanel.classList.contains('open');
+  playerFilterPanel.classList.toggle('open',open);
+  playerFilterPanel.setAttribute('aria-hidden',String(!open));
+  playerFilterButton.setAttribute('aria-expanded',String(open));
+}
+
+function filterPlayers(){
+  const [team,position,minHeight,minPoints]=playerFilterControls.map(control=>control.value);
+  let visibleCount=0;
+  playerRows.forEach(row=>{
+    const visible=(!team || row.dataset.team===team) &&
+      (!position || row.dataset.position===position) &&
+      (!minHeight || Number(row.dataset.height)>=Number(minHeight)) &&
+      (!minPoints || Number(row.dataset.points)>=Number(minPoints));
+    row.hidden=!visible;
+    if(visible) visibleCount+=1;
+  });
+  playerResultsCount.innerHTML=`<strong>${visibleCount}</strong> ${visibleCount===1 ? 'jugador' : 'jugadores'}`;
+  playerTable.hidden=visibleCount===0;
+  playerEmptyState.classList.toggle('visible',visibleCount===0);
+}
+
+playerFilterButton.addEventListener('click',()=>togglePlayerFilters());
+playerFilterControls.forEach(control=>control.addEventListener('change',filterPlayers));
+document.getElementById('players-clear-filters').addEventListener('click',()=>{
+  playerFilterControls.forEach(control=>{ control.value=''; });
+  filterPlayers();
+});
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape' && playerFilterPanel.classList.contains('open')){
+    togglePlayerFilters(false);
+    playerFilterButton.focus();
+  }
+});
+</script>
+</body>
+</html>

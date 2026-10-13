@@ -89,7 +89,7 @@ export function AdminTournamentStatsPage() {
           {tournamentTabs.map((tab) => (
             <Link
               aria-current={tab.suffix === "/stats" ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab.suffix === "/stats" ? "bg-vt-accent text-vt-canvas" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab.suffix === "/stats" ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
               key={tab.label}
               to={`/admin/tournaments/${tournament.id}${tab.suffix}` as string}
             >
@@ -100,13 +100,13 @@ export function AdminTournamentStatsPage() {
       </nav>
 
       <section aria-label="Estadísticas del torneo" className="space-y-4">
-        <Card className="border-vt-border bg-vt-raised p-4">
+        <Card className="border-vt-border p-4" variant="raised">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="mr-6 text-sm font-black text-vt-text">Filtrar estadística</h2>
             {(Object.keys(rankings) as Statistic[]).map((option) => (
               <button
                 aria-pressed={statistic === option}
-                className={`rounded-full px-8 py-2 text-xs font-black ${statistic === option ? "bg-vt-accent text-vt-canvas" : "bg-vt-panel text-vt-muted hover:text-vt-text"}`}
+                className={`rounded-full px-8 py-2 text-xs font-black ${statistic === option ? "bg-vt-accent text-vt-background" : "bg-vt-panel text-vt-muted hover:text-vt-text"}`}
                 key={option}
                 onClick={() => setStatistic(option)}
                 type="button"
@@ -117,7 +117,7 @@ export function AdminTournamentStatsPage() {
           </div>
         </Card>
 
-        <Card className="border-vt-border bg-vt-raised p-5">
+        <Card className="border-vt-border p-5" variant="raised">
           <h2 className="text-lg font-black text-vt-text">Ranking de Jugadores · {ranking.title}</h2>
           <div className="mt-5 space-y-2">
             {ranking.leaders.map((leader, index) => (

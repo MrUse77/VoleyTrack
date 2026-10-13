@@ -23,20 +23,22 @@ describe("public tournament matches", () => {
     tournamentId = PUBLIC_TOURNAMENTS.inProgress[0].id;
   });
 
-  it("renders the selected tournament context and fixture-driven match rows", () => {
+  it("renders the selected tournament context and tournament-scoped fixture rows", () => {
     const tournament = PUBLIC_TOURNAMENTS.inProgress[0];
     const html = renderTournamentMatches(tournament.id);
+    const matches = Object.values(PUBLIC_MATCHES).flat();
 
     expect(html).toContain(tournament.name);
     expect(html).toContain(`Torneos / ${tournament.name}`);
     expect(html).toContain("Partidos del Torneo");
-    for (const matches of Object.values(PUBLIC_MATCHES)) {
-      for (const match of matches) {
-        expect(html).toContain(match.homeTeamName);
-        expect(html).toContain(match.awayTeamName);
-        expect(html).toContain(match.scheduledLabel);
-        expect(html).toContain(match.badgeLabel);
-      }
+    for (const match of matches.filter(({ tournamentId }) => tournamentId === tournament.id)) {
+      expect(html).toContain(match.homeTeamName);
+      expect(html).toContain(match.awayTeamName);
+      expect(html).toContain(match.scheduledLabel);
+      expect(html).toContain(match.badgeLabel);
+    }
+    for (const match of matches.filter(({ tournamentId }) => tournamentId !== tournament.id)) {
+      expect(html).not.toContain(`/matches/${match.id}/live`);
     }
   });
 
