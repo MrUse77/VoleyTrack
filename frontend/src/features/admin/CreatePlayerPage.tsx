@@ -1,45 +1,58 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "../../components/primitives/Button";
+import { buttonClasses } from "../../components/primitives/buttonClasses";
+import { Card, CardBody, CardHeader } from "../../components/primitives/Card";
 import { Field, fieldControlClasses } from "../../components/primitives/Field";
-import { SectionShell } from "../../components/ui/SectionShell";
+import { PageHeader } from "../../components/primitives/PageHeader";
+import { ADMIN } from "../../fixtures";
 
-type PlayerPosition = "setter" | "outside-hitter" | "opposite" | "middle-blocker" | "libero";
-
+/**
+ * Design: frontend/design/html/voleytrack-admin-crear-jugador.html — a `.page-head`
+ * ("Crear jugador") over the `.form-card` (max-width 760px): a `.card-h` reading
+ * "Datos del jugador" with the `Estado automático: Activo` eyebrow, then the form's
+ * `.card-b` holding a `.form-grid` of Nombre | Apellido | Fecha de nacimiento | Posición |
+ * Equipo | Dorsal and a `.form-actions` row (Cancelar | Crear jugador).
+ *
+ * The design's Equipo select carries the hint "El dorsal debe ser único dentro del equipo
+ * seleccionado." and its prototype enforces it, so the rule is implemented against the
+ * fixture roster instead of shipping a hint that nothing checks.
+ *
+ * The design groups its fields in one two-column grid with no fieldset, so the app's
+ * "Datos personales" / "Datos deportivos" groupings are gone.
+ */
 type PlayerForm = {
+  birthDate: string;
   firstName: string;
   lastName: string;
-  birthDate: string;
   number: string;
-  position: PlayerPosition | "";
+  position: string;
+  teamName: string;
 };
 
 type PlayerField = keyof PlayerForm;
 type PlayerErrors = Partial<Record<PlayerField, string>>;
 
 const initialForm: PlayerForm = {
+  birthDate: "",
   firstName: "",
   lastName: "",
-  birthDate: "",
   number: "",
   position: "",
+  teamName: "",
 };
 
 const fieldIds: Record<PlayerField, string> = {
+  birthDate: "player-birth-date",
   firstName: "player-first-name",
   lastName: "player-last-name",
-  birthDate: "player-birth-date",
   number: "player-number",
   position: "player-position",
+  teamName: "player-team",
 };
 
-const positionOptions: Array<{ label: string; value: PlayerPosition }> = [
-  { label: "Armador", value: "setter" },
-  { label: "Punta receptor", value: "outside-hitter" },
-  { label: "Opuesto", value: "opposite" },
-  { label: "Central", value: "middle-blocker" },
-  { label: "Líbero", value: "libero" },
-];
+/** The design's own option list, in its order. */
+const positionOptions = ["Armador", "Central", "Líbero", "Opuesto", "Punta"] as const;
 
 function validatePlayerForm(form: PlayerForm): PlayerErrors {
   const errors: PlayerErrors = {};
@@ -56,26 +69,36 @@ function validatePlayerForm(form: PlayerForm): PlayerErrors {
     errors.birthDate = "Ingresá la fecha de nacimiento.";
   }
 
-  if (!form.number.trim()) {
-    errors.number = "Ingresá el dorsal.";
-  } else if (!Number.isInteger(Number(form.number)) || Number(form.number) < 0) {
-    errors.number = "Ingresá un dorsal válido.";
-  } else if (Number(form.number) > 99) {
-    errors.number = "Ingresá un dorsal entre 0 y 99.";
-  }
-
   if (!form.position) {
     errors.position = "Seleccioná una posición.";
+  }
+
+  if (!form.teamName) {
+    errors.teamName = "Seleccioná un equipo.";
+  }
+
+  if (!form.number.trim()) {
+    errors.number = "Ingresá el dorsal.";
+  } else if (!Number.isInteger(Number(form.number)) || Number(form.number) < 1) {
+    errors.number = "Ingresá un dorsal válido.";
+  } else if (Number(form.number) > 99) {
+    errors.number = "Ingresá un dorsal entre 1 y 99.";
+  } else if (
+    ADMIN.players.some(
+      (player) => player.teamName === form.teamName && player.number === Number(form.number),
+    )
+  ) {
+    errors.number = "Dorsal duplicado, ingresar otro valor";
   }
 
   return errors;
 }
 
 /**
- * `Field` renders an optional hint and an optional error as two separate slots, so the
- * old single-message field has to choose one: passing both would put two ids in
- * `aria-describedby`. The error keeps its `role="alert"` wrapper, and `Field` derives
- * `aria-invalid` from `error` being present.
+ * `Field` renders an optional hint and an optional error as two separate slots, so a field
+ * with both has to choose one: passing both would put two ids in `aria-describedby`. The
+ * error keeps its `role="alert"` wrapper, and `Field` derives `aria-invalid` from `error`
+ * being present.
  */
 function feedbackProps(error: string | undefined, hint: string): { error?: ReactNode; hint?: ReactNode } {
   return error ? { error: <span role="alert">{error}</span> } : { hint };
@@ -115,122 +138,149 @@ export function CreatePlayerPage() {
     setIsSubmitted(true);
   };
 
-  const hasErrors = Object.keys(errors).length > 0;
-  const positionMessageId = errors.position ? `${fieldIds.position}-error` : `${fieldIds.position}-hint`;
-
   return (
-    <SectionShell
-      description="Completá los datos para preparar el registro de un jugador."
-      eyebrow="Administración"
-      title="Crear Nuevo Jugador"
-    >
-      <form
-        className="max-w-2xl rounded-2xl border border-vt-border bg-vt-raised p-6"
-        noValidate
-        onSubmit={handleSubmit}
-      >
-        {hasErrors ? (
-          <p
-            aria-live="assertive"
-            className="mb-5 rounded-lg border border-vt-danger/60 bg-vt-danger/10 px-4 py-3 text-sm text-vt-danger"
-            role="alert"
-          >
-            Revisá los campos marcados antes de continuar.
-          </p>
-        ) : null}
+    <div>
+      <PageHeader
+        className="mb-[22px]"
+        description="Completá los datos deportivos para incorporar al jugador al equipo."
+        title="Crear jugador"
+      />
 
-        <fieldset className="grid gap-5 rounded-xl border border-vt-border p-4">
-          <legend className="px-2 text-sm font-bold text-vt-text">Datos personales</legend>
-          <Field id={fieldIds.firstName} label="Nombre" {...feedbackProps(errors.firstName, "Nombre de pila")}>
-            <input
-              autoComplete="given-name"
-              className={fieldControlClasses}
-              name="firstName"
-              onChange={(event) => updateField("firstName", event.target.value)}
-              placeholder="Nombre del jugador"
-              required
-              value={form.firstName}
-            />
-          </Field>
-          <Field id={fieldIds.lastName} label="Apellido" {...feedbackProps(errors.lastName, "Apellido del jugador")}>
-            <input
-              autoComplete="family-name"
-              className={fieldControlClasses}
-              name="lastName"
-              onChange={(event) => updateField("lastName", event.target.value)}
-              placeholder="Apellido del jugador"
-              required
-              value={form.lastName}
-            />
-          </Field>
-          <Field id={fieldIds.birthDate} label="Fecha de nacimiento" {...feedbackProps(errors.birthDate, "Formato de fecha local")}>
-            <input
-              className={fieldControlClasses}
-              name="birthDate"
-              onChange={(event) => updateField("birthDate", event.target.value)}
-              required
-              type="date"
-              value={form.birthDate}
-            />
-          </Field>
-        </fieldset>
+      <Card className="max-w-[760px]" padded={false}>
+        <CardHeader>
+          Datos del jugador
+          <small>Estado automático: Activo</small>
+        </CardHeader>
+        <CardBody data-testid="create-player-card-body">
+          <form className="grid gap-[18px]" noValidate onSubmit={handleSubmit}>
+            {isSubmitted ? (
+              /* Design: voleytrack-admin.css:191-192 `.form-status.success`. */
+              <p
+                aria-live="polite"
+                className="rounded-vt-md border border-vt-success-soft-border bg-vt-success-soft px-[14px] py-3 text-[13px] font-bold text-vt-success-soft-text"
+                role="status"
+                tabIndex={-1}
+              >
+                Jugador preparado localmente. No se enviaron datos al servidor.
+              </p>
+            ) : null}
 
-        <fieldset className="mt-5 grid gap-5 rounded-xl border border-vt-border p-4">
-          <legend className="px-2 text-sm font-bold text-vt-text">Datos deportivos</legend>
-          <Field id={fieldIds.number} label="Dorsal" {...feedbackProps(errors.number, "Número de camiseta (ej. 10)")}>
-            <input
-              className={fieldControlClasses}
-              inputMode="numeric"
-              max="99"
-              min="0"
-              name="number"
-              onChange={(event) => updateField("number", event.target.value)}
-              placeholder="10"
-              required
-              step="1"
-              type="number"
-              value={form.number}
-            />
-          </Field>
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-vt-text" htmlFor={fieldIds.position}>Posición</label>
-            <select
-              aria-describedby={positionMessageId}
-              aria-invalid={Boolean(errors.position)}
-              className="h-10 rounded-lg border border-vt-border bg-vt-panel px-3 text-sm text-vt-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vt-accent"
-              id={fieldIds.position}
-              name="position"
-              onChange={(event) => updateField("position", event.target.value as PlayerPosition | "")}
-              required
-              value={form.position}
-            >
-              <option disabled value="">Seleccioná una posición</option>
-              {positionOptions.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-            <p
-              className={errors.position ? "text-sm text-vt-danger" : "text-sm text-vt-muted"}
-              id={positionMessageId}
-              role={errors.position ? "alert" : undefined}
-            >
-              {errors.position ?? "Elegí la posición habitual del jugador."}
-            </p>
-          </div>
-        </fieldset>
+            {/* Design: voleytrack-admin.css:175-176 `.form-grid` — two columns with an 18px
+                gap, one column below 901px. */}
+            <div className="grid gap-[18px] min-[901px]:grid-cols-2">
+              <Field
+                id={fieldIds.firstName}
+                label="Nombre"
+                {...feedbackProps(errors.firstName, "Nombre de pila")}
+              >
+                <input
+                  autoComplete="given-name"
+                  className={fieldControlClasses}
+                  name="firstName"
+                  onChange={(event) => updateField("firstName", event.target.value)}
+                  placeholder="Nombre del jugador"
+                  required
+                  value={form.firstName}
+                />
+              </Field>
+              <Field
+                id={fieldIds.lastName}
+                label="Apellido"
+                {...feedbackProps(errors.lastName, "Apellido del jugador")}
+              >
+                <input
+                  autoComplete="family-name"
+                  className={fieldControlClasses}
+                  name="lastName"
+                  onChange={(event) => updateField("lastName", event.target.value)}
+                  placeholder="Apellido del jugador"
+                  required
+                  value={form.lastName}
+                />
+              </Field>
+              <Field
+                id={fieldIds.birthDate}
+                label="Fecha de nacimiento"
+                {...feedbackProps(errors.birthDate, "Formato de fecha local")}
+              >
+                <input
+                  className={fieldControlClasses}
+                  name="birthDate"
+                  onChange={(event) => updateField("birthDate", event.target.value)}
+                  required
+                  type="date"
+                  value={form.birthDate}
+                />
+              </Field>
+              <Field
+                id={fieldIds.position}
+                label="Posición"
+                {...feedbackProps(errors.position, "Elegí la posición habitual del jugador.")}
+              >
+                <select
+                  className={fieldControlClasses}
+                  name="position"
+                  onChange={(event) => updateField("position", event.target.value)}
+                  required
+                  value={form.position}
+                >
+                  <option value="">Seleccionar posición</option>
+                  {positionOptions.map((position) => (
+                    <option key={position} value={position}>{position}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field
+                id={fieldIds.teamName}
+                label="Equipo"
+                {...feedbackProps(errors.teamName, "El dorsal debe ser único dentro del equipo seleccionado.")}
+              >
+                <select
+                  className={fieldControlClasses}
+                  name="teamName"
+                  onChange={(event) => updateField("teamName", event.target.value)}
+                  required
+                  value={form.teamName}
+                >
+                  <option value="">Seleccionar equipo</option>
+                  {ADMIN.teams.map((team) => (
+                    <option key={team.id} value={team.name}>{team.name}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field
+                id={fieldIds.number}
+                label="Dorsal"
+                {...feedbackProps(errors.number, "Número de camiseta (ej. 10)")}
+              >
+                <input
+                  className={fieldControlClasses}
+                  inputMode="numeric"
+                  max="99"
+                  min="1"
+                  name="number"
+                  onChange={(event) => updateField("number", event.target.value)}
+                  placeholder="10"
+                  required
+                  step="1"
+                  type="number"
+                  value={form.number}
+                />
+              </Field>
+            </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-4">
-          <Button type="submit">Crear jugador</Button>
-          <Link className="text-sm font-semibold text-vt-muted hover:text-vt-text" to={"/admin/players" as string}>
-            Cancelar
-          </Link>
-          {isSubmitted ? (
-            <p className="text-sm text-vt-success" role="status">
-              Jugador preparado localmente. No se enviaron datos al servidor.
-            </p>
-          ) : null}
-        </div>
-      </form>
-    </SectionShell>
+            {/* Design: voleytrack-admin.css:187 `.form-actions` — 22px above, an 18px
+                --border-2 rule, a 10px gap and right alignment; below 600px it reverses into
+                a full-width column. */}
+            <div className="mt-[22px] flex flex-wrap justify-end gap-2.5 border-t border-vt-border-2 pt-[18px] max-[600px]:flex-col-reverse">
+              <Link className={buttonClasses("ghost")} to={"/admin/players" as string}>
+                Cancelar
+              </Link>
+              <Button type="submit">Crear jugador</Button>
+            </div>
+          </form>
+        </CardBody>
+      </Card>
+    </div>
   );
 }

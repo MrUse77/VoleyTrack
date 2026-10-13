@@ -36,37 +36,96 @@ function setInputValue(input: HTMLInputElement, value: string) {
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
+function setSelectValue(select: HTMLSelectElement, value: string) {
+  select.value = value;
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
 describe("CreateMatchPage", () => {
-  it("SSR renders the canonical create-match form", () => {
+  it("SSR renders the design's form card and its fields", () => {
     const html = renderToStaticMarkup(<CreateMatchPage />);
 
-    expect(html).toContain("Crear Partido");
-    expect(html).toContain("Programa un encuentro para el torneo seleccionado.");
+    expect(html).toContain("Crear partido");
+    expect(html).toContain("Programá un encuentro entre dos equipos activos.");
+    expect(html).toContain("Datos del partido");
+    expect(html).toContain("Estado automático: Programado");
     expect(html).toContain("Torneo");
-    expect(html).toContain("Equipo Local");
-    expect(html).toContain("Equipo Visitante");
-    expect(html).toContain("Fecha y Hora");
-    expect(html).toContain("Sede");
-    expect(html).toContain("Ej: Polideportivo Municipal");
+    expect(html).toContain("Equipo local");
+    expect(html).toContain("Equipo visitante");
+    expect(html).toContain("Fecha");
+    expect(html).toContain("Horario disponible");
     expect(html).toContain("Cancelar");
+    expect(html).toContain('href="/admin/matches"');
     for (const tournament of ADMIN.tournaments) expect(html).toContain(tournament.name);
     for (const team of ADMIN.teams) expect(html).toContain(team.name);
   });
 
-  it("does not show success when the empty form is submitted", () => {
-    const page = renderPage();
+  it("keeps the design's unlock order for teams, date and slot", () => {
+    const rendered = renderPage();
 
     try {
-      const form = page.container.querySelector("form")!;
+      const container = rendered.container;
+      const tournament = getControlByLabel<HTMLSelectElement>(container, "Torneo");
+      const homeTeam = getControlByLabel<HTMLSelectElement>(container, "Equipo local");
+      const awayTeam = getControlByLabel<HTMLSelectElement>(container, "Equipo visitante");
+      const date = getControlByLabel<HTMLInputElement>(container, "Fecha");
+      const time = getControlByLabel<HTMLSelectElement>(container, "Horario disponible");
 
-      act(() => {
-        form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-      });
+      expect(homeTeam.disabled).toBe(true);
+      expect(awayTeam.disabled).toBe(true);
+      expect(date.disabled).toBe(true);
+      expect(time.disabled).toBe(true);
+      expect(container.textContent).toContain("Seleccioná dos equipos diferentes para habilitar la fecha.");
+      expect(container.textContent).toContain("Seleccioná una fecha para consultar la disponibilidad.");
 
-      expect(page.container.textContent).not.toContain("Partido preparado localmente");
+      act(() => setSelectValue(tournament, ADMIN.tournaments[0].id));
+      expect(homeTeam.disabled).toBe(false);
+      expect(awayTeam.disabled).toBe(false);
+
+      // The same team on both sides never unlocks the schedule.
+      act(() => setSelectValue(homeTeam, ADMIN.teams[0].id));
+      act(() => setSelectValue(awayTeam, ADMIN.teams[0].id));
+      expect(date.disabled).toBe(true);
+
+      act(() => setSelectValue(awayTeam, ADMIN.teams[1].id));
+      expect(date.disabled).toBe(false);
+      expect(container.textContent).toContain("Local");
+      expect(container.textContent).toContain("Visitante");
+
+      act(() => setInputValue(date, "2999-12-31"));
+      expect(time.disabled).toBe(false);
+      expect(container.textContent).toContain("Solo se muestran horarios disponibles.");
+      expect(container.textContent).toContain("18:00");
     } finally {
-      act(() => page.root.unmount());
-      page.container.remove();
+      act(() => rendered.root.unmount());
+      rendered.container.remove();
+    }
+  });
+
+  it("reports the required fields and the same-team rule when submitted", () => {
+    const rendered = renderPage();
+
+    try {
+      const container = rendered.container;
+      const form = container.querySelector("form")!;
+
+      act(() => form.requestSubmit());
+
+      const tournament = getControlByLabel<HTMLSelectElement>(container, "Torneo");
+      expect(tournament.getAttribute("aria-invalid")).toBe("true");
+      expect(container.textContent).toContain("Seleccioná un torneo.");
+      expect(container.textContent).not.toContain("Partido preparado localmente");
+
+      act(() => setSelectValue(tournament, ADMIN.tournaments[0].id));
+      act(() => setSelectValue(getControlByLabel<HTMLSelectElement>(container, "Equipo local"), ADMIN.teams[0].id));
+      act(() => setSelectValue(getControlByLabel<HTMLSelectElement>(container, "Equipo visitante"), ADMIN.teams[0].id));
+      act(() => form.requestSubmit());
+
+      expect(container.textContent).toContain("Un equipo no puede jugar contra sí mismo");
+      expect(container.textContent).not.toContain("Partido preparado localmente");
+    } finally {
+      act(() => rendered.root.unmount());
+      rendered.container.remove();
     }
   });
 
@@ -75,41 +134,21 @@ describe("CreateMatchPage", () => {
     const first = renderPage();
 
     try {
-      const form = first.container.querySelector("form")!;
-      const tournament = getControlByLabel<HTMLSelectElement>(first.container, "Torneo");
-      const homeTeam = getControlByLabel<HTMLSelectElement>(first.container, "Equipo Local");
-      const awayTeam = getControlByLabel<HTMLSelectElement>(first.container, "Equipo Visitante");
-      const scheduledAt = getControlByLabel<HTMLInputElement>(first.container, "Fecha y Hora");
-      const venue = getControlByLabel<HTMLInputElement>(first.container, "Sede");
+      const container = first.container;
+      const form = container.querySelector("form")!;
       const location = window.location.href;
 
-      expect(first.container.querySelector('a[href="/admin/matches"]')).not.toBeNull();
-
-      act(() => {
-        tournament.value = ADMIN.tournaments[0].id;
-        tournament.dispatchEvent(new Event("change", { bubbles: true }));
-        homeTeam.value = ADMIN.teams[0].id;
-        homeTeam.dispatchEvent(new Event("change", { bubbles: true }));
-        awayTeam.value = ADMIN.teams[1].id;
-        awayTeam.dispatchEvent(new Event("change", { bubbles: true }));
-        setInputValue(scheduledAt, "2026-05-15T20:30");
-        setInputValue(venue, "Polideportivo Municipal");
-      });
-
-      expect(tournament.value).toBe(ADMIN.tournaments[0].id);
-      expect(homeTeam.value).toBe(ADMIN.teams[0].id);
-      expect(awayTeam.value).toBe(ADMIN.teams[1].id);
-      expect(scheduledAt.value).toBe("2026-05-15T20:30");
-      expect(venue.value).toBe("Polideportivo Municipal");
+      act(() => setSelectValue(getControlByLabel<HTMLSelectElement>(container, "Torneo"), ADMIN.tournaments[0].id));
+      act(() => setSelectValue(getControlByLabel<HTMLSelectElement>(container, "Equipo local"), ADMIN.teams[0].id));
+      act(() => setSelectValue(getControlByLabel<HTMLSelectElement>(container, "Equipo visitante"), ADMIN.teams[1].id));
+      act(() => setInputValue(getControlByLabel<HTMLInputElement>(container, "Fecha"), "2999-12-31"));
+      act(() => setSelectValue(getControlByLabel<HTMLSelectElement>(container, "Horario disponible"), "19:30"));
 
       act(() => form.requestSubmit());
 
       expect(fetchSpy).not.toHaveBeenCalled();
       expect(window.location.href).toBe(location);
-      expect(first.container.textContent).toContain("Partido preparado localmente");
-
-      act(() => setInputValue(venue, "Estadio Central"));
-      expect(first.container.textContent).not.toContain("Partido preparado localmente");
+      expect(container.textContent).toContain("Partido preparado localmente");
     } finally {
       act(() => first.root.unmount());
       first.container.remove();
@@ -119,10 +158,10 @@ describe("CreateMatchPage", () => {
     const second = renderPage();
     try {
       expect(getControlByLabel<HTMLSelectElement>(second.container, "Torneo").value).toBe("");
-      expect(getControlByLabel<HTMLSelectElement>(second.container, "Equipo Local").value).toBe("");
-      expect(getControlByLabel<HTMLSelectElement>(second.container, "Equipo Visitante").value).toBe("");
-      expect(getControlByLabel<HTMLInputElement>(second.container, "Fecha y Hora").value).toBe("");
-      expect(getControlByLabel<HTMLInputElement>(second.container, "Sede").value).toBe("");
+      expect(getControlByLabel<HTMLSelectElement>(second.container, "Equipo local").value).toBe("");
+      expect(getControlByLabel<HTMLSelectElement>(second.container, "Equipo visitante").value).toBe("");
+      expect(getControlByLabel<HTMLInputElement>(second.container, "Fecha").value).toBe("");
+      expect(getControlByLabel<HTMLSelectElement>(second.container, "Horario disponible").value).toBe("");
       expect(second.container.textContent).not.toContain("Partido preparado localmente");
     } finally {
       act(() => second.root.unmount());

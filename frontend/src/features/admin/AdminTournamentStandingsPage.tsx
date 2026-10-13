@@ -1,99 +1,49 @@
-import { Link, useParams } from "@tanstack/react-router";
-import { Card } from "../../components/primitives/Card";
-import { DataTable, type DataTableColumn } from "../../components/primitives/DataTable";
-import { ADMIN, type AdminTournamentFixture } from "../../fixtures";
+import { useParams } from "@tanstack/react-router";
+import { DataTable } from "../../components/primitives/DataTable";
+import { TournamentPanelHeader } from "../public/TournamentDetailShell";
+import { standingsColumns } from "../public/tournamentTables";
+import { AdminTournamentNotFound } from "./AdminTournamentNotFound";
+import { AdminTournamentShell } from "./AdminTournamentShell";
+import { findAdminTournament } from "./adminTournamentLookup";
 
-type StandingsRow = {
-  position: number;
-  team: string;
-  played: number;
-  won: number;
-  lost: number;
-  sets: string;
-  points: number;
-};
-
-const tournamentTabs = [
-  { label: "Partidos", suffix: "/matches" },
-  { label: "Tabla", suffix: "/standings" },
-  { label: "Estadísticas", suffix: "/stats" },
-] as const;
-
-const standings = Object.freeze([
-  { position: 1, team: "San Jorge Vóley", played: 6, won: 5, lost: 1, sets: "16-7", points: 15 },
-  { position: 2, team: "Rosario Central", played: 6, won: 4, lost: 2, sets: "14-9", points: 12 },
-  { position: 3, team: "Provincial", played: 6, won: 3, lost: 3, sets: "11-11", points: 9 },
-  { position: 4, team: "Náutico Sportivo Avellaneda", played: 6, won: 0, lost: 6, sets: "3-17", points: 0 },
-] satisfies readonly StandingsRow[]);
-
-const columns: DataTableColumn<StandingsRow>[] = [
-  { header: "#", key: "position" },
-  { header: "Equipo", key: "team" },
-  { header: "PJ", key: "played" },
-  { header: "PG", key: "won" },
-  { header: "PP", key: "lost" },
-  { header: "SETS", key: "sets" },
-  { header: "PTS", key: "points", sortIndicator: "descending" },
-];
-
-function findTournament(id: string): AdminTournamentFixture | undefined {
-  return ADMIN.tournaments.find((tournament) => tournament.id === id);
-}
-
+/**
+ * The admin tournament's `Clasificación` tab.
+ *
+ * Design: frontend/design/html/voleytrack-admin-ver-torneo.html — the league detail's
+ * `Clasificación <small>TOP 5</small>` panel, a `.table-wrap` inside the competition card whose
+ * columns are `# | Equipo | PJ | PG | Pts`, all three measurements marked `.num`. The design's
+ * panel shows the landing's five-row preview; this screen is the tab that owns the full
+ * classification, so the eyebrow reports the row count it actually renders.
+ *
+ * Correctness fix (this change): the tab used to render the screen's own frozen prototype
+ * table — four invented rows (`San Jorge Vóley`, `Rosario Central`, `Provincial`, `Náutico
+ * Sportivo Avellaneda`) with two columns the design has no counterpart for (`PP`, `SETS`) and
+ * a header set that did not match the public standings route. It now renders
+ * `tournament.detail.standings` through the shared `standingsColumns`, which is exactly the
+ * fixture-backed path the public `Clasificación` panel and the admin overview already use, so
+ * the two sides can no longer disagree on the same tournament's table.
+ */
 export function AdminTournamentStandingsPage() {
   const { id } = useParams({ strict: false }) as { id: string };
-  const tournament = findTournament(id);
+  const tournament = findAdminTournament(id);
 
-  if (!tournament) {
-    return (
-      <Card>
-        <h1 className="text-2xl font-bold text-vt-text">Torneo no encontrado</h1>
-        <Link className="mt-4 inline-block text-sm font-semibold text-vt-accent" to={"/admin/tournaments" as string}>
-          ← Volver a torneos
-        </Link>
-      </Card>
-    );
-  }
+  if (!tournament) return <AdminTournamentNotFound />;
+
+  const { detail } = tournament;
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Link className="text-sm font-semibold text-vt-accent" to={"/admin/tournaments" as string}>
-            ← Torneos
-          </Link>
-          <p className="mt-5 text-sm text-vt-muted">Administración / Torneos / {tournament.name}</p>
-          <h1 className="mt-2 text-3xl font-black text-vt-text">{tournament.name}</h1>
-        </div>
-        <div className="rounded-xl border border-vt-border bg-vt-raised px-4 py-2 text-sm text-vt-muted">
-          {tournament.category} · {tournament.statusLabel}
-        </div>
-      </header>
-
-      <nav aria-label="Navegación del torneo" className="rounded-2xl border border-vt-border bg-vt-raised p-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {tournamentTabs.map((tab) => (
-            <Link
-              aria-current={tab.suffix === "/standings" ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab.suffix === "/standings" ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
-              key={tab.label}
-              to={`/admin/tournaments/${tournament.id}${tab.suffix}` as string}
-            >
-              {tab.label}
-            </Link>
-          ))}
-        </div>
-      </nav>
-
-      <section aria-label="Tabla de posiciones">
-        <Card className="border-vt-border p-6" variant="raised">
-          <h2 className="text-xl font-bold text-vt-accent">Tabla de posiciones</h2>
-          <p className="mt-2 text-sm text-vt-muted">Posiciones actuales del torneo</p>
-        </Card>
-        <Card className="mt-4 overflow-hidden border-vt-border p-0" variant="raised">
-          <DataTable columns={columns} getRowKey={(row) => row.team} rows={[...standings]} />
-        </Card>
-      </section>
-    </div>
+    <AdminTournamentShell activeTab="clasificacion" tournament={tournament}>
+      <TournamentPanelHeader eyebrow={`${detail.standings.length} EQUIPOS`}>
+        Clasificación
+      </TournamentPanelHeader>
+      {/* Design: the panel's `.table-wrap` carries `border:0;border-radius:0;background:
+          transparent` because the card around it already paints the box. */}
+      <DataTable
+        columns={standingsColumns}
+        getRowKey={(row) => `standing-${row.position}`}
+        rows={[...detail.standings]}
+        wrapperClassName="rounded-none border-0 bg-transparent"
+      />
+    </AdminTournamentShell>
   );
 }

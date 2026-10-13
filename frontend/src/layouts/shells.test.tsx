@@ -43,8 +43,11 @@ const adminNavigation = [
   {
     label: "ADMINISTRACIÓN",
     items: [
-      { href: "/admin/staff/register", icon: "👥", label: "Staff / Planilleros" },
-      { href: "/admin/settings", icon: "⚙️", label: "Configuración" },
+      // The design's own admin label (frontend/design/html/voleytrack-admin-gestion.html);
+      // the app-only "Configuración" entry left with its PlaceholderPage route, because the
+      // nav only points at destinations that render a real screen.
+      { href: "/admin/staff/register", icon: "👥", label: "Staff & gestión" },
+      { href: "/planillero", icon: "📝", label: "Panel de planillero" },
     ],
   },
 ];
@@ -112,8 +115,8 @@ describe("application shells", () => {
     expect(html).toContain("ADMIN");
     expect(html).toContain("GESTIÓN DE COMPETICIÓN");
     expect(html).toContain("ADMINISTRACIÓN");
-    expect(html).toContain("Staff / Planilleros");
-    expect(html).toContain("Configuración");
+    expect(html).toContain("Staff &amp; gestión");
+    expect(html).toContain("Panel de planillero");
     expect(html).toContain('role="search"');
     expect(html).toContain("Buscar...");
     expect(html).toMatch(

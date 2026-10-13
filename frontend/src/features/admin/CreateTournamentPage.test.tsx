@@ -19,7 +19,7 @@ function renderPage() {
   return { container, root };
 }
 
-function getControlByLabel<Control extends HTMLInputElement | HTMLSelectElement>(
+function getControlByLabel<Control extends HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
   container: HTMLElement,
   labelText: string,
 ) {
@@ -36,19 +36,24 @@ function setInputValue(input: HTMLInputElement, value: string) {
 }
 
 describe("CreateTournamentPage", () => {
-  it("SSR renders the canonical create-tournament desktop form", () => {
+  it("SSR renders the design's create-tournament form", () => {
     const html = renderToStaticMarkup(<CreateTournamentPage />);
 
-    expect(html).toContain("Crear Torneo");
-    expect(html).toContain("Configura los parámetros iniciales de la competencia.");
-    expect(html).toContain("Nombre del Torneo");
-    expect(html).toContain("Ej: Liga Nacional 2026");
-    expect(html).toContain("Fecha de Inicio");
-    expect(html).toContain("Fecha de Fin");
-    expect(html).toContain("Tipo de Competición");
-    expect(html).toContain("Seleccionar (Liga Regular, Playoffs...)");
-    expect(html).toContain("Crear Torneo");
+    expect(html).toContain("Nuevo torneo");
+    expect(html).toContain("Crear un torneo nuevo y configurar su sistema de competencia.");
+    expect(html).toContain("Datos del torneo");
+    expect(html).toContain("NUEVO");
+    expect(html).toContain("Nombre del torneo");
+    expect(html).toContain("Ej: Liga Argentina A1");
+    expect(html).toContain("Temporada");
+    expect(html).toContain("Sistema de competencia");
+    expect(html).toContain("Cantidad de equipos");
+    expect(html).toContain("Fecha de inicio");
+    expect(html).toContain("Fecha de finalización");
+    expect(html).toContain("Descripción");
+    expect(html).toContain("Crear torneo");
     expect(html).toContain("Cancelar");
+    expect(html).toContain("Volver");
   });
 
   it("keeps typed values locally, submits without navigation or network, and resets on remount", () => {
@@ -57,24 +62,24 @@ describe("CreateTournamentPage", () => {
 
     try {
       const form = first.container.querySelector("form")!;
-      const name = getControlByLabel<HTMLInputElement>(first.container, "Nombre del Torneo");
-      const format = getControlByLabel<HTMLSelectElement>(first.container, "Tipo de Competición");
-      const startDate = getControlByLabel<HTMLInputElement>(first.container, "Fecha de Inicio");
-      const endDate = getControlByLabel<HTMLInputElement>(first.container, "Fecha de Fin");
+      const name = getControlByLabel<HTMLInputElement>(first.container, "Nombre del torneo");
+      const system = getControlByLabel<HTMLSelectElement>(first.container, "Sistema de competencia");
+      const startDate = getControlByLabel<HTMLInputElement>(first.container, "Fecha de inicio");
+      const endDate = getControlByLabel<HTMLInputElement>(first.container, "Fecha de finalización");
       const location = window.location.href;
 
       expect(first.container.querySelector('a[href="/admin/tournaments"]')).not.toBeNull();
 
       act(() => {
         setInputValue(name, "Liga Nacional 2026");
-        format.value = "regular-league";
-        format.dispatchEvent(new Event("change", { bubbles: true }));
+        system.value = "Liga regular";
+        system.dispatchEvent(new Event("change", { bubbles: true }));
         setInputValue(startDate, "2026-04-01");
         setInputValue(endDate, "2026-08-30");
       });
 
       expect(name.value).toBe("Liga Nacional 2026");
-      expect(format.value).toBe("regular-league");
+      expect(system.value).toBe("Liga regular");
       expect(startDate.value).toBe("2026-04-01");
       expect(endDate.value).toBe("2026-08-30");
 
@@ -94,10 +99,10 @@ describe("CreateTournamentPage", () => {
 
     const second = renderPage();
     try {
-      expect(getControlByLabel<HTMLInputElement>(second.container, "Nombre del Torneo").value).toBe("");
-      expect(getControlByLabel<HTMLSelectElement>(second.container, "Tipo de Competición").value).toBe("");
-      expect(getControlByLabel<HTMLInputElement>(second.container, "Fecha de Inicio").value).toBe("");
-      expect(getControlByLabel<HTMLInputElement>(second.container, "Fecha de Fin").value).toBe("");
+      expect(getControlByLabel<HTMLInputElement>(second.container, "Nombre del torneo").value).toBe("");
+      expect(getControlByLabel<HTMLSelectElement>(second.container, "Sistema de competencia").value).toBe("");
+      expect(getControlByLabel<HTMLInputElement>(second.container, "Fecha de inicio").value).toBe("");
+      expect(getControlByLabel<HTMLInputElement>(second.container, "Fecha de finalización").value).toBe("");
       expect(second.container.textContent).not.toContain("Torneo preparado localmente");
     } finally {
       act(() => second.root.unmount());

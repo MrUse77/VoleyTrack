@@ -196,14 +196,21 @@ describe("design tokens", () => {
     const source = readFileSync(createTeamPagePath, "utf8");
 
     expect(source).toContain("border-vt-border");
-    expect(source).toContain("bg-vt-panel");
-    expect(source).toContain("bg-vt-raised");
     expect(source).toContain("text-vt-muted");
     expect(source).toContain("text-vt-background");
     expect(source).not.toContain("slate-");
     expect(source).not.toContain("bg-slate-");
     expect(source).not.toContain("border-slate-");
     expect(source).not.toContain("text-slate-");
+
+    // The alignment replaced the screen's app-only surfaces (`bg-vt-raised` box,
+    // `bg-vt-panel` roster/feedback/assign panels) with the design's structural cards and its
+    // own `--surface-2` / `--background` layers, so the guard now pins the design layers
+    // instead of the retired ones. The shared `Field` control still paints `--bg`.
+    expect(source).toContain("border-vt-border-2");
+    expect(source).toContain("bg-vt-background");
+    expect(source).not.toContain("bg-vt-panel");
+    expect(source).not.toContain("bg-vt-raised");
   });
 
   it("normalizes remaining slate tokens in PlayerDetail and scoring pages", () => {
@@ -455,10 +462,33 @@ describe("design tokens", () => {
     // structural ones. Measured with this guard's own patterns and exclusions: vt-panel
     // 45/26, vt-raised 25/16, vt-raised-border 7/5, so every ceiling drops to its measured
     // value.
+    // T17 then aligned the three admin screens. The staff screen became the design's combined
+    // table + dialog, the players and matches lists moved onto the design's structural cards
+    // and match-card surfaces, the three create forms replaced their `bg-vt-raised` form boxes
+    // with `Card padded={false}`, and the shared `Modal` moved onto the design's --surface
+    // panel with a --border edge (dropping its raised fill and raised border). Measured with
+    // this guard's own patterns and exclusions: vt-panel 39/20, vt-raised 21/12,
+    // vt-raised-border 6/4, so every ceiling drops to its measured value again.
+    // T18 then aligned the admin tournament screens: the list, the create form, the new
+    // overview, the new bracket route and the new edit route, plus the three content tabs,
+    // which moved onto the shared tournament frame. The three tabs' hand-rolled headers,
+    // their raised nav strips and the stats screen's app-only pill row and `bg-vt-panel`
+    // leaderboard rows all left with them. Measured with this guard's own patterns and
+    // exclusions: vt-panel 34/16, vt-raised 14/8, and vt-raised-border unchanged at 6/4 (so
+    // its ceiling stays).
+    // T19 then aligned the admin team screens: the list's own `bg-vt-panel` feedback block
+    // left with the row actions the design does not have, the create screen's whole
+    // app-only box (one `bg-vt-raised` section and five `bg-vt-panel` panels: the roster box,
+    // its feedback line, the modal search, the assign list and its empty state) was replaced
+    // by the design's structural cards and the shared field controls, and the four new admin
+    // team detail routes render their tables through the shared `DataTable` (+1 each) and
+    // their panels through the design's `--surface` / `--surface-2` layers. Measured with
+    // this guard's own patterns and exclusions: vt-panel 28/14, vt-raised 13/7,
+    // vt-raised-border 5/3, so every ceiling drops to its measured value.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 45, baselineFiles: 26 },
-      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 25, baselineFiles: 16 },
-      { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 7, baselineFiles: 5 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 28, baselineFiles: 14 },
+      { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 13, baselineFiles: 7 },
+      { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 5, baselineFiles: 3 },
     ];
 
     for (const { token, pattern, ceiling, baselineFiles } of ratchets) {

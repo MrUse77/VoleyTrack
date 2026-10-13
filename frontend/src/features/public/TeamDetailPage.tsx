@@ -1,5 +1,5 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { Badge, type BadgeVariant } from "../../components/primitives/Badge";
+import { Badge } from "../../components/primitives/Badge";
 import { Card, CardBody, CardHeader } from "../../components/primitives/Card";
 import { Num } from "../../components/primitives/Num";
 import type { TeamDetailFixture } from "../../fixtures";
@@ -10,6 +10,8 @@ import {
   teamMatchRows,
   TeamNotFound,
   TeamPlayerName,
+  teamPerformanceBadges,
+  teamPerformanceReadout,
   teamRosterRows,
 } from "./TeamJourney";
 
@@ -157,14 +159,8 @@ function PerformanceCard({
   matches: readonly TeamMatchRow[];
   teamId: string;
 }) {
-  const matchesPlayed = detail.matchesPlayed > 0 ? detail.matchesPlayed : 1;
-  const readout = [
-    ...detail.summaryStats.map((stat) => ({
-      label: `${stat.label.charAt(0)}${stat.label.slice(1).toLowerCase()} / partido`,
-      // Real per-match average of the team's own recorded totals, rounded to one decimal.
-      value: (stat.value / matchesPlayed).toFixed(1),
-    })),
-  ].slice(0, 3);
+  const badges = teamPerformanceBadges(matches, teamId);
+  const readout = teamPerformanceReadout(detail);
 
   return (
     <Card className="min-[1416px]:col-span-2" data-testid="team-overview-performance" padded={false}>
@@ -174,14 +170,11 @@ function PerformanceCard({
       </CardHeader>
       <CardBody data-testid="team-overview-performance-card-body">
         <ul aria-label="Últimos resultados" className="mb-[14px] flex flex-wrap gap-2">
-          {matches.slice(0, 5).map((row) => {
-            const badge = performanceBadge(row, teamId);
-            return (
-              <li key={row.match.id}>
-                <Badge variant={badge.variant}>{badge.label}</Badge>
-              </li>
-            );
-          })}
+          {badges.map((badge) => (
+            <li key={badge.id}>
+              <Badge variant={badge.variant}>{badge.label}</Badge>
+            </li>
+          ))}
         </ul>
         <dl className="m-0">
           {readout.map((row) => (
@@ -194,23 +187,6 @@ function PerformanceCard({
       </CardBody>
     </Card>
   );
-}
-
-function performanceBadge(
-  row: TeamMatchRow,
-  teamId: string,
-): Readonly<{ label: string; variant: BadgeVariant }> {
-  const { match, resultLabel } = row;
-  const score = match.score
-    ? match.homeTeamId === teamId
-      ? `${match.score.home}-${match.score.away}`
-      : `${match.score.away}-${match.score.home}`
-    : null;
-
-  if (match.status === "live") return { label: score ? `EN VIVO ${score}` : "EN VIVO", variant: "accent" };
-  if (resultLabel === "VICTORIA") return { label: `V ${score ?? "—"}`, variant: "ok" };
-  if (resultLabel === "DERROTA") return { label: `D ${score ?? "—"}`, variant: "danger" };
-  return { label: "PRÓXIMO", variant: "default" };
 }
 
 function RosterPreviewRow({ index, row }: { index: number; row: TeamRosterRow }) {

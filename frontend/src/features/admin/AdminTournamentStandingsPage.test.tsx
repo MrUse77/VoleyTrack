@@ -27,27 +27,34 @@ describe("admin tournament standings", () => {
     tournamentId = ADMIN.tournaments[0].id;
   });
 
-  it("renders selected tournament context and its static standings table", () => {
+  it("renders the fixture's classification through the shared standings columns", () => {
     const tournament = ADMIN.tournaments[0];
     const html = renderStandings(tournament.id);
 
     expect(html).toContain(tournament.name);
     expect(html).toContain(tournament.category);
-    expect(html).toContain("Tabla de posiciones");
+    expect(html).toContain("Clasificación");
+    expect(html).toContain(`${tournament.detail.standings.length} EQUIPOS`);
+    // The shared `standingsColumns`, i.e. the same header set the public `Clasificación` panel
+    // renders: `# | Equipo | PJ | PG | Pts`. The screen's former own table also carried `PP`
+    // and `SETS`, which the design has no counterpart for.
     expect(html).toContain("Equipo");
     expect(html).toContain("PJ");
-    expect(html).toContain("PTS");
-    const standingsRows = [
-      [1, "San Jorge Vóley", 6, 5, 1, "16-7", 15],
-      [2, "Rosario Central", 6, 4, 2, "14-9", 12],
-      [3, "Provincial", 6, 3, 3, "11-11", 9],
-      [4, "Náutico Sportivo Avellaneda", 6, 0, 6, "3-17", 0],
-    ];
+    expect(html).toContain("PG");
+    expect(html).toContain("Pts");
+    expect(visibleText(html)).not.toContain("SETS");
+    expect(visibleText(html)).not.toContain("PP");
 
+    // Every row comes from the tournament's own fixture projection, so the two sides cannot
+    // disagree on the same classification.
     const text = visibleText(html);
-    for (const row of standingsRows) {
-      expect(text).toContain(row.join(" "));
+    for (const standing of tournament.detail.standings) {
+      expect(text).toContain(standing.teamName);
     }
+    expect(html).toContain(String(tournament.detail.standings[0].points));
+    // The screen's own frozen prototype rows are gone.
+    expect(text).not.toContain("Náutico Sportivo Avellaneda");
+    expect(text).not.toContain("Provincial");
   });
 
   it("renders local admin tournament tabs with Standings active", () => {
@@ -57,6 +64,7 @@ describe("admin tournament standings", () => {
     expect(html).toContain(`href="/admin/tournaments/${tournament.id}/matches"`);
     expect(html).toContain(`href="/admin/tournaments/${tournament.id}/standings" aria-current="page"`);
     expect(html).toContain(`href="/admin/tournaments/${tournament.id}/stats"`);
+    expect(html).toContain(`href="/admin/tournaments/${tournament.id}/bracket"`);
     expect(html).not.toContain(`href="/admin/tournaments/${tournament.id}/matches" aria-current="page"`);
     expect(html).not.toContain(`href="/admin/tournaments/${tournament.id}/stats" aria-current="page"`);
   });
@@ -66,6 +74,6 @@ describe("admin tournament standings", () => {
 
     expect(html).toContain("Torneo no encontrado");
     expect(html).toContain('href="/admin/tournaments"');
-    expect(html).not.toContain("Tabla de posiciones");
+    expect(html).not.toContain("Clasificación");
   });
 });

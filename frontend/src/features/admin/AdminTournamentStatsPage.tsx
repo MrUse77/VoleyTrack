@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { Link, useParams } from "@tanstack/react-router";
-import { Card } from "../../components/primitives/Card";
-import { ADMIN, type AdminTournamentFixture } from "../../fixtures";
+import { useParams } from "@tanstack/react-router";
+import { Filter, FilterGroup } from "../../components/primitives/FilterGroup";
+import { Num } from "../../components/primitives/Num";
+import { TournamentPanelHeader } from "../public/TournamentDetailShell";
+import { AdminTournamentNotFound } from "./AdminTournamentNotFound";
+import { AdminTournamentShell } from "./AdminTournamentShell";
+import { findAdminTournament } from "./adminTournamentLookup";
 
 type Statistic = "Puntos" | "Ataques" | "Bloqueos";
 
@@ -11,12 +15,20 @@ type Leader = {
   value: string;
 };
 
-const tournamentTabs = [
-  { label: "Partidos", suffix: "/matches" },
-  { label: "Tabla", suffix: "/standings" },
-  { label: "Estadísticas", suffix: "/stats" },
-] as const;
-
+/**
+ * The admin tournament's `Estadísticas` tab.
+ *
+ * Design: the design's own statistics card is the public tournament detail's (there is no
+ * statistics screen in the admin set — `voleytrack-admin-ver-torneo.html` ends at its
+ * `Próximos partidos` card), so this panel keeps the app's existing content on the app's
+ * existing primitives: the `.filters` pill row is `FilterGroup`/`Filter` (aria-pressed, so the
+ * selection is announced rather than only painted), the rank is the row's own number — never
+ * colour alone — and the figures carry the design's `.num` treatment through `Num`.
+ *
+ * PROTOTYPE DATA — NOT REAL: these three leaderboards were literals in this screen before the
+ * alignment and are still local constants; they must be replaced by the tournament's real
+ * statistics.
+ */
 const rankings = Object.freeze({
   Puntos: {
     title: "Puntos Totales",
@@ -47,90 +59,48 @@ const rankings = Object.freeze({
   },
 } satisfies Readonly<Record<Statistic, { title: string; leaders: readonly Leader[] }>>);
 
-function findTournament(id: string): AdminTournamentFixture | undefined {
-  return ADMIN.tournaments.find((tournament) => tournament.id === id);
-}
-
 export function AdminTournamentStatsPage() {
   const { id } = useParams({ strict: false }) as { id: string };
-  const tournament = findTournament(id);
+  const tournament = findAdminTournament(id);
   const [statistic, setStatistic] = useState<Statistic>("Puntos");
 
-  if (!tournament) {
-    return (
-      <Card>
-        <h1 className="text-2xl font-bold text-vt-text">Torneo no encontrado</h1>
-        <Link className="mt-4 inline-block text-sm font-semibold text-vt-accent" to={"/admin/tournaments" as string}>
-          ← Volver a torneos
-        </Link>
-      </Card>
-    );
-  }
+  if (!tournament) return <AdminTournamentNotFound />;
 
   const ranking = rankings[statistic];
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Link className="text-sm font-semibold text-vt-accent" to={"/admin/tournaments" as string}>
-            ← Torneos
-          </Link>
-          <p className="mt-5 text-sm text-vt-muted">Administración / Torneos / {tournament.name}</p>
-          <h1 className="mt-2 text-3xl font-black text-vt-text">{tournament.name}</h1>
-        </div>
-        <div className="rounded-xl border border-vt-border bg-vt-raised px-4 py-2 text-sm text-vt-muted">
-          {tournament.category} · {tournament.statusLabel}
-        </div>
-      </header>
+    <AdminTournamentShell activeTab="estadisticas" tournament={tournament}>
+      <TournamentPanelHeader eyebrow="JUGADORES">
+        Ranking de Jugadores · {ranking.title}
+      </TournamentPanelHeader>
 
-      <nav aria-label="Navegación del torneo" className="rounded-2xl border border-vt-border bg-vt-raised p-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {tournamentTabs.map((tab) => (
-            <Link
-              aria-current={tab.suffix === "/stats" ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab.suffix === "/stats" ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
-              key={tab.label}
-              to={`/admin/tournaments/${tournament.id}${tab.suffix}` as string}
+      <div className="px-[18px] pt-4">
+        <FilterGroup aria-label="Filtrar estadística">
+          {(Object.keys(rankings) as Statistic[]).map((option) => (
+            <Filter
+              isActive={statistic === option}
+              key={option}
+              onClick={() => setStatistic(option)}
             >
-              {tab.label}
-            </Link>
+              {option}
+            </Filter>
           ))}
-        </div>
-      </nav>
+        </FilterGroup>
+      </div>
 
-      <section aria-label="Estadísticas del torneo" className="space-y-4">
-        <Card className="border-vt-border p-4" variant="raised">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="mr-6 text-sm font-black text-vt-text">Filtrar estadística</h2>
-            {(Object.keys(rankings) as Statistic[]).map((option) => (
-              <button
-                aria-pressed={statistic === option}
-                className={`rounded-full px-8 py-2 text-xs font-black ${statistic === option ? "bg-vt-accent text-vt-background" : "bg-vt-panel text-vt-muted hover:text-vt-text"}`}
-                key={option}
-                onClick={() => setStatistic(option)}
-                type="button"
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="border-vt-border p-5" variant="raised">
-          <h2 className="text-lg font-black text-vt-text">Ranking de Jugadores · {ranking.title}</h2>
-          <div className="mt-5 space-y-2">
-            {ranking.leaders.map((leader, index) => (
-              <article className="flex items-center gap-4 rounded-xl bg-vt-panel px-4 py-4" key={leader.name}>
-                <span className={`w-6 text-sm font-black ${index === 0 ? "text-vt-accent" : "text-vt-text"}`}>{index + 1}</span>
-                <p className="min-w-0 flex-1 text-sm font-black text-vt-text">{leader.name}</p>
-                <p className="w-36 text-xs text-vt-muted">{leader.team}</p>
-                <p className={`w-28 text-right text-xl font-black ${index === 0 ? "text-vt-accent" : "text-vt-text"}`}>{leader.value}</p>
-              </article>
-            ))}
-          </div>
-        </Card>
-      </section>
-    </div>
+      <ul className="grid list-none gap-2 px-[18px] pt-4 pb-[18px]">
+        {ranking.leaders.map((leader, index) => (
+          <li
+            className="flex items-center gap-4 rounded-[10px] border border-vt-border-2 bg-vt-surface-2 px-4 py-4"
+            key={leader.name}
+          >
+            <Num className="w-6 text-[14px] font-black text-vt-text">{index + 1}</Num>
+            <p className="min-w-0 flex-1 text-[14px] font-black text-vt-text">{leader.name}</p>
+            <p className="w-36 text-[12px] text-vt-muted">{leader.team}</p>
+            <Num className="w-28 text-[20px] font-black text-vt-accent">{leader.value}</Num>
+          </li>
+        ))}
+      </ul>
+    </AdminTournamentShell>
   );
 }

@@ -24,74 +24,101 @@ function renderPage() {
   return { container, root };
 }
 
+function setInputValue(input: HTMLInputElement, value: string) {
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, value);
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
 describe("AdminTeamsPage", () => {
-  it("renders the fixture-driven teams table with canonical Spanish labels", () => {
+  it("renders the design's team columns over the admin fixture", () => {
     const html = renderToStaticMarkup(<AdminTeamsPage />);
     const text = visibleText(html);
 
     expect(text).toContain("Equipos");
-    expect(text).toContain("Administrá y consultá los equipos registrados.");
+    expect(text).toContain("Listado de equipos. Seleccioná un equipo para ver su detalle.");
+    // Design: voleytrack-admin-equipos.html — the `.table-wrap` columns are
+    // `Equipo | Torneo | Jugadores | PG / PP`, and the app's own Ciudad/Entrenador/Categoría/
+    // Estado/Acciones columns left with the row actions the design does not have.
     expect(text).toContain("Equipo");
-    expect(text).toContain("Ciudad");
-    expect(text).toContain("Entrenador");
-    expect(text).toContain("Categoría");
+    expect(text).toContain("Torneo");
     expect(text).toContain("Jugadores");
-    expect(text).toContain("Estado");
+    expect(text).toContain("PG / PP");
+    expect(text).not.toContain("Ciudad");
+    expect(text).not.toContain("Entrenador");
+    expect(text).not.toContain("Categoría");
+    expect(text).not.toContain("Acciones");
 
     for (const team of ADMIN.teams) {
       expect(text).toContain(team.name);
       expect(text).toContain(team.city);
-      expect(text).toContain(team.coach);
-      expect(text).toContain(team.category);
       expect(text).toContain(String(team.playerCount));
-      expect(text).toContain(team.statusLabel);
     }
   });
 
-  it("exposes the primary create route and named row actions", () => {
+  it("exposes the Filtros toggle, the create link and a named row link to the detail", () => {
     const html = renderToStaticMarkup(<AdminTeamsPage />);
     const team = ADMIN.teams[0];
 
-    expect(html).toContain("+ Nuevo Equipo");
+    expect(html).toContain(">Filtros<");
+    expect(html).toContain('aria-controls="teams-filter-panel"');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain(">Crear equipo<");
     expect(html).toContain('href="/admin/teams/create"');
-    expect(html).toContain("h-12");
-    expect(html).toContain("w-[200px]");
-    expect(html).toContain("max-w-full");
-    expect(html).toContain("bg-vt-accent");
-    expect(html).toContain("Acciones");
-    expect(html).toContain("✏️ Editar");
-    expect(html).toContain("🗑️ Borrar");
-    expect(html).toContain(`aria-label="Ver ${team.name}"`);
-    expect(html).toContain(`aria-label="Editar ${team.name}"`);
-    expect(html).toContain(`aria-label="Eliminar ${team.name}"`);
+    // Design: `.table-wrap tbody tr[onclick]` opens the team detail; an anchor is the same
+    // destination with link semantics instead of a click handler on a row.
+    expect(html).toContain(`href="/admin/teams/${team.id}"`);
+    expect(visibleText(html)).toContain(`${team.name} · ${team.city}`);
   });
 
-  it("confirms removal and reports that the local fixture was not persisted", () => {
+  it("keeps the filter panel in the DOM and omits the Torneo select when no team carries a tournament", () => {
+    const html = renderToStaticMarkup(<AdminTeamsPage />);
+
+    expect(html).toContain('id="teams-filter-panel"');
+    expect(html).toContain("hidden");
+    expect(html).toContain('id="team-name-filter"');
+    expect(html).toContain("Buscar por nombre");
+    expect(html).toContain('id="team-results-count"');
+    expect(html).toContain("Limpiar filtros");
+    // The admin team fixture carries no tournament assignment, so the design's Torneo select
+    // would render a control whose only option is the current value; it is omitted instead.
+    expect(html).not.toContain('id="team-tournament-filter"');
+  });
+
+  it("filters the rows by name, reports the count and restores them when cleared", () => {
     const rendered = renderPage();
     const team = ADMIN.teams[0];
 
     try {
-      const removeButton = rendered.container.querySelector<HTMLButtonElement>(
-        `button[aria-label="Eliminar ${team.name}"]`,
-      );
-
-      expect(removeButton).not.toBeNull();
-      act(() => removeButton?.click());
-
-      expect(rendered.container.textContent).toContain(`¿Eliminar ${team.name} solo de esta vista?`);
-      expect(rendered.container.querySelector(`button[aria-label="Confirmar eliminación de ${team.name}"]`)).not.toBeNull();
+      const search = rendered.container.querySelector<HTMLInputElement>("#team-name-filter");
+      expect(search).not.toBeNull();
       expect(rendered.container.querySelectorAll("tbody tr")).toHaveLength(ADMIN.teams.length);
 
-      const confirmButton = rendered.container.querySelector<HTMLButtonElement>(
-        `button[aria-label="Confirmar eliminación de ${team.name}"]`,
-      );
-      act(() => confirmButton?.click());
+      act(() => setInputValue(search!, "no-such-team"));
+      expect(rendered.container.querySelectorAll("tbody tr")).toHaveLength(0);
+      expect(rendered.container.querySelector("#team-results-count")?.textContent).toContain("0 equipos");
+      expect(rendered.container.querySelector('[role="status"]')?.textContent).toContain("No se encontraron equipos");
 
-      expect(rendered.container.querySelectorAll("tbody tr")).toHaveLength(ADMIN.teams.length - 1);
-      expect(rendered.container.querySelector('[role="status"]')?.textContent).toContain("No se guardaron cambios.");
+      act(() => setInputValue(search!, "san jorge"));
+      expect(rendered.container.querySelectorAll("tbody tr")).toHaveLength(1);
+      expect(rendered.container.textContent).toContain(team.name);
+
+      act(() =>
+        [...rendered.container.querySelectorAll("button")]
+          .find((button) => button.textContent === "Limpiar filtros")
+          ?.click(),
+      );
+      expect(rendered.container.querySelectorAll("tbody tr")).toHaveLength(ADMIN.teams.length);
     } finally {
       act(() => rendered.root.unmount());
       rendered.container.remove();
     }
+  });
+
+  it("removed the app-only row actions the design does not have", () => {
+    const html = renderToStaticMarkup(<AdminTeamsPage />);
+
+    expect(html).not.toContain("✏️ Editar");
+    expect(html).not.toContain("🗑️ Borrar");
+    expect(html).not.toContain("solo de esta vista");
   });
 });

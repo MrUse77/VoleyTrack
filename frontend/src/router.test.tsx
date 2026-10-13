@@ -10,7 +10,7 @@ import { MatchSetupPage } from "./features/scoring/MatchSetupPage";
 import { ScoringConsolePage } from "./features/scoring/ScoringConsolePage";
 import { PointEntryPage } from "./features/scoring/PointEntryPage";
 import { PostMatchSummaryPage } from "./features/scoring/PostMatchSummaryPage";
-import { StaffRegisterPage } from "./features/admin/StaffRegisterPage";
+import { AdminStaffPage } from "./features/admin/AdminStaffPage";
 import { CreatePlayerPage } from "./features/admin/CreatePlayerPage";
 import { CreateTeamPage } from "./features/admin/CreateTeamPage";
 import { CreateTournamentPage } from "./features/admin/CreateTournamentPage";
@@ -19,7 +19,14 @@ import { AdminTournamentMatchesPage } from "./features/admin/AdminTournamentMatc
 import { AdminMatchesPage } from "./features/admin/AdminMatchesPage";
 import { AdminPlayersPage } from "./features/admin/AdminPlayersPage";
 import { AdminTeamsPage } from "./features/admin/AdminTeamsPage";
+import { AdminTeamDetailPage } from "./features/admin/AdminTeamDetailPage";
+import { AdminTeamRosterPage } from "./features/admin/AdminTeamRosterPage";
+import { AdminTeamMatchesPage } from "./features/admin/AdminTeamMatchesPage";
+import { AdminTeamStatsPage } from "./features/admin/AdminTeamStatsPage";
 import { AdminTournamentsPage } from "./features/admin/AdminTournamentsPage";
+import { AdminTournamentOverviewPage } from "./features/admin/AdminTournamentOverviewPage";
+import { AdminTournamentBracketPage } from "./features/admin/AdminTournamentBracketPage";
+import { AdminTournamentEditPage } from "./features/admin/AdminTournamentEditPage";
 import { AdminTournamentStandingsPage } from "./features/admin/AdminTournamentStandingsPage";
 import { AdminTournamentStatsPage } from "./features/admin/AdminTournamentStatsPage";
 import { UIStatesBoardPage } from "./features/admin/UIStatesBoardPage";
@@ -264,7 +271,20 @@ describe("router", () => {
     const staffRegisterRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/staff/register",
     );
-    expect(staffRegisterRoute?.options?.component).toBe(StaffRegisterPage);
+    expect(staffRegisterRoute?.options?.component).toBe(AdminStaffPage);
+    // The design's staff screen hosts its create/edit dialog in the same page
+    // (frontend/design/html/voleytrack-admin-gestion.html), so the open dialog is part of the
+    // route's search contract rather than unreachable component state.
+    expect(staffRegisterRoute?.options?.validateSearch?.({ editar: "staff-planillero-mariana-lopez" })).toEqual({
+      editar: "staff-planillero-mariana-lopez",
+    });
+    expect(staffRegisterRoute?.options?.validateSearch?.({ nuevo: "1" })).toEqual({ nuevo: true });
+    expect(staffRegisterRoute?.options?.validateSearch?.({ editar: "" })).toEqual({});
+    // `/admin/settings` was a PlaceholderPage: the design's admin navigation has no such
+    // destination (frontend/design/html/voleytrack-admin-gestion.html lists Staff & gestión,
+    // Partidos, Equipos, Jugadores, Torneos), and the nav only points at screens that render,
+    // so the route and its single nav entry were removed with it.
+    expect(routePaths(router.routeTree)).not.toContain("/admin/settings");
 
     const createPlayerRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/players/create",
@@ -275,13 +295,33 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/teams/create",
     );
     expect(createTeamRoute?.options?.component).toBe(CreateTeamPage);
-    expect(createTeamRoute?.options?.validateSearch?.({ modal: "player" })).toEqual({
-      modal: "player",
-    });
-    expect(createTeamRoute?.options?.validateSearch?.({ modal: "assign-player" })).toEqual({
-      modal: "assign-player",
-    });
-    expect(createTeamRoute?.options?.validateSearch?.({ modal: "unexpected" })).toEqual({});
+    // The design's create screen opens its player dialog with plain component state
+    // (`openPlayerModal()`, frontend/design/html/voleytrack-admin-crear-equipo.html) and the
+    // app-only assign-free-player dialog is gone, so the route declares no search contract.
+    expect(createTeamRoute?.options?.validateSearch).toBeUndefined();
+
+    // The admin team detail: the design's own tab set
+    // (frontend/design/html/voleytrack-admin-ver-equipo.html) as one real route per label, a
+    // sibling under the resource — the shape the admin tournament cluster uses.
+    const teamDetailRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/teams/$id",
+    );
+    expect(teamDetailRoute?.options?.component).toBe(AdminTeamDetailPage);
+
+    const teamRosterRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/teams/$id/roster",
+    );
+    expect(teamRosterRoute?.options?.component).toBe(AdminTeamRosterPage);
+
+    const teamMatchesRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/teams/$id/matches",
+    );
+    expect(teamMatchesRoute?.options?.component).toBe(AdminTeamMatchesPage);
+
+    const teamStatsRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/teams/$id/stats",
+    );
+    expect(teamStatsRoute?.options?.component).toBe(AdminTeamStatsPage);
 
     const createTournamentRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/tournaments/create",
@@ -327,6 +367,25 @@ describe("router", () => {
       (route) => route.fullPath === "/admin/tournaments/$id/standings",
     );
     expect(tournamentStandingsRoute?.options?.component).toBe(AdminTournamentStandingsPage);
+
+    // The three admin tournament routes this slice added: the overview the design's own detail
+    // page opens on, the bracket panel, and the edit form (frontend/design/html/
+    // voleytrack-admin-ver-torneo.html, voleytrack-admin-ver-copa.html and
+    // voleytrack-admin-editar-torneo.html).
+    const tournamentOverviewRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/tournaments/$id",
+    );
+    expect(tournamentOverviewRoute?.options?.component).toBe(AdminTournamentOverviewPage);
+
+    const tournamentBracketRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/tournaments/$id/bracket",
+    );
+    expect(tournamentBracketRoute?.options?.component).toBe(AdminTournamentBracketPage);
+
+    const tournamentEditRoute = adminChildren?.find(
+      (route) => route.fullPath === "/admin/tournaments/$id/edit",
+    );
+    expect(tournamentEditRoute?.options?.component).toBe(AdminTournamentEditPage);
 
     const tournamentStatsRoute = adminChildren?.find(
       (route) => route.fullPath === "/admin/tournaments/$id/stats",
@@ -397,7 +456,7 @@ describe("router", () => {
     container.remove();
   });
 
-  it("renders staff registration when the real router navigates to its canonical URL", async () => {
+  it("renders the staff management screen when the real router navigates to its canonical URL", async () => {
     const container = document.createElement("div");
     document.body.append(container);
     const root = createRoot(container);
@@ -408,7 +467,20 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/staff/register");
-    expect(container.textContent).toContain("Registrar planillero");
+    // The design's staff screen is the table plus the create/edit dialog on one page, so the
+    // old register-only assertion moves onto what the screen now renders.
+    expect(container.textContent).toContain("Staff & gestión");
+    expect(container.textContent).toContain(ADMIN.staff[0].fullName);
+    expect(container.textContent).toContain("+ Nuevo integrante");
+
+    // The dialog's own search contract: `?editar=<id>` opens it on the record.
+    await act(async () => {
+      await router.navigate({ to: "/admin/staff/register", search: { editar: ADMIN.staff[0].id } });
+    });
+
+    expect(window.location.search).toBe(`?editar=${ADMIN.staff[0].id}`);
+    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(container.textContent).toContain("Editar integrante");
 
     await act(async () => root.unmount());
     container.remove();
@@ -442,7 +514,7 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/tournaments/create");
-    expect(container.textContent).toContain("Crear Torneo");
+    expect(container.textContent).toContain("Nuevo torneo");
 
     await act(async () => root.unmount());
     container.remove();
@@ -459,49 +531,35 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/teams/create");
-    expect(container.textContent).toContain("Crear Nuevo Equipo");
+    expect(container.textContent).toContain("Crear equipo");
 
     await act(async () => root.unmount());
     container.remove();
   });
 
-  it("renders the add-player dialog for the canonical create-team modal URL", async () => {
+  it("renders the create-team player dialog from component state without a modal URL", async () => {
     const container = document.createElement("div");
     document.body.append(container);
     const root = createRoot(container);
 
     await act(async () => {
-      await router.navigate({ to: "/admin/teams/create", search: { modal: "player" } });
+      await router.navigate({ to: "/admin/teams/create" });
       root.render(<RouterProvider router={router} />);
     });
 
     expect(window.location.pathname).toBe("/admin/teams/create");
-    expect(window.location.search).toBe("?modal=player");
-    expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Agregar Jugador al Equipo");
-
-    await act(async () => root.unmount());
-    container.remove();
-  });
-
-  it("does not render the add-player dialog for invalid create-team modal URLs", async () => {
-    const container = document.createElement("div");
-    document.body.append(container);
-    const root = createRoot(container);
-
-    await act(async () => {
-      await router.navigate({ to: "/admin/teams/create", search: { modal: "unexpected" } });
-      root.render(<RouterProvider router={router} />);
-    });
-
-    expect(window.location.search).toBe("?modal=unexpected");
+    // The route declares no search contract, so the old modal query is not a destination and
+    // the dialog is closed until the roster button opens it.
+    expect(window.location.search).toBe("");
     expect(container.querySelector('[role="dialog"]')).toBeNull();
 
     await act(async () => {
-      await router.navigate({ to: "/admin/teams/create", search: { modal: "unknown" } });
+      [...container.querySelectorAll("button")]
+        .find((button) => button.textContent === "Agregar jugador")
+        ?.click();
     });
 
-    expect(window.location.search).toBe("?modal=unknown");
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain("Crear jugador");
 
     await act(async () => root.unmount());
     container.remove();
@@ -518,7 +576,7 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/matches/create");
-    expect(container.textContent).toContain("Crear Partido");
+    expect(container.textContent).toContain("Crear partido");
     expect(container.querySelector('a[href="/admin/matches"]')).not.toBeNull();
 
     await act(async () => root.unmount());
@@ -555,7 +613,7 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/matches");
-    expect(container.textContent).toContain("Administrá y consultá los partidos registrados.");
+    expect(container.textContent).toContain("Consulta la programación y gestiona los partidos creados.");
     expect(container.textContent).toContain(ADMIN.matches[0].homeTeamName);
 
     await act(async () => root.unmount());
@@ -573,8 +631,66 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/teams");
-    expect(container.textContent).toContain("Administrá y consultá los equipos registrados.");
+    expect(container.textContent).toContain("Listado de equipos. Seleccioná un equipo para ver su detalle.");
     expect(container.textContent).toContain(ADMIN.teams[0].name);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the admin team detail and its tab routes through the real router", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const team = ADMIN.teams[0];
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/$id", params: { id: team.id } });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe(`/admin/teams/${team.id}`);
+    expect(container.textContent).toContain(team.name);
+    expect(container.textContent).toContain("Perfil");
+    // The admin navigation's team entry is the destination this detail belongs to, and it is
+    // the one the sidebar marks current.
+    expect(container.querySelector('aside a[aria-current="page"][href="/admin/teams"]')).not.toBeNull();
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/$id/roster", params: { id: team.id } });
+    });
+    expect(window.location.pathname).toBe(`/admin/teams/${team.id}/roster`);
+    expect(container.textContent).toContain("Altura");
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/$id/matches", params: { id: team.id } });
+    });
+    expect(window.location.pathname).toBe(`/admin/teams/${team.id}/matches`);
+    expect(container.textContent).toContain("Partidos");
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/$id/stats", params: { id: team.id } });
+    });
+    expect(window.location.pathname).toBe(`/admin/teams/${team.id}/stats`);
+    expect(container.textContent).toContain("Jugadores");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the unknown admin team fallback when the real router navigates to its URL", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      await router.navigate({ to: "/admin/teams/$id", params: { id: "missing-team" } });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe("/admin/teams/missing-team");
+    expect(container.textContent).toContain("Equipo no encontrado");
+    expect(container.querySelector('a[href="/admin/teams"]')).not.toBeNull();
 
     await act(async () => root.unmount());
     container.remove();
@@ -591,7 +707,7 @@ describe("router", () => {
     });
 
     expect(window.location.pathname).toBe("/admin/players");
-    expect(container.textContent).toContain("Administrá y consultá los jugadores registrados.");
+    expect(container.textContent).toContain("Jugadores registrados, con su equipo, posición, altura y puntos.");
     expect(container.textContent).toContain(ADMIN.players[0].fullName);
 
     await act(async () => root.unmount());
@@ -632,7 +748,7 @@ describe("router", () => {
 
     expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/matches`);
     expect(container.textContent).toContain(tournament.name);
-    expect(container.textContent).toContain("Partidos del torneo");
+    expect(container.textContent).toContain("Partidos programados");
 
     await act(async () => root.unmount());
     container.remove();
@@ -654,7 +770,7 @@ describe("router", () => {
 
     expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/standings`);
     expect(container.textContent).toContain(tournament.name);
-    expect(container.textContent).toContain("Tabla de posiciones");
+    expect(container.textContent).toContain("Clasificación");
 
     await act(async () => root.unmount());
     container.remove();
@@ -677,6 +793,40 @@ describe("router", () => {
     expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/stats`);
     expect(container.textContent).toContain(tournament.name);
     expect(container.textContent).toContain("Ranking de Jugadores · Puntos Totales");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the admin tournament overview, bracket and edit routes through the real router", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const tournament = ADMIN.tournaments[0];
+
+    await act(async () => {
+      await router.navigate({ params: { id: tournament.id }, to: "/admin/tournaments/$id" });
+      root.render(<RouterProvider router={router} />);
+    });
+
+    expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}`);
+    expect(container.textContent).toContain(tournament.name);
+    expect(container.textContent).toContain("Clasificación");
+
+    await act(async () => {
+      await router.navigate({ params: { id: tournament.id }, to: "/admin/tournaments/$id/bracket" });
+    });
+
+    expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/bracket`);
+    expect(container.textContent).toContain("Llaves de playoffs");
+
+    await act(async () => {
+      await router.navigate({ params: { id: tournament.id }, to: "/admin/tournaments/$id/edit" });
+    });
+
+    expect(window.location.pathname).toBe(`/admin/tournaments/${tournament.id}/edit`);
+    expect(container.textContent).toContain("Editar torneo");
+    expect(container.textContent).toContain(tournament.name);
 
     await act(async () => root.unmount());
     container.remove();

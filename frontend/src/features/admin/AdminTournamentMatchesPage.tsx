@@ -1,103 +1,100 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { Badge } from "../../components/primitives/Badge";
-import { Card } from "../../components/primitives/Card";
-import { ADMIN, type AdminMatchFixture, type AdminTournamentFixture } from "../../fixtures";
+import { buttonClasses } from "../../components/primitives/buttonClasses";
+import { EmptyState } from "../../components/primitives/EmptyState";
+import { StatePill, type MatchStatus as PillStatus } from "../../components/primitives/StatePill";
+import { ADMIN, type AdminMatchFixture, type MatchStatus } from "../../fixtures";
+import { TournamentPanelHeader } from "../public/TournamentDetailShell";
+import { AdminTournamentNotFound } from "./AdminTournamentNotFound";
+import { AdminTournamentShell } from "./AdminTournamentShell";
+import { findAdminTournament } from "./adminTournamentLookup";
 
-const tournamentTabs = [
-  { label: "Partidos", suffix: "/matches" },
-  { label: "Tabla", suffix: "/standings" },
-  { label: "Estadísticas", suffix: "/stats" },
-] as const;
+/**
+ * The admin tournament's `Partidos` tab.
+ *
+ * Design: frontend/design/html/voleytrack-admin-ver-copa.html — the "Partidos programados
+ * <small>CREADOS EN ADMINISTRACIÓN</small>" card below the competition card, a `.match-list` of
+ * `.match-card`s (a bold "Local vs Visitante" title, a `.match-meta` line, a `.state-pill`) and,
+ * when there are none, the design's `#cup-matches-empty` status card ("Aún no hay partidos
+ * programados"). voleytrack-admin-ver-torneo.html renders the same card for a league as
+ * "Próximos partidos <small>JORNADA 15</small>" over a table; the app has no matchday number
+ * for that eyebrow, so the panel reports the number of matches it actually has instead, and it
+ * keeps the cup file's match-card treatment, which is the same treatment the admin matches list
+ * already uses.
+ *
+ * PROTOTYPE DATA — NOT REAL: "Datos de referencia" is the design's own label for its prototype
+ * rows (voleytrack-admin-partidos.html) and must be replaced by a real origin once matches are
+ * created through the backend.
+ */
+const pillStatusByFixtureStatus: Record<MatchStatus, PillStatus> = {
+  live: "envivo",
+  today: "programado",
+  upcoming: "programado",
+  finished: "finalizado",
+};
 
-const statusVariants = {
-  finished: "default",
-  live: "success",
-  today: "accent",
-  upcoming: "default",
-} as const;
-
-function findTournament(id: string): AdminTournamentFixture | undefined {
-  return ADMIN.tournaments.find((tournament) => tournament.id === id);
-}
-
-function findTournamentMatches(id: string): readonly AdminMatchFixture[] {
-  return ADMIN.matches.filter((match) => match.tournamentId === id);
-}
+const sourceLabel = "Datos de referencia";
 
 export function AdminTournamentMatchesPage() {
   const { id } = useParams({ strict: false }) as { id: string };
-  const tournament = findTournament(id);
+  const tournament = findAdminTournament(id);
 
-  if (!tournament) {
-    return (
-      <Card>
-        <h1 className="text-2xl font-bold text-vt-text">Torneo no encontrado</h1>
-        <Link className="mt-4 inline-block text-sm font-semibold text-vt-accent" to={"/admin/tournaments" as string}>
-          ← Volver a torneos
-        </Link>
-      </Card>
-    );
-  }
+  if (!tournament) return <AdminTournamentNotFound />;
 
-  const matches = findTournamentMatches(tournament.id);
+  const matches = ADMIN.matches.filter((match) => match.tournamentId === tournament.id);
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Link className="text-sm font-semibold text-vt-accent" to={"/admin/tournaments" as string}>
-            ← Torneos
-          </Link>
-          <p className="mt-5 text-sm text-vt-muted">Administración / Torneos / {tournament.name}</p>
-          <h1 className="mt-2 text-3xl font-black text-vt-text">{tournament.name}</h1>
-        </div>
-        <div className="rounded-xl border border-vt-border bg-vt-raised px-4 py-2 text-sm text-vt-muted">
-          {tournament.category} · {tournament.statusLabel}
-        </div>
-      </header>
+    <AdminTournamentShell activeTab="partidos" tournament={tournament}>
+      <TournamentPanelHeader eyebrow={`${matches.length} PROGRAMADOS`}>
+        Partidos programados
+      </TournamentPanelHeader>
 
-      <nav aria-label="Navegación del torneo" className="rounded-2xl border border-vt-border bg-vt-raised p-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {tournamentTabs.map((tab) => (
-            <Link
-              aria-current={tab.suffix === "/matches" ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab.suffix === "/matches" ? "bg-vt-accent text-vt-background" : "text-vt-muted hover:bg-vt-surface hover:text-vt-text"}`}
-              key={tab.label}
-              to={`/admin/tournaments/${tournament.id}${tab.suffix}` as string}
-            >
-              {tab.label}
-            </Link>
+      {matches.length === 0 ? (
+        /* Design: the cup detail's `#cup-matches-empty` status card. */
+        <EmptyState
+          description={`Crea el primer partido de ${tournament.name}.`}
+          title="Aún no hay partidos programados"
+        />
+      ) : (
+        /* Design: voleytrack-admin.css:197-198 `.match-list` — a 12px-gap grid of
+           `.match-card`s, each a `minmax(0,1fr) auto auto` row at an 18px gap with
+           `padding:16px 18px`, a 1px --border edge and a 14px radius; below 700px the card
+           collapses to one column at an 8px gap. */
+        <ul className="grid list-none gap-3 p-[18px]" data-testid="admin-tournament-match-list">
+          {matches.map((match) => (
+            <li key={match.id}>
+              <MatchRow match={match} />
+            </li>
           ))}
-        </div>
-      </nav>
+        </ul>
+      )}
 
-      <Card className="border-vt-border p-5" variant="raised">
-        <h2 className="text-xl font-bold text-vt-accent">Partidos del torneo</h2>
-        <div className="mt-5 space-y-3">
-          {matches.length === 0 ? (
-            <p className="text-sm text-vt-muted">Este torneo todavía no tiene partidos programados.</p>
-          ) : (
-            matches.map((match) => <MatchRow key={match.id} match={match} />)
-          )}
-        </div>
-      </Card>
-    </div>
+      <div className="px-[18px] pb-[18px]">
+        <Link className={buttonClasses("ghost")} to={"/admin/matches/create" as string}>
+          Crear partido
+        </Link>
+      </div>
+    </AdminTournamentShell>
   );
 }
 
 function MatchRow({ match }: { match: AdminMatchFixture }) {
   return (
-    <article className="rounded-xl border border-vt-border bg-vt-panel p-4" data-testid="admin-tournament-match-row">
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="flex min-w-[130px] items-center gap-2">
-          <Badge variant={statusVariants[match.status]}>{match.statusLabel}</Badge>
-          <span className="text-xs font-semibold text-vt-muted">{match.scheduledLabel}</span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-black text-vt-text">{match.homeTeamName} vs {match.awayTeamName}</p>
-          <p className="mt-1 text-xs text-vt-muted">{match.venue}</p>
-        </div>
+    <article
+      className="grid gap-2 rounded-[14px] border border-vt-border bg-vt-surface px-[18px] py-4 min-[701px]:grid-cols-[minmax(0,1fr)_auto_auto] min-[701px]:items-center min-[701px]:gap-[18px]"
+      data-testid="admin-tournament-match-row"
+    >
+      <div className="min-w-0">
+        <h2 className="m-0 text-[15px] font-bold leading-[1.3] text-vt-text">
+          {match.homeTeamName} vs {match.awayTeamName}
+        </h2>
+        <p className="mb-0 mt-1 text-[12px] text-vt-muted">
+          {match.scheduledLabel} · {match.venue}
+        </p>
       </div>
+      <span className="font-mono text-[9px] font-extrabold uppercase tracking-[0.06em] text-vt-muted-2">
+        {sourceLabel}
+      </span>
+      <StatePill status={pillStatusByFixtureStatus[match.status]} label={match.statusLabel} />
     </article>
   );
 }

@@ -319,13 +319,34 @@ export type ScoringFixtures = Readonly<{
 
 export type AdminStaffFixture = Readonly<{
   id: string; fullName: string; email: string; role: string; roleLabel: string; status: string; statusLabel: string;
+  /**
+   * The design's `Torneo` column and "Torneo asignado" select
+   * (frontend/design/html/voleytrack-admin-gestion.html). The staff record had no
+   * assignment at all, so the shape gains the field the design renders.
+   */
+  tournamentLabel: string;
 }>;
 export type AdminTournamentFixture = Readonly<{
   id: string; name: string; status: TournamentStatus; statusLabel: string; category: string; dateLabel: string;
   location: string; matchesLabel: string; teamsLabel: string;
+  /**
+   * The tournament this admin row administers, i.e. the same `TournamentFixture` the public
+   * detail routes read (`standings`, `bracketRounds`, `type`/`typeLabel`). The admin row used
+   * to carry only the list's own labels, so the admin detail screens had no competition data
+   * at all; the design's admin detail (`frontend/design/html/voleytrack-admin-ver-torneo.html`)
+   * renders the same standings/bracket content the public detail does, which is only possible
+   * if the admin row exposes the tournament itself instead of a second copy of it.
+   */
+  detail: TournamentFixture;
 }>;
 export type AdminMatchFixture = Readonly<{
   id: string; tournamentId: string; status: MatchStatus; statusLabel: string; scheduledLabel: string;
+  /**
+   * The design's match card prints the competition next to the schedule
+   * (frontend/design/html/voleytrack-admin-partidos.html, `.match-meta`), and the match
+   * record only carried `tournamentId`; the name is resolved from the tournament fixture.
+   */
+  tournamentName: string;
   homeTeamId: string; homeTeamName: string; awayTeamId: string; awayTeamName: string; venue: string;
 }>;
 export type AdminTeamFixture = Readonly<{
