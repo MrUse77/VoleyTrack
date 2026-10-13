@@ -36,6 +36,90 @@ function stripCssComments(source: string): string {
 }
 
 /**
+ * Production `.tsx` files only, collected with the same convention `core.test.tsx` uses: the
+ * `generated` / `__generated__` directories are skipped and every `.test.tsx`, `.spec.tsx` and
+ * `.gen.tsx` file is excluded. A test that asserts on a token literal is not a shipped colour,
+ * so scanning tests turns the guard's own pins into false positives.
+ */
+function productionTsxFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      const entryPath = `${directory}/${entry.name}`;
+
+      if (entry.isDirectory()) {
+        return ["generated", "__generated__"].includes(entry.name) ? [] : productionTsxFiles(entryPath);
+      }
+
+      if (!entry.name.endsWith(".tsx") || /\.(?:test|spec|gen)\.tsx$/.test(entry.name)) return [];
+      return [entryPath];
+    })
+    .sort();
+}
+
+/**
+ * Comment-aware source stripper. A comment that cites a forbidden literal is documentation,
+ * not a defect, so its text must not reach the colour pattern.
+ *
+ * This walks the source instead of running a regex, because a naive regex would strip a `//`
+ * that lives inside a string or a URL (`"https://..."`, `to="/foo//bar"`). String bodies are
+ * copied verbatim, so their contents are never treated as delimiters. Block-comment newlines
+ * are re-emitted, so a later line's reported number still points at the real source line.
+ * Regex literals are not modelled (no production file here carries a `//` inside one).
+ */
+function stripJsComments(source: string): string {
+  const quoteCharacters = ['"', "'", "`"];
+  let stripped = "";
+  let index = 0;
+
+  while (index < source.length) {
+    const character = source[index];
+
+    if (quoteCharacters.includes(character)) {
+      stripped += character;
+      index += 1;
+
+      while (index < source.length) {
+        const stringCharacter = source[index];
+        stripped += stringCharacter;
+
+        if (stringCharacter === "\\" && index + 1 < source.length) {
+          stripped += source[index + 1];
+          index += 2;
+          continue;
+        }
+
+        index += 1;
+        if (stringCharacter === character) break;
+      }
+
+      continue;
+    }
+
+    if (character === "/" && source[index + 1] === "/") {
+      while (index < source.length && source[index] !== "\n") index += 1;
+      continue;
+    }
+
+    if (character === "/" && source[index + 1] === "*") {
+      index += 2;
+
+      while (index < source.length && !(source[index] === "*" && source[index + 1] === "/")) {
+        if (source[index] === "\n") stripped += "\n";
+        index += 1;
+      }
+
+      index += 2;
+      continue;
+    }
+
+    stripped += character;
+    index += 1;
+  }
+
+  return stripped;
+}
+
+/**
  * Cascade-position scanner. A plain regex cannot answer "is this rule inside
  * `@layer`?", because `@layer base { ... }` legitimately wraps `a` and `button`
  * rules. This walks the stylesheet character by character and records, for every
@@ -85,7 +169,6 @@ const indexPath = fileURLToPath(new URL("../index.css", import.meta.url));
 const publicShellPath = fileURLToPath(new URL("../layouts/PublicShell.tsx", import.meta.url));
 const adminShellPath = fileURLToPath(new URL("../layouts/AdminShell.tsx", import.meta.url));
 const scoringConsolePath = fileURLToPath(new URL("../features/scoring/ScoringConsolePage.tsx", import.meta.url));
-const placeholderPagePath = fileURLToPath(new URL("../pages/PlaceholderPage.tsx", import.meta.url));
 const adminPagePath = fileURLToPath(new URL("../pages/AdminPage.tsx", import.meta.url));
 const planilleroPagePath = fileURLToPath(new URL("../pages/PlanilleroPage.tsx", import.meta.url));
 const createTeamPagePath = fileURLToPath(new URL("../features/admin/CreateTeamPage.tsx", import.meta.url));
@@ -176,11 +259,13 @@ describe("design tokens", () => {
   it("normalizes generic page surfaces to canonical tokens without white/black leaks", () => {
     // `pages/LoginPage.tsx` left this list with T10: it was an orphan (the live `/login`
     // route renders `features/auth/LoginPage.tsx`), so the file is gone.
+    // `pages/PlaceholderPage.tsx` left it the same way: no route rendered it any more and
+    // nothing imported it, so the dead file (and its own test) are gone.
     // The pattern now includes the design's `--bg` layer (`bg-vt-background`) as well: the
     // planillero's setup blocks are the design's `.setup-team{background:var(--bg)}`
     // (frontend/design/html/voleytrack-admin.css:214), which is a canonical token with no
     // app-only counterpart, so a screen that uses it is more aligned, not less.
-    for (const filePath of [scoringConsolePath, placeholderPagePath, adminPagePath, planilleroPagePath]) {
+    for (const filePath of [scoringConsolePath, adminPagePath, planilleroPagePath]) {
       const source = readFileSync(filePath, "utf8");
 
       expect(source).toMatch(/bg-vt-(panel|surface|raised|background)/);
@@ -191,7 +276,6 @@ describe("design tokens", () => {
     }
 
     expect(readFileSync(scoringConsolePath, "utf8")).toMatch(/bg-vt-(panel|surface)/);
-    expect(readFileSync(placeholderPagePath, "utf8")).toContain("bg-vt-panel");
     expect(readFileSync(adminPagePath, "utf8")).toContain("bg-vt-panel");
 
     // The planillero's alignment replaced the whole control-room screen, so the app-only
@@ -236,10 +320,38 @@ describe("design tokens", () => {
     }
 
     const playerDetail = readFileSync(playerDetailPath, "utf8");
-    expect(playerDetail).toContain("bg-vt-panel");
+    // The hero used the app-only panel layer, which the vendored design never defined. The
+    // colour-alignment slice removed it and left the surface to the `Card` primitive's own default
+    // (`variant="surface"`, frontend/design/html/voleytrack.css:75
+    // `.card{background:var(--surface);...}`) instead of restating a background class at the call
+    // site, which `core.test.tsx`'s typed-variant guard also vetoes. The ink is the pin here,
+    // together with the absence of the retired layer: `text-vt-text` and `text-vt-background` are
+    // the design's `--fg` and `--bg`.
+    expect(playerDetail).not.toContain("bg-vt-panel");
+    expect(playerDetail).not.toContain("bg-vt-raised");
+    expect(playerDetail).not.toMatch(/<Card\b[^>]*bg-vt-/s);
+    expect(playerDetail).toContain("text-vt-text");
     expect(playerDetail).toContain("text-vt-muted");
+    expect(playerDetail).toContain("text-vt-background");
+    expect(playerDetail).not.toContain("text-white");
     expect(playerDetail).not.toContain("bg-slate-900");
     expect(playerDetail).not.toContain("text-slate-200");
+    // The screen's four remaining non-panel tones are the vendored design's own: `--blue` and
+    // `--success` for the recent-match result rules, and (since the owner's decision) the
+    // `--accent` that the design's `.stat-bar` declares for BOTH halves of every row
+    // (voleytrack-admin.css:300-305). `bg-vt-blue` is gone from this screen on purpose: the
+    // `block` bar tone it painted was one of the four per-stat colours the decision removed.
+    expect(playerDetail).not.toContain("bg-vt-blue");
+    expect(playerDetail).toContain("bg-vt-success");
+
+    // The owner's decision, pinned as a behaviour instead of as prose: every stat row carries
+    // the design accent on its fill AND on its value ink, and the per-stat tone map that used to
+    // sit between them is gone (a map that returns one value for all five keys implies the tones
+    // still mean something). The rendered values are measured by the harness probe
+    // (tools/screenshot.mjs `probes.statBars`, all five rows `matchesDesign`).
+    expect(playerDetail).toContain('className="block h-full rounded-full bg-vt-accent"');
+    expect(playerDetail).toContain('text-vt-accent min-[1416px]:ml-1.5');
+    expect(playerDetail).not.toContain("statToneClasses");
 
     for (const filePath of [playerSelectionModalPath, matchSetupPath, scoringConsolePath, pointEntryPath]) {
       const source = readFileSync(filePath, "utf8");
@@ -302,28 +414,186 @@ describe("design tokens", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("keeps the auth, layout and dashboard surfaces free of raw colour literals", () => {
-    const authDir = fileURLToPath(new URL("../features/auth", import.meta.url));
-    const layoutsDir = fileURLToPath(new URL("../layouts", import.meta.url));
-    const dashboardPagePath = fileURLToPath(new URL("../features/public/DashboardPage.tsx", import.meta.url));
-
-    const tsxIn = (directory: string): string[] =>
-      readdirSync(directory)
-        .filter((name) => name.endsWith(".tsx"))
-        .map((name) => `${directory}/${name}`);
-
-    const guarded = [...tsxIn(authDir), ...tsxIn(layoutsDir), dashboardPagePath];
+  // The guard now scans every production `.tsx` file under `src` with the same walker
+  // `core.test.tsx` uses (`productionTsxFiles`), and strips comments before matching. Two
+  // earlier exclusions were consequences of the guard's own blind spots, not of real colour
+  // usage:
+  //
+  //   * `components/primitives` failed only because `core.test.tsx` asserts on the token
+  //     literals themselves. A test file is not shipped UI, so the production walker removes
+  //     those 19 hits.
+  //   * `features/public`, `features/admin` and `components/navigation` failed only on comment
+  //     text that cites a design hex/rgba. Stripping comments removes those 6 hits.
+  //
+  // Every group was measured with THIS pattern and this walker BEFORE it was admitted. Measured
+  // production files / offenders under the improved guard:
+  //
+  //   group                    files  offenders  note
+  //   features/auth                3          0
+  //   features/scoring             5          0
+  //   features/public             22          0  the 4 old hits (LiveMatchPresentation.tsx:73,302,303,
+  //                                             TournamentBracket.tsx:85) were all comment text
+  //   features/admin              25          0  the 1 old hit (AdminTeamShell.tsx:59) was a comment
+  //   layouts                      2          0
+  //   components/states            1          0
+  //   components/navigation        2          0  the 1 old hit (Sidebar.tsx:81) was a comment
+  //   components/primitives       19          0  the 19 old hits were core.test.tsx's literal pins
+  //   pages                        2          0  AdminPage.tsx:47 was a real leak and was fixed here
+  //   root (App/main/router)       3          0
+  //   total                       84          0
+  //
+  // The stock-palette extension below closes the gap that let the `purple-500` / `pink-500`
+  // utilities ship on two of the five player stat bars while this guard reported zero offenders.
+  // The old pattern banned raw hex, `rgb(`, `white`, `black` and `slate-`, but Tailwind's own
+  // default palette is neither a raw literal nor the `slate-` family, so ANY stock-palette colour
+  // utility passed: the `blue-500` / `green-500` tints the breakdown had already moved off, the
+  // `purple-500` / `pink-500` that were still live, and every combination with them nobody had
+  // thought of. Two of those four were found by eye rather than by the guard, and two were live
+  // in shipped code until this change. A Tailwind stock-palette colour is by definition
+  // off-system in an app whose every colour is a `vt-` token.
+  //
+  // This prose deliberately names the shades WITHOUT a utility prefix. Tailwind v4 scans every
+  // non-ignored file, this guard file included, for candidate class names, and it does not know
+  // about comments: writing the prefixed form here emits a real rule into the shipped stylesheet
+  // for a class nothing uses, i.e. the guard's own text keeping alive the exact utility it bans.
+  // (The rest of this file already follows that rule for its samples, which are assembled from
+  // the lists below rather than written out.)
+  it("keeps every production TSX file free of raw colour literals and stock-palette colour utilities", () => {
+    const guarded = productionTsxFiles(srcRootPath);
 
     // A guard that matches zero files is a broken guard, not a passing one.
     expect(guarded.length).toBeGreaterThan(0);
+    // The groups this slice added must stay in scope, so a later edit cannot silently shrink
+    // coverage back to the first slice's handful of directories.
+    for (const group of ["features/scoring", "features/public", "features/admin", "components/primitives", "components/navigation", "pages"]) {
+      expect(guarded.some((filePath) => filePath.startsWith(`${srcRootPath}/${group}/`))).toBe(true);
+    }
 
     // Raw hex (3 to 8 digits), rgb()/rgba(), and the disallowed Tailwind utility families.
-    const forbidden = /#[0-9a-fA-F]{3,8}\b|rgba?\(|\b(?:text|bg|border)-white\b|\bbg-black\b|\bslate-/;
+    const rawColour =
+      /#[0-9a-fA-F]{3,8}\b|rgba?\(|\b(?:text|bg|border)-white\b|\bbg-black\b|\bslate-/;
 
+    // Tailwind's stock palette, complete rather than hand-picked: the point is to catch the
+    // hue nobody thought of, and a subset guard just moves the blind spot. `slate` is already
+    // banned outright above and is kept here only so the enumeration stays the real palette.
+    const stockPaletteNames = [
+      "slate", "gray", "zinc", "neutral", "stone", "red", "orange", "amber", "yellow",
+      "lime", "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet",
+      "purple", "fuchsia", "pink", "rose",
+    ];
+
+    // The colour-bearing utility families this app actually uses, measured over the production
+    // tree. `via` comes with `from`/`to` (a gradient stop is a colour position too); every other
+    // family here appears in shipped code. Families that carry no colour (`shadow-vt-focus-ring`)
+    // and non-colour utilities of the same families (`border-b`, `outline-offset-2`, `text-sm`,
+    // `divide-y`, `ring-2`) cannot match, because a palette name AND a numeric shade must follow.
+    const colourUtilityPrefixes = [
+      "text", "bg", "border", "ring", "outline", "from", "via", "to", "divide", "accent",
+      "shadow",
+    ];
+
+    // Tailwind's shade scale. Enumerated instead of `\d{2,3}` so a legitimate utility that
+    // happens to end in a number cannot be mistaken for a palette shade.
+    const stockShade = "(?:50|[1-9]00|[1-9]50)";
+
+    // One optional qualifier segment may sit between the family and the colour: a border side or
+    // axis, a divide axis, a ring offset. Without it, `border-t-purple-500` and
+    // `ring-offset-red-500` - both real Tailwind colour forms - would slip through the very gap
+    // this extension exists to close. It cannot widen the guard's aim: a qualifier only counts
+    // when a palette name and a shade still follow it.
+    const stockQualifier = "(?:-(?:offset)|-[xytrblse])?";
+
+    const stockPaletteUtility = new RegExp(
+      `\\b(?:${colourUtilityPrefixes.join("|")})${stockQualifier}-(?:${stockPaletteNames.join("|")})-${stockShade}\\b`,
+    );
+
+    const forbidden = new RegExp(`${rawColour.source}|${stockPaletteUtility.source}`);
+
+    // A pattern that cannot discriminate is a broken guard, not a strict one, so both
+    // directions are pinned here. `transparent`, `current` and `inherit` are real Tailwind
+    // colour keywords, and `vt-` is this app's own namespace: none of them is a stock palette
+    // entry, so all of them must pass. A guard that fires on legitimate code is disabled by the
+    // next person, which is worse than no guard. Samples are assembled from the two lists rather
+    // than written out, so this file does not carry the very shapes it bans.
+    for (const prefix of colourUtilityPrefixes) {
+      for (const name of stockPaletteNames) {
+        const utility = `${prefix}-${name}-500`;
+
+        expect(stockPaletteUtility.test(utility), `${utility} must be banned`).toBe(true);
+        expect(stockPaletteUtility.test(`hover:${utility}`), `hover:${utility} must be banned`).toBe(true);
+        expect(
+          stockPaletteUtility.test(`focus-visible:${utility}/40`),
+          `focus-visible:${utility}/40 must be banned`,
+        ).toBe(true);
+      }
+    }
+
+    // The qualified forms of the families that have one, at the darkest and lightest shades
+    // instead of only the 500 every entry above already covers.
+    for (const name of stockPaletteNames) {
+      for (const qualified of [
+        `border-t-${name}-50`,
+        `border-x-${name}-950`,
+        `divide-y-${name}-100`,
+        `ring-offset-${name}-700`,
+      ]) {
+        expect(stockPaletteUtility.test(qualified), `${qualified} must be banned`).toBe(true);
+      }
+    }
+
+    expect(rawColour.test("#0b1220")).toBe(true);
+    expect(rawColour.test("rgba(0,0,0,.35)")).toBe(true);
+    expect(forbidden.test(`text-${"white"}`)).toBe(true);
+    expect(forbidden.test(`bg-${"black"}`)).toBe(true);
+    expect(forbidden.test(`bg-${stockPaletteNames[0]}-500`)).toBe(true);
+
+    for (const allowed of [
+      "text-vt-text",
+      "bg-vt-accent",
+      "bg-vt-accent/90",
+      "border-vt-border-2",
+      "border-vt-border/70",
+      "ring-vt-accent",
+      "outline-vt-accent",
+      "from-vt-surface-2",
+      "to-vt-accent-strong",
+      "divide-vt-border",
+      "accent-vt-accent",
+      "shadow-vt-focus-ring",
+      "text-vt-muted-2",
+      "text-vt-success-soft-text",
+      "border-vt-warn-soft-border",
+      "bg-vt-background/80",
+      "bg-transparent",
+      "border-transparent",
+      "text-current",
+      "border-current",
+      "text-inherit",
+      "bg-[color:var(--color-vt-surface)]",
+      // Non-colour utilities of the same families, including the qualified ones, must survive.
+      "text-sm",
+      "border-b",
+      "border-t",
+      "border-t-2",
+      "divide-x",
+      "divide-y",
+      "ring-2",
+      "ring-offset-2",
+      "outline-offset-2",
+      "shadow-lg",
+    ]) {
+      expect(forbidden.test(allowed), `${allowed} must NOT be reported`).toBe(false);
+    }
+
+    // Measured with THIS pattern and walker before it was admitted: of the 84 production TSX
+    // files, exactly two lines were offenders - `features/public/PlayerDetailPage.tsx:38` and
+    // `:39`, the `defense` and `reception` stat bars - and both were removed in the same change
+    // that added this guard. Nothing else in the tree uses a stock-palette colour utility, so
+    // the guard starts on a clean tree instead of on a backlog.
     const offenders: string[] = [];
 
     for (const filePath of guarded) {
-      readFileSync(filePath, "utf8")
+      stripJsComments(readFileSync(filePath, "utf8"))
         .split("\n")
         .forEach((line, index) => {
           if (forbidden.test(line)) {
@@ -504,8 +774,21 @@ describe("design tokens", () => {
     // occurrences the screen carried left with it. Measured with this guard's own patterns and
     // exclusions: vt-panel 20/13, vt-raised 13/7 and vt-raised-border 5/3 (both unchanged, so their
     // ceilings stay).
+    // T26 migrated the four scoring screens' last legacy header (`SectionShell`) onto the shared
+    // `PageHeader` primitive. The migration moves no app-only surface or border token, so the
+    // measured counts are unchanged from T25. Re-measured with this guard's own patterns and
+    // exclusions: vt-panel 19/12, vt-raised 13/7, vt-raised-border 5/3. vt-panel is one occurrence
+    // and one file below its T25 ceiling, so the ceiling is tightened to the measured value; the
+    // other two already sit exactly on their measured values and stay.
+    // The colour-alignment slice that followed T26 removed the last app-only panel occurrence
+    // from a public screen: the player ficha's hero banner, which the design renders as a
+    // `--surface` card (frontend/design/html/voleytrack.css:75), moved off `bg-vt-panel`, and the
+    // screen's breakdown tones that had exact design counterparts (`--blue`, `--success`) moved
+    // off the raw Tailwind hues. Measured with this guard's own patterns and exclusions: vt-panel
+    // 18/11, vt-raised 13/7, vt-raised-border 5/3, so vt-panel's ceiling drops to its measured
+    // value and the other two stay on theirs.
     const ratchets = [
-      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 20, baselineFiles: 13 },
+      { token: "vt-panel", pattern: "vt-panel(?![\\-\\w])", ceiling: 18, baselineFiles: 11 },
       { token: "vt-raised", pattern: "vt-raised(?![\\-\\w])", ceiling: 13, baselineFiles: 7 },
       { token: "vt-raised-border", pattern: "vt-raised-border", ceiling: 5, baselineFiles: 3 },
     ];

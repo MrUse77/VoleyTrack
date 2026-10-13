@@ -1,8 +1,10 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { Badge } from "../../components/primitives/Badge";
 import { Card, CardBody } from "../../components/primitives/Card";
 import { EmptyState } from "../../components/primitives/EmptyState";
-import { Filter, FilterGroup } from "../../components/primitives/FilterGroup";
+import { FilterPanel, FilterPanelSelect, FilterPanelToggle } from "../../components/primitives/FilterPanel";
 import { PageHeader } from "../../components/primitives/PageHeader";
 import { StateBoundary } from "../../components/states/StateBoundary";
 import { PUBLIC_TOURNAMENTS, type TournamentFixture, type TournamentType } from "../../fixtures";
@@ -12,20 +14,37 @@ type TournamentStageFilter = "todos" | "en-curso" | "proximos" | "finalizados";
 type TournamentTypeFilter = "todos" | "liga" | "copa";
 
 /**
- * Design: frontend/design/html/voleytrack-torneos.html — the `tournaments-type-filter`
- * select's options are "Todos", "Liga" and "Copa", and the app keeps its own `status`
- * query (the same one `src/artboardManifest.ts` pins for /tournaments) as the design's
- * "Etapa" dimension, whose options there are "En curso" / "Próximo" / "Futuro". The
- * design's third dimension, "Equipos mínimos" (16 / 18), is not modelled: no tournament
- * fixture carries a minimum team count, and printing one would invent a number.
+ * The design's panel, not a pill group. frontend/design/html/voleytrack-torneos.html:45-57 is
+ * a page head whose `.head-actions` carries the `Filtros` toggle
+ * (`aria-expanded` / `aria-controls="tournaments-filter-panel"`), then the collapsible
+ * `#tournaments-filter-panel` with a labelled `<select>` per dimension, its result count and
+ * `Limpiar filtros`, then the `.cards-grid`. There is no `.filters` pill row on this screen at
+ * all, which is why the two pill groups this screen used to render are gone: both dimensions
+ * they carried are the panel's own two controls (`tournaments-type-filter` and
+ * `tournaments-stage-filter`, same file:49-50).
+ *
+ * The design's third control, `Equipos mínimos` (16 / 18, line 51), is NOT rendered. Every
+ * tournament in the fixture set shares one `standings` list of eight teams, so the dimension
+ * cannot discriminate and the design's own option values (16, 18) match no fixture: the
+ * control could only ever return every tournament or none. That is a filter that cannot work,
+ * so it is omitted rather than printed.
+ *
+ * The `Etapa` options are the app's real fixture states. The design's own option set is
+ * `En curso` / `Próximo` / `Futuro` (line 50); no fixture tournament is `Futuro`, while the
+ * app's `Finalizado` state is one the design's `Etapa` select does not list, so the options
+ * are the three states that exist. `Tipo` is the design's own option set (Todos / Liga / Copa).
+ *
+ * Both selects stay bound to the search parameters the screen already used (`type` and
+ * `status`), because `/tournaments?status=…` is a deep link the artboard manifest and the
+ * router tests address; only the control type changed.
  */
-const typeFilters = [
+const typeOptions = [
   { label: "Todos", value: "todos" },
   { label: "Liga", value: "liga" },
   { label: "Copa", value: "copa" },
 ] as const satisfies readonly { label: string; value: TournamentTypeFilter }[];
 
-const stageFilters = [
+const stageOptions = [
   { label: "Todas", value: "todos" },
   { label: "En curso", value: "en-curso" },
   { label: "Próximos", value: "proximos" },
@@ -60,6 +79,7 @@ export function TournamentsPage() {
   const navigate = useNavigate();
   const stage = stageFilter(location.search.status);
   const type = typeFilter(location.search.type);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const setFilter = (next: Partial<{ status: TournamentStageFilter; type: TournamentTypeFilter }>) => {
     navigate({
@@ -73,52 +93,49 @@ export function TournamentsPage() {
   return (
     <StateBoundary>
       <div className="mx-auto w-full max-w-[1104px]" data-testid="tournaments-page-content">
-        {/* Design: voleytrack-torneos.html:44 — the `.page-head` h1 "Torneos" and its line. */}
+        {/* Design: voleytrack-torneos.html:45 — the `.page-head` h1 "Torneos", its line and
+            the `Filtros` toggle in `.head-actions`. */}
         <PageHeader
+          actions={
+            <FilterPanelToggle
+              controls="tournaments-filter-panel"
+              isOpen={isFilterOpen}
+              onToggle={() => setIsFilterOpen((current) => !current)}
+            />
+          }
           className="mb-[22px]"
           description="Explorá torneos activos, posiciones, próximos partidos y resultados recientes."
           title="Torneos"
         />
 
-        {/*
-         * Design: the `tournaments-filter-grid` holds the "Tipo" and "Etapa" selects in one
-         * panel. Both dimensions are rendered here as the design's own `.filter` pill
-         * (voleytrack.css:88-89) inside a labelled group with `aria-pressed`, because a
-         * filter in this app is a real button, never a bare select.
-         */}
-        <FilterGroup aria-label="Filtrar torneos por tipo">
-          {typeFilters.map((filter) => (
-            <Filter
-              isActive={type === filter.value}
-              key={filter.value}
-              onClick={() => setFilter({ type: filter.value })}
-            >
-              {filter.label}
-            </Filter>
-          ))}
-        </FilterGroup>
-
-        <FilterGroup aria-label="Filtrar torneos por etapa">
-          {stageFilters.map((filter) => (
-            <Filter
-              isActive={stage === filter.value}
-              key={filter.value}
-              onClick={() => setFilter({ status: filter.value })}
-            >
-              {filter.label}
-            </Filter>
-          ))}
-        </FilterGroup>
-
-        {/* Design: voleytrack-torneos.css:12-14 (.tournament-results-count). */}
-        <p
-          aria-live="polite"
-          className="mb-4 font-mono text-[11px] font-bold text-vt-muted"
-          data-testid="tournaments-results-count"
+        {/* Design: the collapsible `#tournaments-filter-panel` with its `.tournament-filter-grid`
+            of labelled selects and its `.tournament-filter-footer` (count + `Limpiar filtros`),
+            voleytrack-torneos.html:46-58. */}
+        <FilterPanel
+          count={tournaments.length}
+          countPlural="torneos"
+          countSingular="torneo"
+          countTestId="tournaments-results-count"
+          id="tournaments-filter-panel"
+          isOpen={isFilterOpen}
+          onClear={() => setFilter({ status: "todos", type: "todos" })}
+          onClose={() => setIsFilterOpen(false)}
         >
-          <strong className="text-vt-text">{tournaments.length}</strong>{" "}
-          {tournaments.length === 1 ? "torneo" : "torneos"}
-        </p>
+          <FilterPanelSelect
+            id="tournaments-type-filter"
+            label="Tipo"
+            onChange={(value) => setFilter({ type: typeFilter(value) })}
+            options={typeOptions}
+            value={type}
+          />
+          <FilterPanelSelect
+            id="tournaments-stage-filter"
+            label="Etapa"
+            onChange={(value) => setFilter({ status: stageFilter(value) })}
+            options={stageOptions}
+            value={stage}
+          />
+        </FilterPanel>
 
         {tournaments.length === 0 ? (
           /* Design: voleytrack-torneos.css:16-20 (.tournament-empty) and its copy at

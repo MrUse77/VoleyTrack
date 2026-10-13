@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { useState } from "react";
 import { Button } from "../../components/primitives/Button";
 import { buttonClasses } from "../../components/primitives/buttonClasses";

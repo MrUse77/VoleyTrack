@@ -191,11 +191,11 @@ describe("public fixtures", () => {
       { label: "Saque ace", value: "11", sub: "Top 3 liga" },
     ]);
     expect(PUBLIC_PLAYER_DETAILS[0].statBreakdown).toEqual([
-      { id: "attack", label: "Ataque", value: "140 pts", barPercent: 100, tone: "attack" },
-      { id: "block", label: "Bloqueo", value: "42 pts", barPercent: 32, tone: "block" },
-      { id: "serve", label: "Saque", value: "18 pts", barPercent: 16, tone: "serve" },
-      { id: "defense", label: "Defensa (Digs)", value: "85", barPercent: 60, tone: "defense" },
-      { id: "reception", label: "Recepción Perf.", value: "60%", barPercent: 80, tone: "reception" },
+      { id: "attack", label: "Ataque", value: "140 pts", barPercent: 100 },
+      { id: "block", label: "Bloqueo", value: "42 pts", barPercent: 32 },
+      { id: "serve", label: "Saque", value: "18 pts", barPercent: 16 },
+      { id: "defense", label: "Defensa (Digs)", value: "85", barPercent: 60 },
+      { id: "reception", label: "Recepción Perf.", value: "60%", barPercent: 80 },
     ]);
     expect(PUBLIC_PLAYER_DETAILS[0].recentMatches.map(({ playerPoints }) => playerPoints)).toEqual([22, 18, 15, 25]);
 

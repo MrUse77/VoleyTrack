@@ -1,4 +1,5 @@
-import { Link, Outlet } from "@tanstack/react-router";
+import { Outlet } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../components/navigation/NavigationLink";
 import { Sidebar, type SidebarNavigationGroup } from "../components/navigation/Sidebar";
 
 interface PublicShellProps {

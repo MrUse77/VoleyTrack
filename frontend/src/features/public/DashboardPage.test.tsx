@@ -111,9 +111,14 @@ describe("public dashboard", () => {
     // Design source: voleytrack-dashboard.css:16-19 — the score is `.score`, mono at
     // 36px/800, which is the `Num` treatment plus the design's size.
     expect(html).toMatch(/class="font-mono tabular-nums text-right text-\[36px\] font-extrabold tracking-\[-0\.02em\]"/);
-    // Design source: voleytrack.css:61 and dashboard.html:51 — the live pill is the
-    // primitive's announced status region, not a decorative dot.
-    expect(html).toMatch(/<span aria-live="polite" class="[^"]*bg-vt-danger[^"]*" role="status"/);
+    // Design source: voleytrack.css:61 and dashboard.html:51 — the live pill is the primitive's
+    // danger-filled status LABEL, not a decorative dot and no longer a live region: its text is a
+    // fixed fixture label that never changes, so there is nothing for it to announce, and on the
+    // live match screen two such pills used to compete with the score region that does change.
+    expect(html).toContain("bg-vt-danger");
+    expect(html).toContain("EN VIVO · SET 3");
+    expect(html).not.toContain('role="status"');
+    expect(html).not.toContain("aria-live");
   });
 
   it("renders the design's highlight rail with its dashed link to the matches list", () => {

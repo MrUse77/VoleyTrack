@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Card } from "../../components/primitives/Card";
 import { Modal } from "../../components/primitives/Modal";
 import { Badge } from "../../components/primitives/Badge";
-import { SectionShell } from "../../components/ui/SectionShell";
+import { PageHeader } from "../../components/primitives/PageHeader";
 import { SCORING, SCORING_ROSTER } from "../../fixtures";
 import { PlayerSelectionModal } from "./PlayerSelectionModal";
 
@@ -13,6 +13,11 @@ type AssignmentTarget = { position: number; teamId: string } | null;
 export function MatchSetupPage() {
   const location = useLocation() as { search: Record<string, unknown> };
   const navigate = useNavigate({ from: "/admin/matches/setup" });
+  // Design: the pack's setup view gives its heading `tabindex="-1"` and moves focus to it
+  // (frontend/design/html/voleytrack-planillero.html:25). `PageHeader` renders that focus
+  // target only when a caller supplies `headingRef`, so the ref is what keeps the pack's
+  // contract on this screen; the heading is programmatically focusable, not auto-focused.
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const setup = SCORING.matchSetup;
   const teams = [setup.homeTeam, setup.awayTeam];
   const [stepIndex, setStepIndex] = useState(0);
@@ -114,7 +119,13 @@ export function MatchSetupPage() {
   };
 
   return (
-    <SectionShell eyebrow="Planillero" title={setup.title} description={step.description}>
+    <div className="space-y-6">
+      <PageHeader
+        description={step.description}
+        eyebrow="Planillero"
+        headingRef={headingRef}
+        title={setup.title}
+      />
       <Card className="border-vt-border p-5" variant="raised">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -390,6 +401,6 @@ export function MatchSetupPage() {
         isOpen={isPlayerSelectionOpen}
         onClose={() => setPlayerSelectionOpen(false)}
       />
-    </SectionShell>
+    </div>
   );
 }

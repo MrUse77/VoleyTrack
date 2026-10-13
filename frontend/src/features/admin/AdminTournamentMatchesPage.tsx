@@ -1,4 +1,5 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { buttonClasses } from "../../components/primitives/buttonClasses";
 import { EmptyState } from "../../components/primitives/EmptyState";
 import { StatePill, type MatchStatus as PillStatus } from "../../components/primitives/StatePill";

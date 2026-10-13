@@ -1,0 +1,92 @@
+/* Self-hosted design fonts: Inter 400-900 and JetBrains Mono 500/700.
+ *
+ * Declared here instead of importing Fontsource's `latin-*.css` entry points, because
+ * those emit BOTH formats for every face:
+ *
+ *   src: url(./files/inter-latin-400-normal.woff2) format('woff2'),
+ *        url(./files/inter-latin-400-normal.woff)  format('woff');
+ *
+ * which bundlers expand into two emitted files per face. Measured on the pre-change
+ * build, those eight legacy `.woff` files were 242,952 of the 431,736 bytes shipped
+ * (56%), and no browser that can run this app's stack (React 19 + Vite 8 + Tailwind v4,
+ * all of which require a modern evergreen engine) lacks `.woff2` support.
+ *
+ * Everything else is deliberately byte-identical in intent to the entry points that
+ * were imported before, so runtime behaviour does not change:
+ *   - the same two family names ("Inter", "JetBrains Mono"), so `--font-sans` /
+ *     `--font-mono` in tokens.css and the `document.fonts.check()` probe in
+ *     tools/screenshot.mjs keep resolving;
+ *   - the same eight weights, in the same order as the previous `@import` list;
+ *   - the latin-only subset (the app is Spanish-language), and
+ *   - NO `unicode-range`, exactly like Fontsource's `latin-*.css` entries, which declare
+ *     none. The subset entry points rely on the file containing only latin glyphs and
+ *     the browser's per-glyph fallback to the rest of `--font-sans` / `--font-mono`.
+ *     Adding a range here would be a behaviour change, so it is intentionally omitted.
+ *
+ * Paths are package-relative bare specifiers resolved by Vite from node_modules; the
+ * built CSS therefore references hashed local /assets URLs and never a remote origin.
+ * Guarded by src/styles/fonts.test.ts. */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("@fontsource/inter/files/inter-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url("@fontsource/inter/files/inter-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url("@fontsource/inter/files/inter-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("@fontsource/inter/files/inter-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: url("@fontsource/inter/files/inter-latin-800-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 900;
+  src: url("@fontsource/inter/files/inter-latin-900-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url("@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff2") format("woff2");
+}

@@ -7,9 +7,14 @@ import { AdminTournamentStandingsPage } from "./AdminTournamentStandingsPage";
 let tournamentId = ADMIN.tournaments[0].id;
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to, ...props }: { children: ReactNode; to: string; "aria-current"?: "page" }) => (
-    <a href={to} {...props}>{children}</a>
-  ),
+  Link: ({ activeOptions: _exactMarking, children, to, ...props }: { activeOptions?: unknown; children: ReactNode; to: string; "aria-current"?: "page" }) => {
+    // `activeOptions` is the exactness option the app's own Link
+    // (components/navigation/NavigationLink) always passes; a plain anchor has no such
+    // attribute, so the option is consumed here instead of leaking into the markup.
+    void _exactMarking;
+
+    return <a href={to} {...props}>{children}</a>;
+  },
   useParams: () => ({ id: tournamentId }),
 }));
 
@@ -75,5 +80,26 @@ describe("admin tournament standings", () => {
     expect(html).toContain("Torneo no encontrado");
     expect(html).toContain('href="/admin/tournaments"');
     expect(html).not.toContain("Clasificación");
+  });
+
+  it("pins the emphasis each Formato row gives its label and its value", () => {
+    // The cup detail is the admin side that renders the design's second `.info-row` card
+    // (`Formato`, frontend/design/html/voleytrack-admin-ver-copa.html:79-82).
+    const cup = ADMIN.tournaments[1];
+    expect(cup.detail.type).toBe("Copa");
+
+    const html = renderStandings(cup.id);
+    const cardBody = html.slice(html.indexOf('data-testid="tournament-format-card-body"'));
+
+    // Design: frontend/design/html/voleytrack-admin.css:121-122
+    //   .info-row b{font-weight:700}
+    //   .info-row span{color:var(--muted)}
+    // The label carries the emphasis and the value is muted, pinned as one contiguous fragment
+    // so a swap cannot pass on the two classes alone.
+    expect(cardBody).toContain(
+      '<span class="font-bold text-vt-text">Final</span><span class="text-vt-muted">Partido único</span>',
+    );
+    expect(cardBody).toContain('<span class="font-bold text-vt-text">Semifinal</span>');
+    expect(cardBody).not.toContain('<span class="text-vt-muted">Final</span>');
   });
 });

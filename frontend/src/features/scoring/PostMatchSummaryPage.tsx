@@ -1,9 +1,12 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { useState } from "react";
 import { Button } from "../../components/primitives/Button";
+import { buttonClasses } from "../../components/primitives/buttonClasses";
 import { Card } from "../../components/primitives/Card";
 import { Badge } from "../../components/primitives/Badge";
-import { SectionShell } from "../../components/ui/SectionShell";
+import { EmptyState } from "../../components/primitives/EmptyState";
+import { PageHeader } from "../../components/primitives/PageHeader";
 import { SCORING } from "../../fixtures";
 
 export function PostMatchSummaryPage() {
@@ -12,18 +15,28 @@ export function PostMatchSummaryPage() {
   const [reviewCompleted, setReviewCompleted] = useState(false);
 
   if (!summary) {
+    /*
+     * The unknown-id fallback, on the same primitives as every other not-found branch in the
+     * app (`AdminTeamNotFound` / `AdminTournamentNotFound`): the design's structural `Card`
+     * (`padded={false}`, voleytrack.css:75-78) holding the announced `role="status"`
+     * `EmptyState` block, with the way back as the design's ghost `.btn`. The design has no
+     * counterpart for this branch (its prototype always resolves the match it links to), so
+     * `EmptyState` is the app's own aligned block rather than a design region.
+     *
+     * Before this, the branch rendered the legacy uniform-padding `Card` plus its own `<h1>`
+     * and paragraph: the last screen in the app that still built a fallback by hand.
+     */
     return (
-      <Card>
-        <h1 className="text-2xl font-bold text-vt-text">Partido no encontrado</h1>
-        <p className="mt-2 text-sm text-vt-muted">
-          No hay un resumen disponible para este partido.
-        </p>
-        <Link
-          className="mt-4 inline-block text-sm font-semibold text-vt-accent hover:underline"
-          to="/admin/matches"
-        >
-          ← Volver a partidos
-        </Link>
+      <Card padded={false}>
+        <EmptyState
+          description="No hay un resumen disponible para este partido."
+          title="Partido no encontrado"
+        />
+        <div className="px-5 pb-[18px]">
+          <Link className={buttonClasses("ghost")} to="/admin/matches">
+            ← Volver a partidos
+          </Link>
+        </div>
       </Card>
     );
   }
@@ -33,11 +46,12 @@ export function PostMatchSummaryPage() {
   const mvp = summary.mvp ?? null;
 
   return (
-    <SectionShell
-      eyebrow="Planillero"
-      title={summary.title}
-      description="Resultado final, sets completados y resumen local del partido."
-    >
+    <div className="space-y-6">
+      <PageHeader
+        description="Resultado final, sets completados y resumen local del partido."
+        eyebrow="Planillero"
+        title={summary.title}
+      />
       <div className="space-y-6">
         <section aria-labelledby="final-score-heading">
           <Card className="border-vt-border p-6 sm:p-8" variant="raised">
@@ -233,6 +247,6 @@ export function PostMatchSummaryPage() {
           </Card>
         </section>
       </div>
-    </SectionShell>
+    </div>
   );
 }

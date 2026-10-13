@@ -1,4 +1,5 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { DataTable } from "../../components/primitives/DataTable";
 import { TournamentPanelHeader } from "../public/TournamentDetailShell";
 import { participantColumns, standingsColumns } from "../public/tournamentTables";

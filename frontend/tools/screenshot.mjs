@@ -303,6 +303,14 @@ function electronEntry(opts, url, output) {
 // Electron side
 // ---------------------------------------------------------------------------------------
 
+// ESCAPING RULE FOR EVERYTHING BELOW. `PROBE_SOURCE` is a template literal, so a single
+// backslash is CONSUMED by the template before `evaluate()` ever sees it: a pattern written with
+// one backslash before the `s` reaches the page as `/s+/g`, and the probe then rewrites the letter
+// "s" out of every label it reports. Two fields did exactly that (`adminTournamentCards[].figures`
+// and `adminTournamentTabs[].tabs[].label`, the `"equipos"` -> `"equipo "` corruption). Every
+// regex escape inside this literal is therefore written with a doubled backslash. When adding a
+// probe, re-check the literal for odd-length backslash runs: a run of 2n backslashes yields n
+// escaped characters, while an odd run leaves its last backslash escaping the next character.
 const PROBE_SOURCE = `(async () => {
   const round = (n) => Math.round(n * 100) / 100;
   const rect = (el) => {
@@ -1175,6 +1183,121 @@ const PROBE_SOURCE = `(async () => {
     listStates.restoredRowCount = document.querySelectorAll("main tbody tr, main ul > li").length;
   }
 
+  // Additive: new keys only, every key above keeps its name, order and shape. The design's
+  // collapsible filter panel (voleytrack-partidos.html:45-58, voleytrack-torneos.html:45-58) is
+  // a real button whose aria-expanded exposes its state and whose aria-controls names
+  // the panel it drives, over a panel of labelled selects. The filterPanels key above already
+  // reports that toggle/panel pair; filterPanelDetail adds what the panel HOLDS and what the
+  // toggle's state actually resolves to when it is operated: each control with the text of the
+  // label[for] that names it and the options it offers, plus the toggle's aria-expanded
+  // and the panel's hidden attribute measured closed and after a real click.
+  const filterPanelDetail = await (async () => {
+    const described = [];
+
+    for (const panel of Array.from(document.querySelectorAll("main [id$='-filter-panel']"))) {
+      const toggle = document.querySelector('[aria-controls="' + panel.id + '"]');
+      const expandedClosed = toggle ? toggle.getAttribute("aria-expanded") : null;
+      const hiddenClosed = panel.hasAttribute("hidden");
+
+      if (toggle) {
+        toggle.click();
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      }
+
+      const expandedOpen = toggle ? toggle.getAttribute("aria-expanded") : null;
+      const hiddenOpen = panel.hasAttribute("hidden");
+
+      if (toggle) {
+        toggle.click();
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      }
+
+      described.push({
+        id: panel.id,
+        toggle: toggle
+          ? {
+              tag: toggle.tagName.toLowerCase(),
+              type: toggle.getAttribute("type"),
+              text: (toggle.textContent || "").trim(),
+              controls: toggle.getAttribute("aria-controls"),
+              expandedClosed,
+              expandedOpen,
+            }
+          : null,
+        panelHiddenClosed: hiddenClosed,
+        panelHiddenOpen: hiddenOpen,
+        controls: Array.from(panel.querySelectorAll("select, input, textarea")).map((control) => {
+          const label = control.id
+            ? document.querySelector('label[for="' + control.id + '"]')
+            : null;
+          const tag = control.tagName.toLowerCase();
+
+          return {
+            id: control.id || null,
+            tag,
+            labelText: label ? (label.textContent || "").trim() : null,
+            value: control.value,
+            options: tag === "select"
+              ? Array.from(control.options).map((option) => ({
+                  value: option.value,
+                  label: option.textContent,
+                }))
+              : null,
+          };
+        }),
+      });
+    }
+
+    return described;
+  })();
+
+  // Additive: new key only. A filter is measured by APPLYING it: for every non-empty option of
+  // the panel's first select, the value is set, the change event the design's own
+  // filterMatches / filterTournaments listens for is dispatched, the visible row count is
+  // read, and the original value is restored so the capture that follows shows the populated
+  // screen. initialRows is the count before any of it, so a filter that changed nothing is
+  // visible as such instead of being described in prose.
+  const filterPanelEffect = await (async () => {
+    const panel = document.querySelector("main [id$='-filter-panel']");
+    const control = panel ? panel.querySelector("select") : null;
+    const listRoot = document.querySelector("main table") ?? document.querySelector("main ul");
+    if (!panel || !control || !listRoot) return null;
+
+    const countRows = () => {
+      const root = document.querySelector("main table") ?? document.querySelector("main ul");
+      return root ? root.querySelectorAll("tbody tr, :scope > li").length : 0;
+    };
+    const originalValue = control.value;
+    const initialRows = countRows();
+    const results = [];
+
+    for (const option of Array.from(control.options)) {
+      if (option.value === "") continue;
+
+      control.value = option.value;
+      control.dispatchEvent(new Event("change", { bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
+      results.push({
+        value: option.value,
+        label: option.textContent,
+        visibleRows: countRows(),
+      });
+    }
+
+    control.value = originalValue;
+    control.dispatchEvent(new Event("change", { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 60));
+
+    return {
+      panelId: panel.id,
+      controlId: control.id || null,
+      initialRows,
+      restoredRows: countRows(),
+      results,
+    };
+  })();
+
   // ---------------------------------------------------------------------------------------
   // Additive: the admin tournament area's own probes. New keys only - every key above keeps its
   // name, order and shape, and no existing strategy is reordered or redefined.
@@ -1197,7 +1320,7 @@ const PROBE_SOURCE = `(async () => {
       ariaLabel: card.getAttribute("aria-label"),
       eyebrow: (card.querySelector("small")?.textContent || "").trim(),
       heading: (card.querySelector("h3")?.textContent || "").trim(),
-      figures: (card.querySelector("p")?.textContent || "").trim().replace(/\s+/g, " "),
+      figures: (card.querySelector("p")?.textContent || "").trim().replace(/\\s+/g, " "),
       badgeCount: card.querySelectorAll("span[class*='rounded-full']").length,
       badges: Array.from(card.querySelectorAll("span[class*='rounded-full']")).map((badge) =>
         (badge.textContent || "").trim(),
@@ -1265,6 +1388,60 @@ const PROBE_SOURCE = `(async () => {
     informacion: describeInfoRows("tournament-info-card-body"),
   };
 
+  // Additive: new key only, every key above keeps its name, order and shape. The design's
+  // .info-row gives the EMPHASIS to the label and leaves the value muted:
+  //   frontend/design/html/voleytrack-admin.css:121  .info-row b{font-weight:700}
+  //   frontend/design/html/voleytrack-admin.css:122  .info-row span{color:var(--muted)}
+  // (the same two rules at frontend/design/html/voleytrack-torneos.css:45-46).
+  // The infoRows key above reports the row text but not which element owns which treatment,
+  // so a swap of the two tones would not be visible there. This key reports the RESOLVED ink
+  // and weight of each row's label and value, which is what the owner's decision changes, and
+  // it is measured on every route that renders an Informacion or Formato card.
+  const describeInfoRowTreatment = (testId) => {
+    const body = document.querySelector('[data-testid="' + testId + '"]');
+    if (!body) return null;
+
+    // The rows are found by their own resolved class pair rather than by position, so the same
+    // probe reads a card whose rows are the body's direct children (the tournament
+    // Informacion/Formato cards) and one whose rows sit inside a nested CardBody (the live
+    // screen's match-metadata panel). The two-span shape is what separates an InfoRow from
+    // the other rows that carry the same class pair (the admin team detail's performance readout
+    // is a dt/dd row), so the probe reports InfoRows and nothing else.
+    const rows = Array.from(
+      body.querySelectorAll('[class*="justify-between"][class*="border-vt-border-2"]'),
+    ).filter(
+      (row) =>
+        row.children.length === 2 &&
+        row.children[0].tagName === "SPAN" &&
+        row.children[1].tagName === "SPAN",
+    );
+
+    return {
+      testId,
+      rows: rows.map((row) => {
+        const label = row.children[0] || null;
+        const value = row.children[1] || null;
+        const labelStyle = label ? getComputedStyle(label) : null;
+        const valueStyle = value ? getComputedStyle(value) : null;
+
+        return {
+          label: (label?.textContent || "").trim(),
+          labelColor: labelStyle ? labelStyle.color : null,
+          labelFontWeight: labelStyle ? labelStyle.fontWeight : null,
+          value: (value?.textContent || "").trim(),
+          valueColor: valueStyle ? valueStyle.color : null,
+          valueFontWeight: valueStyle ? valueStyle.fontWeight : null,
+        };
+      }),
+    };
+  };
+  const infoRowTreatment = {
+    format: describeInfoRowTreatment("tournament-format-card-body"),
+    informacion: describeInfoRowTreatment("tournament-info-card-body"),
+    liveMetadata: describeInfoRowTreatment("match-metadata"),
+    adminTeamProfile: describeInfoRowTreatment("admin-team-overview-grid"),
+  };
+
   // The .tournament-tabs strip (frontend/design/html/voleytrack-admin-ver-torneo.html,
   // role="tablist" there). Here every entry is a route link, so the key reports each label,
   // its destination, whether it is the current page (aria-current), and the active entry's
@@ -1277,7 +1454,7 @@ const PROBE_SOURCE = `(async () => {
         tabs: Array.from(adminTournamentTabsElement.querySelectorAll("a")).map((tab) => {
           const cs = getComputedStyle(tab);
           return {
-            label: (tab.textContent || "").trim().replace(/\s+/g, " "),
+            label: (tab.textContent || "").trim().replace(/\\s+/g, " "),
             href: tab.getAttribute("href"),
             isCurrent: tab.getAttribute("aria-current") === "page",
             backgroundColor: cs.backgroundColor,
@@ -1557,6 +1734,404 @@ const PROBE_SOURCE = `(async () => {
       })()
     : null;
 
+  // Additive: the login screen's own probes. New keys only - every key above keeps its name,
+  // order and shape, no existing strategy is reordered or redefined, and the exit codes are
+  // untouched. The key is null off the login route, so every other capture is unchanged.
+  //
+  // Design: frontend/design/html/voleytrack-login.html. The .login-wrap rule is
+  // display:grid with grid-template-columns 640px 1fr and min-height 100vh (line 42), whose
+  // first column is .branding - the --surface fill with a 1px --border right edge and 80px
+  // padding (line 43), a 48px/900 -0.03em wordmark beside a 54px mark (lines 44-45) and a
+  // 16px --muted claim capped at 32ch (line 46) - and whose second is .form-col (centred,
+  // 40px padding, the --bg canvas, line 50) holding a 480px .form-box (line 51) with a
+  // 32px/900 -0.02em heading (line 52), a 14px --muted sub with an 8px/32px vertical margin
+  // (line 53), 48px/10px controls (line 57) and the 48px/10px accent submit with its #0b1220
+  // ink (line 58). Reading the resolved columns, boxes, typography, control geometry and the
+  // submit's fill and ink makes the alignment machine-readable without an image.
+  // The gate is the screen's own email field id, which both the pre-alignment screen and
+  // the aligned one render, so the same key reports the before and the after of this work
+  // instead of appearing only after the change.
+  const loginEmailControl = document.querySelector("#login-email");
+  const loginScreenElement = loginEmailControl ? loginEmailControl.closest("main") : null;
+  const loginScreen = loginScreenElement
+    ? (() => {
+        const boxOf = (el) => {
+          if (!el) return null;
+          const cs = getComputedStyle(el);
+          return {
+            ...rect(el),
+            paddingTop: cs.paddingTop,
+            paddingRight: cs.paddingRight,
+            paddingBottom: cs.paddingBottom,
+            paddingLeft: cs.paddingLeft,
+            backgroundColor: cs.backgroundColor,
+            borderRightWidth: cs.borderRightWidth,
+            borderRightColor: cs.borderRightColor,
+            display: cs.display,
+            flexDirection: cs.flexDirection,
+            justifyContent: cs.justifyContent,
+          };
+        };
+        const textOf = (el) => (el ? (el.textContent || "").trim().replace(/\\s+/g, " ") : null);
+        const typographyOf = (el) => {
+          if (!el) return null;
+          const cs = getComputedStyle(el);
+          return {
+            text: textOf(el),
+            fontSize: cs.fontSize,
+            fontWeight: cs.fontWeight,
+            lineHeight: cs.lineHeight,
+            letterSpacing: cs.letterSpacing,
+            color: cs.color,
+            marginTop: cs.marginTop,
+            marginBottom: cs.marginBottom,
+            maxWidth: cs.maxWidth,
+          };
+        };
+        const branding = loginScreenElement.querySelector("section");
+        const brandStats = loginScreenElement.querySelectorAll('[data-testid="login-brand-stat"]');
+        const heading = loginScreenElement.querySelector("h1");
+        const submit = loginScreenElement.querySelector('button[type="submit"]');
+        const submitStyle = submit ? getComputedStyle(submit) : null;
+        const errors = Array.from(loginScreenElement.querySelectorAll('[role="alert"]')).map(textOf);
+        return {
+          columns: {
+            gridTemplateColumns: getComputedStyle(loginScreenElement).gridTemplateColumns,
+            minHeight: getComputedStyle(loginScreenElement).minHeight,
+            children: Array.from(loginScreenElement.children).map((child) => ({
+              testId: child.getAttribute("data-testid"),
+              ...boxOf(child),
+            })),
+          },
+          branding: branding
+            ? {
+                ...boxOf(branding),
+                // The first and last element children are the mark/wordmark block and the
+                // claim in both the pre-alignment panel and the design's panel.
+                logo: typographyOf(branding.firstElementChild),
+                claim: typographyOf(branding.lastElementChild),
+              }
+            : { present: false },
+          // The design's login stylesheet declares .brand-stats (lines 47-49) but its
+          // markup renders no such element (lines 73-74 are the logo and the claim), so the
+          // count is reported rather than assumed.
+          brandStatCount: brandStats.length,
+          brandStats: Array.from(brandStats).map(textOf),
+          heading: typographyOf(heading),
+          sub: typographyOf(heading ? heading.nextElementSibling : null),
+          controls: Array.from(loginScreenElement.querySelectorAll("input, select, textarea")).map(
+            (control) => {
+              const cs = getComputedStyle(control);
+              return {
+                id: control.id,
+                type: control.getAttribute("type"),
+                ...rect(control),
+                borderRadius: cs.borderRadius,
+                borderColor: cs.borderTopColor,
+                backgroundColor: cs.backgroundColor,
+                fontSize: cs.fontSize,
+                paddingLeft: cs.paddingLeft,
+                ariaDescribedBy: control.getAttribute("aria-describedby"),
+                ariaInvalid: control.getAttribute("aria-invalid"),
+              };
+            },
+          ),
+          submit: submit
+            ? {
+                text: textOf(submit),
+                ...rect(submit),
+                borderRadius: submitStyle.borderRadius,
+                backgroundColor: submitStyle.backgroundColor,
+                color: submitStyle.color,
+                borderColor: submitStyle.borderTopColor,
+                fontSize: submitStyle.fontSize,
+                fontWeight: submitStyle.fontWeight,
+                letterSpacing: submitStyle.letterSpacing,
+              }
+            : null,
+          errorCount: errors.length,
+          errors,
+          // The design's login form is a bare 480px .form-box (line 51) and paints no
+          // .card at all, so there is no card padding to report on this screen.
+          cardPadding: null,
+        };
+      })()
+    : null;
+
+  // Additive: the two auth screens' shared branding column. New key only - every key above
+  // keeps its name, order and shape, no existing strategy is reordered or redefined, and the
+  // exit codes are untouched. The key is null off the two auth routes, so every other capture
+  // is unchanged.
+  //
+  // Design: frontend/design/html/voleytrack-login.html is the only screen the pack draws
+  // outside the shell, and its .branding rule (line 43) is that column: the --surface fill
+  // with a 1px --border right edge and 80px padding, a 48px/900 -0.03em wordmark beside a 54px
+  // mark (lines 44-45) and a 16px --muted claim capped at 32ch (line 46). The login screen was
+  // aligned to it first and the change-password screen shares the same block, so this probe
+  // exists to report whether the two columns measure identically.
+  //
+  // The gate is the route pathname (not a control id or a class), so the SAME key reports the
+  // before and the after of the unification instead of appearing only once the code changed.
+  // The first element child of main is the branding column on both screens and the last is the
+  // form column, which is what the structural selector relies on rather than a data attribute
+  // the pre-unification change-password screen does not carry.
+  const authBrandingPathname = location.pathname;
+  const isAuthBrandingRoute =
+    authBrandingPathname === "/login" || authBrandingPathname === "/change-password";
+  const authBrandingMain = isAuthBrandingRoute ? document.querySelector("main") : null;
+  const authBranding = authBrandingMain
+    ? (() => {
+        const boxOf = (el) => {
+          if (!el) return null;
+          const cs = getComputedStyle(el);
+          return {
+            ...rect(el),
+            paddingTop: cs.paddingTop,
+            paddingRight: cs.paddingRight,
+            paddingBottom: cs.paddingBottom,
+            paddingLeft: cs.paddingLeft,
+            backgroundColor: cs.backgroundColor,
+            borderRightWidth: cs.borderRightWidth,
+            borderRightColor: cs.borderRightColor,
+            display: cs.display,
+            flexDirection: cs.flexDirection,
+            justifyContent: cs.justifyContent,
+          };
+        };
+        const typographyOf = (el) => {
+          if (!el) return null;
+          const cs = getComputedStyle(el);
+          return {
+            text: (el.textContent || "").trim().replace(/\\s+/g, " "),
+            fontSize: cs.fontSize,
+            fontWeight: cs.fontWeight,
+            lineHeight: cs.lineHeight,
+            letterSpacing: cs.letterSpacing,
+            color: cs.color,
+            marginTop: cs.marginTop,
+            marginBottom: cs.marginBottom,
+            maxWidth: cs.maxWidth,
+          };
+        };
+        const branding = authBrandingMain.firstElementChild;
+        const formColumn = authBrandingMain.lastElementChild;
+        return {
+          route: authBrandingPathname,
+          gridTemplateColumns: getComputedStyle(authBrandingMain).gridTemplateColumns,
+          branding: branding
+            ? {
+                testId: branding.getAttribute("data-testid"),
+                ...boxOf(branding),
+                // The mark is the logo block's own aria-hidden element. A wordmark that
+                // carries the mark as bare text instead reports 0 here rather than a mark
+                // the screen does not have.
+                markCount: branding.querySelectorAll('[aria-hidden="true"]').length,
+                logo: typographyOf(branding.firstElementChild),
+                claim: typographyOf(branding.lastElementChild),
+              }
+            : null,
+          formColumn: formColumn
+            ? { testId: formColumn.getAttribute("data-testid"), ...boxOf(formColumn) }
+            : null,
+        };
+      })()
+    : null;
+
+  // Additive: the four scoring screens' own header treatment. New key only - every key above
+  // keeps its name, order and shape, no existing strategy is reordered or redefined, and the
+  // exit codes are untouched. The key is null off the four scoring routes, so every other
+  // capture is unchanged.
+  //
+  // Those four screens were the last consumers of the legacy SectionShell header, which is
+  // being migrated onto the shared PageHeader primitive. The key is gated on the route path
+  // (not on a class or a data attribute) so the SAME key reports the before and the after of
+  // the migration instead of appearing only once the code has changed: the first main header
+  // is the screen's own header on both implementations, and its parent is the wrapper element
+  // the screen chose (the legacy section.space-y-6 before, the replacement box after).
+  // Reading the resolved wrapper/header classes, the heading's level and computed size and
+  // tracking, the eyebrow's computed family and size and the actions container makes the
+  // header treatment machine-readable at the pixel level, which a static-markup test cannot do.
+  const scoringPathname = location.pathname;
+  const isScoringHeaderRoute =
+    scoringPathname === "/admin/matches/setup" ||
+    /\\/(?:scoring|point-entry|summary)$/.test(scoringPathname);
+  const scoringHeaderElement = isScoringHeaderRoute
+    ? document.querySelector("main header")
+    : null;
+  const scoringHeader = scoringHeaderElement
+    ? (() => {
+        const textOf = (el) =>
+          el ? (el.innerText || el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 80) : null;
+        const describe = (el, keys) => {
+          if (!el) return null;
+          const cs = getComputedStyle(el);
+          return {
+            tag: el.tagName.toLowerCase(),
+            text: textOf(el),
+            ...Object.fromEntries(keys.map((key) => [key, cs[key]])),
+          };
+        };
+        const wrapper = scoringHeaderElement.parentElement;
+        const column = scoringHeaderElement.firstElementChild;
+        const children = column ? Array.from(column.children) : [];
+        const paragraphs = children.filter((el) => el.tagName === "P");
+        const heading = column ? column.querySelector("h1, h2") : null;
+        const eyebrow = paragraphs.length > 1 ? paragraphs[0] : null;
+        const description = paragraphs.length > 0 ? paragraphs[paragraphs.length - 1] : null;
+        const actions = scoringHeaderElement.children[1] ?? null;
+        return {
+          route: scoringPathname,
+          wrapper: wrapper
+            ? { tag: wrapper.tagName.toLowerCase(), className: wrapper.className }
+            : null,
+          header: {
+            tag: scoringHeaderElement.tagName.toLowerCase(),
+            className: scoringHeaderElement.className,
+          },
+          heading: describe(heading, [
+            "fontSize",
+            "fontWeight",
+            "lineHeight",
+            "letterSpacing",
+            "textTransform",
+            "color",
+          ]),
+          eyebrow: describe(eyebrow, [
+            "fontFamily",
+            "fontSize",
+            "fontWeight",
+            "letterSpacing",
+            "textTransform",
+            "color",
+          ]),
+          description: describe(description, ["fontSize", "maxWidth"]),
+          actions: actions
+            ? { tag: actions.tagName.toLowerCase(), className: actions.className, text: textOf(actions) }
+            : null,
+          // The heading is the screens' h1 after the migration and was an h2 before, so the
+          // count is reported instead of assumed; mainHeadingCount distinguishes "the screen
+          // owns exactly one h1" from "the shell chrome's h1 leaked in".
+          mainHeadingCount: document.querySelectorAll("main h1").length,
+          tabIndex: heading ? heading.getAttribute("tabindex") : null,
+        };
+      })()
+    : null;
+
+  // Additive: the accessibility-semantics census. New keys only - every key above keeps its
+  // name, order and shape, no existing strategy is reordered or redefined, and the exit
+  // codes are untouched. Two defects live in the accessible state of a page rather than in
+  // its pixels, so the DOM's own semantics are read instead of a class name:
+  //
+  //   currentPage  - every element carrying aria-current, with the value it carries, plus
+  //                  the count of aria-current="page". The value "page" means "this link
+  //                  points at the page you are on", so exactly one element per page may
+  //                  carry it; a section link that merely contains the current location
+  //                  must not.
+  //   liveRegions  - every element that is a live region, either through role="status" or
+  //                  through an explicit aria-live, with its role, politeness, accessible
+  //                  label, text and whether it sits inside navigation. It also snapshots
+  //                  each region's text twice, 2.6s apart, so regions whose content is bound
+  //                  to changing state can be told apart from those painted with a fixed
+  //                  literal.
+  const censusTextOf = (el) =>
+    el ? (el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 80) : null;
+  const navLabelOf = (el) => {
+    const nav = el.closest("nav");
+    if (!nav) return null;
+    return nav.getAttribute("aria-label") || "(nav sin etiqueta)";
+  };
+
+  const currentPage = Array.from(document.querySelectorAll("[aria-current]")).map((el) => ({
+    tag: el.tagName.toLowerCase(),
+    value: el.getAttribute("aria-current"),
+    label: censusTextOf(el),
+    href: el.getAttribute("href"),
+    nav: navLabelOf(el),
+  }));
+  const currentPageCensus = {
+    pageCount: currentPage.filter((entry) => entry.value === "page").length,
+    entries: currentPage,
+  };
+
+  const liveRegionElements = Array.from(
+    document.querySelectorAll('[role="status"], [aria-live]'),
+  );
+  const liveRegionTextBefore = liveRegionElements.map(censusTextOf);
+  // The second sample only exists to tell a region whose text is bound to changing state
+  // from one painted with a fixed literal, and the screen where that matters is the one
+  // carrying more than one region - so only that screen pays the extra window. The fixture
+  // set this app renders carries no clock, so no region in it changes on its own; the flag
+  // therefore reads "the text did not change inside the window", not "the content is static".
+  if (liveRegionElements.length > 1) {
+    await new Promise((resolve) => setTimeout(resolve, 2600));
+  }
+  const liveRegionTextAfter = liveRegionElements.map(censusTextOf);
+  const liveRegionCensus = {
+    count: liveRegionElements.length,
+    statusCount: liveRegionElements.filter((el) => el.getAttribute("role") === "status").length,
+    entries: liveRegionElements.map((el, index) => ({
+      tag: el.tagName.toLowerCase(),
+      testId: el.getAttribute("data-testid"),
+      role: el.getAttribute("role"),
+      ariaLive: el.getAttribute("aria-live"),
+      ariaAtomic: el.getAttribute("aria-atomic"),
+      label: el.getAttribute("aria-label"),
+      // The visible text the region shows (sr-only text included), and the same text after
+      // a 2.6s window (sampled only when the route carries more than one region): a region
+      // whose text differs between the two was rewritten during the capture.
+      text: liveRegionTextBefore[index],
+      textAfter: liveRegionTextAfter[index],
+      changesOverTime: liveRegionTextBefore[index] !== liveRegionTextAfter[index],
+      nav: navLabelOf(el),
+      inSidebar: Boolean(el.closest("aside")),
+    })),
+  };
+
+  // Additive: new key only, every key above keeps its name, order and shape, and no existing
+  // strategy is reordered, redefined or removed. The player ficha's five .stat-bar rows.
+  // The design's bar treatment (frontend/design/html/voleytrack-admin.css:300-305) gives BOTH
+  // halves of a row one tone: ".stat-bar-val{...color:var(--accent)}" is the value ink and
+  // ".stat-bar i{...background:var(--accent)}" is the fill, with the accent resolving to
+  // #ff8c42 / rgb(255, 140, 66). Reporting each row's resolved fill and ink is what makes
+  // "all five bars use the design accent" a measured value rather than a claim; before this
+  // probe the route's bar colours were not machine-readable at all, which is how a raw
+  // Tailwind "purple-500" / "pink-500" could ship unmeasured.
+  const statBarBody = document.querySelector('[data-testid="player-stat-breakdown-card-body"]');
+  const statBarRows = statBarBody
+    ? Array.from(statBarBody.querySelectorAll('[role="progressbar"]')).map((bar) => {
+        const row = bar.parentElement;
+        const fill = bar.firstElementChild;
+        const value = row ? row.children[1] : null;
+        const fillStyle = fill ? getComputedStyle(fill) : null;
+        const valueStyle = value ? getComputedStyle(value) : null;
+        const designAccent = "rgb(255, 140, 66)";
+
+        return {
+          ariaLabel: bar.getAttribute("aria-label"),
+          fillBackgroundColor: fillStyle ? fillStyle.backgroundColor : null,
+          fillClassName: fill ? fill.className : null,
+          trackBackgroundColor: getComputedStyle(bar).backgroundColor,
+          valueColor: valueStyle ? valueStyle.color : null,
+          valueText: value ? (value.textContent || "").trim() : null,
+          // The design's own invariant: this row's fill and its value ink are the same tone,
+          // and that tone is the accent.
+          matchesDesign:
+            Boolean(fillStyle) &&
+            Boolean(valueStyle) &&
+            fillStyle.backgroundColor === designAccent &&
+            valueStyle.color === designAccent,
+        };
+      })
+    : null;
+  const statBars = statBarRows
+    ? {
+        count: statBarRows.length,
+        expectedFillColor: "rgb(255, 140, 66)",
+        allMatchDesign: statBarRows.length > 0 && statBarRows.every((row) => row.matchesDesign),
+        rows: statBarRows,
+      }
+    : null;
+
   return {
     title: document.title,
     readyState: document.readyState,
@@ -1647,6 +2222,12 @@ const PROBE_SOURCE = `(async () => {
       modals,
       filterPanels,
       listStates,
+      // Additive keys: new names only, every key above is unchanged. filterPanelDetail reports
+      // the design's panel contents (each labelled control with its options) and the toggle's
+      // measured expanded/closed state, and filterPanelEffect the visible-row count produced by
+      // actually applying each of the panel's filter values.
+      filterPanelDetail,
+      filterPanelEffect,
       // Additive keys: new names only, every key above is unchanged. adminTournamentCards reports
       // the admin list's card treatment and its link destination, adminTournamentRegions which of
       // the tournament frame's regions rendered on the route, infoRows the Informacion and
@@ -1655,6 +2236,11 @@ const PROBE_SOURCE = `(async () => {
       adminTournamentCards,
       adminTournamentRegions,
       infoRows,
+      // Additive key: new name only, every key above is unchanged. infoRowTreatment reports the
+      // resolved ink and font weight of each InfoRow's label and value, which is the
+      // label-emphasis contract the design declares at voleytrack-admin.css:121-122 and that
+      // the infoRows key (text only) cannot see.
+      infoRowTreatment,
       adminTournamentTabs,
       // Additive keys: new names only, every key above is unchanged. adminTeamSquad reports the
       // inline roster builder's chips and their named remove affordances, adminTeamRegions which
@@ -1670,6 +2256,30 @@ const PROBE_SOURCE = `(async () => {
       // because the design models no control here.
       planilleroAssigned,
       planilleroSetup,
+      // Additive key: new name only, every key above is unchanged. loginScreen reports the
+      // login route's own columns, branding panel, typography, controls and submit, and is
+      // null on every other route.
+      loginScreen,
+      // Additive key: new name only, every key above is unchanged. authBranding reports the
+      // branding and form columns of the two auth screens - their measured boxes, the mark's
+      // presence, the wordmark and claim typography and the main grid template - and is null
+      // on every other route.
+      authBranding,
+      // Additive key: new name only, every key above is unchanged. scoringHeader reports the
+      // four scoring screens' wrapper, header row, heading level and computed typography,
+      // eyebrow computed typography, description measure, actions container, the main h1 count
+      // and the heading's tabindex, and is null on every other route.
+      scoringHeader,
+      // Additive keys: new names only, every key above is unchanged. currentPageCensus counts
+      // the elements claiming aria-current="page" and lists every aria-current value with its
+      // label, href and enclosing nav; liveRegionCensus lists every live region with its role,
+      // politeness and text, and whether that text changed across a 2.6s window.
+      currentPageCensus,
+      liveRegionCensus,
+      // Additive key: new name only, every key above is unchanged. statBars reports each of the
+      // player ficha's five stat rows with its resolved fill, track and value ink, and is null
+      // on every other route.
+      statBars,
       content: {
         innerTextLength: innerText.trim().length,
         innerTextPreview: innerText.trim().replace(/\\s+/g, " ").slice(0, 160),

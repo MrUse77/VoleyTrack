@@ -7,7 +7,14 @@ import { TournamentDetailPage } from "./TournamentDetailPage";
 let tournamentId = PUBLIC_TOURNAMENTS.inProgress[0].id;
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to, ...props }: { children: ReactNode; to: string; "aria-current"?: "page" }) => <a href={to} {...props}>{children}</a>,
+  Link: ({ activeOptions: _exactMarking, children, to, ...props }: { activeOptions?: unknown; children: ReactNode; to: string; "aria-current"?: "page" }) => {
+    // `activeOptions` is the exactness option the app's own Link
+    // (components/navigation/NavigationLink) always passes; a plain anchor has no such
+    // attribute, so the option is consumed here instead of leaking into the markup.
+    void _exactMarking;
+
+    return <a href={to} {...props}>{children}</a>;
+  },
   useParams: () => ({ id: tournamentId }),
 }));
 
@@ -81,5 +88,25 @@ describe("public tournament detail", () => {
     expect(html).toContain(tournament.statusLabel);
     expect(html).toContain(tournament.location);
     expect(html).not.toContain(PUBLIC_TOURNAMENTS.inProgress[0].name);
+  });
+
+  it("pins the emphasis each Información row gives its label and its value", () => {
+    const tournament = PUBLIC_TOURNAMENTS.inProgress[0];
+    const html = renderTournamentDetail(tournament.id);
+    const cardBody = html.slice(html.indexOf('data-testid="tournament-info-card-body"'));
+
+    // Design: frontend/design/html/voleytrack-admin.css:121-122 (the same rules at
+    // frontend/design/html/voleytrack-torneos.css:45-46)
+    //   .info-row b{font-weight:700}
+    //   .info-row span{color:var(--muted)}
+    // The label carries the emphasis and the value is muted. Pinned as one contiguous fragment
+    // per row, so a swap of the two treatments cannot pass on the two classes alone; this is
+    // the rendered-screen half of the primitive's own pin in core.test.tsx.
+    expect(cardBody).toContain(
+      `<span class="font-bold text-vt-text">Nombre</span><span class="text-vt-muted">${tournament.name}</span>`,
+    );
+    expect(cardBody).toContain('<span class="font-bold text-vt-text">Estado</span>');
+    // The inverted treatment the primitive used to render may not come back.
+    expect(cardBody).not.toContain('<span class="text-vt-muted">Nombre</span>');
   });
 });

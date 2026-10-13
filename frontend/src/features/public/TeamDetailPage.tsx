@@ -1,4 +1,5 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { Badge } from "../../components/primitives/Badge";
 import { Card, CardBody, CardHeader } from "../../components/primitives/Card";
 import { Num } from "../../components/primitives/Num";

@@ -43,6 +43,21 @@ function isActivePath(
   return matchingItems[0]?.href === href;
 }
 
+/**
+ * Whether the entry *is* the current location, rather than a section that contains it.
+ *
+ * `isActivePath` above answers "is this the entry this shell is highlighting?", which on a
+ * nested route is the section entry: on `/tournaments/$id/standings`, `Torneos` is the
+ * highlighted destination. That is the right answer for the accent fill, and the wrong one
+ * for `aria-current`: `aria-current="page"` means "this link points at the page you are on",
+ * and `Torneos` points at the tournament *list*. A section entry that merely contains the
+ * current location is what ARIA defines `aria-current="location"` for, so the two questions
+ * are kept apart here - one decides the fill, this one decides what the entry claims.
+ */
+function isExactPath(currentPath: string, href: string) {
+  return currentPath === href || (href !== "/" && currentPath === `${href}/`);
+}
+
 export function Sidebar({
   currentPath,
   navigation,
@@ -103,12 +118,20 @@ export function Sidebar({
               <ul className="space-y-1">
                 {group.items.map((item) => {
                   const active = isActivePath(currentPath, item.href, navigation);
+                  // The accent fill stays keyed on `active` (the design paints the section you
+                  // are inside); only the accessible value distinguishes the page itself from
+                  // the section that contains it.
+                  const currentValue = active
+                    ? isExactPath(currentPath, item.href)
+                      ? "page"
+                      : "location"
+                    : undefined;
                   const stateClass = active ? activeStateClass : inactiveStateClass;
 
                   return (
                     <li key={item.href}>
                       <a
-                        aria-current={active ? "page" : undefined}
+                        aria-current={currentValue}
                         // Design: frontend/design/html/voleytrack.css:53 `.nav-item{width:100%;
                         // display:flex;align-items:center;gap:10px;padding:10px 10px;
                         // border-radius:10px;border:1px solid transparent;color:var(--muted);

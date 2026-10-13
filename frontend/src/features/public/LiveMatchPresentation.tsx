@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import { Avatar } from "../../components/primitives/Avatar";
 import { Badge } from "../../components/primitives/Badge";
 import { Card, CardBody, CardHeader } from "../../components/primitives/Card";
@@ -113,12 +113,22 @@ function LiveScoreboard({ detail }: { detail: LiveMatchDetailFixture }) {
       </div>
 
       {/*
-       * A score that changes is the one thing on this screen that must be announced: the
-       * sets score and the current set score live inside one atomic polite region, and the
-       * painted digits are replaced for assistive tech by the full sentence above them, so
-       * "2 : 1" is never read as bare punctuation.
+       * A score that changes is the one thing on this screen that must be announced, so this
+       * is the screen's only live region: `role="status"` (which carries an implicit
+       * `aria-live="polite"` and `aria-atomic="true"`, both restated here because this region
+       * already set them) around the sets score and the current set score. The two `LivePill`s
+       * elsewhere on the screen are plain labels now - a static pill is not a live region, and
+       * three competing ones made the one that matters harder to follow. The painted digits
+       * are replaced for assistive tech by the full sentence above them, so "2 : 1" is never
+       * read as bare punctuation.
        */}
-      <div aria-atomic="true" aria-live="polite" className="text-center" data-testid="live-score-region">
+      <div
+        aria-atomic="true"
+        aria-live="polite"
+        className="text-center"
+        data-testid="live-score-region"
+        role="status"
+      >
         <p className="sr-only">
           {`${match.homeTeamName} ${setsLabel(detail.homeSetsWon)}, ${match.awayTeamName} ${setsLabel(
             detail.awaySetsWon,

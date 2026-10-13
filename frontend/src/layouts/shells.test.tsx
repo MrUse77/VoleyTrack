@@ -4,15 +4,23 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
+    activeOptions: _exactMarking,
     children,
     search,
     to,
     ...props
-  }: { children: ReactNode; search?: Record<string, string>; to: string } & AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a href={search ? `${to}?${new URLSearchParams(search).toString()}` : to} {...props}>
-      {children}
-    </a>
-  ),
+  }: { activeOptions?: unknown; children: ReactNode; search?: Record<string, string>; to: string } & AnchorHTMLAttributes<HTMLAnchorElement>) => {
+    // The app's Link (`components/navigation/NavigationLink`) always passes the exactness
+    // option its page marking depends on; a plain anchor has no such attribute, so the option
+    // is consumed here instead of leaking into the markup.
+    void _exactMarking;
+
+    return (
+      <a href={search ? `${to}?${new URLSearchParams(search).toString()}` : to} {...props}>
+        {children}
+      </a>
+    );
+  },
   Outlet: () => <div data-route-content="true">Route content</div>,
 }));
 
@@ -189,7 +197,13 @@ describe("application shells", () => {
     expect(matches).toContain("03");
     expect(dashboard).toMatch(/aria-current="page"[^>]*href="\/"/);
     expect(matches).toMatch(/aria-current="page"[^>]*href="\/matches"/);
-    expect(matchDetail).toMatch(/aria-current="page"[^>]*href="\/matches"/);
+    // On a nested route the entry this shell highlights is the section that CONTAINS the
+    // current location, not the location itself, so it carries ARIA's `location` value and
+    // never `page`. This assertion used to read `page` on `/matches` for the current
+    // `/matches/fixture-1`, which is the defect: the section entry and the page entry both
+    // announced themselves as "the current page".
+    expect(matchDetail).toMatch(/aria-current="location"[^>]*href="\/matches"/);
+    expect(matchDetail).not.toContain('aria-current="page"');
   });
 
   it("renders the design nav-item typography, geometry and active fill on both shells", () => {

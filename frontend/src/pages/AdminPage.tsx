@@ -44,7 +44,7 @@ export function AdminPage() {
 								{card.icon}
 							</div>
 							<div className="space-y-1">
-								<h3 className="text-lg font-bold uppercase tracking-[-0.04em] text-white">{card.title}</h3>
+								<h3 className="text-lg font-bold uppercase tracking-[-0.04em] text-vt-text">{card.title}</h3>
 								<p className="max-w-md text-sm leading-6 text-vt-muted">{card.description}</p>
 							</div>
 						</div>

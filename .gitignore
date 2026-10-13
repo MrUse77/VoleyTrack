@@ -13,3 +13,6 @@ backend/bin/
 
 # Documentation analysis symlink
 DocsAnalisis
+
+# Node modules at repo root
+node_modules/

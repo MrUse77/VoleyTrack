@@ -33,15 +33,22 @@ vi.mock("@tanstack/react-router", () => ({
   // reconciliation puts in the URL. The default click is cancelled so jsdom does not attempt a real
   // navigation for the href; the page drives the view through the location it reads.
   Link: ({
+    activeOptions: _exactMarking,
     children,
     search,
     to,
     ...props
   }: {
+    activeOptions?: unknown;
     children?: ReactNode;
     search?: Record<string, unknown>;
     to: string;
   } & ComponentPropsWithoutRef<"a">) => {
+    // `activeOptions` is the exactness option the app's own Link
+    // (components/navigation/NavigationLink) always passes; a plain anchor has no such
+    // attribute, so the option is consumed here instead of leaking into the markup.
+    void _exactMarking;
+
     const query = new URLSearchParams(
       Object.entries(search ?? {}).map(([key, value]) => [key, String(value)]),
     ).toString();

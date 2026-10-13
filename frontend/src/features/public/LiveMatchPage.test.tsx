@@ -8,12 +8,18 @@ let matchId = PUBLIC_MATCHES.live[0].id;
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
+    activeOptions: _exactMarking,
     children,
     to,
     ...props
-  }: { children: ReactNode; to: string } & AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a href={to} {...props}>{children}</a>
-  ),
+  }: { activeOptions?: unknown; children: ReactNode; to: string } & AnchorHTMLAttributes<HTMLAnchorElement>) => {
+    // `activeOptions` is the exactness option the app's own Link
+    // (components/navigation/NavigationLink) always passes; a plain anchor has no such
+    // attribute, so the option is consumed here instead of leaking into the markup.
+    void _exactMarking;
+
+    return <a href={to} {...props}>{children}</a>;
+  },
   useLocation: () => ({ search: {} }),
   useParams: () => ({ id: matchId }),
 }));
@@ -118,6 +124,35 @@ describe("public live match detail", () => {
     // The design's mono score treatment (.num, voleytrack.css:100) is what makes the
     // changing figures line up.
     expect(html).toContain("font-mono tabular-nums");
+  });
+
+  it("keeps the score as the only live region while the pills stay readable content", () => {
+    const html = renderLiveMatch("match-liga-a1-river-boca");
+
+    // This screen used to carry three live regions: the score, plus the "SET n EN VIVO" and
+    // "AUTO · 2s" pills, whose text never changes. Two of the three were `role="status"`, so a
+    // screen reader was subscribed to three regions to follow for one moving score - and the
+    // two that never change could only add noise. The score is the one region that carries
+    // changing content, so it is the one that is announced; the pills are still rendered and
+    // still read as ordinary content when the reader reaches them.
+    expect(html.match(/role="status"/g)).toHaveLength(1);
+    expect(html.match(/aria-live=/g)).toHaveLength(1);
+    expect(html.match(/aria-atomic=/g)).toHaveLength(1);
+
+    const scoreRegion = tagFor(html, "live-score-region")!;
+    expect(scoreRegion).toContain('role="status"');
+    expect(scoreRegion).toContain('aria-live="polite"');
+    expect(scoreRegion).toContain('aria-atomic="true"');
+
+    // Not removed: both pills are still on the screen with their words intact.
+    expect(html).toContain("SET 3 EN VIVO");
+    expect(html).toContain("AUTO · 2s");
+    const dangerFilledPills = html.match(/<span class="[^"]*bg-vt-danger[^"]*"[^>]*>/g) ?? [];
+    expect(dangerFilledPills.length).toBeGreaterThan(0);
+    for (const pill of dangerFilledPills) {
+      expect(pill).not.toContain("role=");
+      expect(pill).not.toContain("aria-live");
+    }
   });
 
   it("renders the court as twelve labelled positions with the net, the 3m lines and a text alternative", () => {

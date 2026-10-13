@@ -31,27 +31,33 @@ describe("public tournaments", () => {
   /**
    * The previous version of this screen opened with four status KPI cards, a `TabBar` of
    * controlled status tabs and a flat list of cards. The design has none of the first two:
-   * it is a page head, a filter panel whose two dimensions are "Tipo" and "Etapa", and a
-   * `.cards-grid` of clickable tournament cards carrying a mono eyebrow, a title, a muted
-   * detail line and badges (frontend/design/html/voleytrack-torneos.html). Those assertions
-   * were replaced rather than relaxed.
+   * it is a page head with a `Filtros` toggle, a collapsible panel whose two dimensions are
+   * "Tipo" and "Etapa", and a `.cards-grid` of clickable tournament cards carrying a mono
+   * eyebrow, a title, a muted detail line and badges
+   * (frontend/design/html/voleytrack-torneos.html:45-57). Those assertions were replaced
+   * rather than relaxed, and the two pill groups that used to stand in for the panel are gone
+   * because the design has no `.filters` row on this screen at all.
    */
-  it("renders the design's page head, both filter dimensions and the card grid", () => {
+  it("renders the design's page head, its collapsible filter panel and the card grid", () => {
     const html = renderTournaments();
 
     expect(html).toContain("Torneos");
     expect(html).toContain("Explorá torneos activos, posiciones, próximos partidos y resultados recientes.");
-    expect(html).toContain('aria-label="Filtrar torneos por tipo"');
-    expect(html).toContain('aria-label="Filtrar torneos por etapa"');
-    expect(html.match(/role="group"/g)).toHaveLength(2);
     expect(html).toContain('data-testid="tournaments-grid"');
-    expect(html).toContain('aria-pressed="true"');
     for (const tournament of PUBLIC_TOURNAMENTS.all) {
       expect(html).toContain(tournament.name);
       expect(html).toContain(tournament.dateLabel);
       expect(html).toContain(tournament.typeLabel);
       expect(html).toContain(tournament.location);
     }
+
+    // The design's toggle (voleytrack-torneos.html:45) and its panel (:46), and the absence of
+    // the pill row the design never renders on this screen.
+    expect(html).toContain('aria-controls="tournaments-filter-panel"');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain('id="tournaments-filter-panel"');
+    expect(html).not.toContain("role=\"group\"");
+    expect(html).not.toContain("aria-pressed");
   });
 
   it("locks the design's responsive grid behind its own column counts and gap", () => {
@@ -63,22 +69,36 @@ describe("public tournaments", () => {
     expect(html).toContain("max-w-[1104px]");
   });
 
-  it("keeps both filter groups as real buttons that publish their state", () => {
+  it("holds the design's labelled selects in its panel and starts it closed", () => {
     const html = renderTournaments({ status: "en-curso", type: "copa" });
-    const typeGroup = html.slice(
-      html.indexOf('aria-label="Filtrar torneos por tipo"'),
-      html.indexOf('aria-label="Filtrar torneos por etapa"'),
-    );
-    const stageGroup = html.slice(html.indexOf('aria-label="Filtrar torneos por etapa"'));
+    const panel = html.slice(html.indexOf('id="tournaments-filter-panel"'));
+
+    // Design: voleytrack-torneos.html:49-50 — one `.tournament-filter-field` per dimension,
+    // each a real `<label for>` plus its `<select>`.
+    expect(panel).toContain('<label class="text-[13px] font-bold text-vt-text" for="tournaments-type-filter">Tipo</label>');
+    expect(panel).toContain('id="tournaments-type-filter"');
+    expect(panel).toContain('<label class="text-[13px] font-bold text-vt-text" for="tournaments-stage-filter">Etapa</label>');
+    expect(panel).toContain('id="tournaments-stage-filter"');
 
     for (const label of ["Todos", "Liga", "Copa"]) {
-      expect(typeGroup).toContain(label);
+      expect(panel).toContain(`>${label}</option>`);
     }
     for (const label of ["Todas", "En curso", "Próximos", "Finalizados"]) {
-      expect(stageGroup).toContain(label);
+      expect(panel).toContain(`>${label}</option>`);
     }
-    expect(typeGroup.match(/aria-pressed="true"/g)).toHaveLength(1);
-    expect(stageGroup.match(/aria-pressed="true"/g)).toHaveLength(1);
+
+    // The design's third control, `Equipos mínimos`, is omitted: every fixture tournament
+    // shares the same eight-team standings list, so the dimension cannot discriminate.
+    expect(html).not.toContain("Equipos mínimos");
+    expect(html).not.toContain("tournaments-teams-filter");
+
+    // The panel starts closed, and the `hidden` attribute is what exposes that state next to
+    // the toggle's `aria-expanded`.
+    expect(html).toMatch(/hidden="" id="tournaments-filter-panel"/);
+
+    // The design's footer: the result count and the clear action.
+    expect(panel).toContain('data-testid="tournaments-results-count"');
+    expect(panel).toContain("Limpiar filtros");
   });
 
   it("renders the explicit loading state override without tournament content", () => {

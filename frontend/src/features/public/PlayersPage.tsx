@@ -1,4 +1,5 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@tanstack/react-router";
+import { NavigationLink as Link } from "../../components/navigation/NavigationLink";
 import type { DataTableColumn } from "../../components/primitives/DataTable";
 import { DataTable } from "../../components/primitives/DataTable";
 import { Card } from "../../components/primitives/Card";
