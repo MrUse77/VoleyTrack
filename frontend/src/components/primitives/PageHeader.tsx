@@ -1,4 +1,4 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import type { HTMLAttributes, ReactNode, Ref } from "react";
 
 /**
  * `HTMLAttributes` already declares a `title?: string` (the tooltip attribute), which
@@ -10,6 +10,27 @@ import type { HTMLAttributes, ReactNode } from "react";
 type PageHeaderProps = Omit<HTMLAttributes<HTMLElement>, "title"> & {
   actions?: ReactNode;
   description?: ReactNode;
+  /**
+   * The design's `.match-source` line above the heading
+   * (frontend/design/html/voleytrack-admin.css:201 — mono 9px/800, `.06em` tracking,
+   * uppercase, `--muted-2`). `.page-head p` gives it the same 6px top margin as the
+   * description below the heading, and the heading's own margin is 0, so the design's
+   * `eyebrow / h1 / meta` stack is exactly three children with one 6px gap each side.
+   *
+   * It is opt-in because the design uses it on one screen only: the planillero's setup view
+   * (`voleytrack-planillero.html:25`, "Preparación del partido"). Every other page renders an
+   * h1 with no eyebrow and is untouched by the prop.
+   */
+  eyebrow?: ReactNode;
+  /**
+   * The design's planillero moves focus to its own setup heading
+   * (`document.getElementById('match-setup-title').focus()`, and the design's markup gives that
+   * h1 `tabindex="-1"`, `voleytrack-planillero.html:25`), so the heading must be a programmatic
+   * focus target exactly when a caller asks for one. `tabIndex={-1}` is therefore rendered only
+   * alongside a ref: a plain page header keeps the attribute-free `<h1>` it has always had, and
+   * the 30 screens that render one are not given a focus target they never use.
+   */
+  headingRef?: Ref<HTMLHeadingElement>;
   title: ReactNode;
   /**
    * @deprecated The design has a single `.page-head` treatment, so `compact` no longer
@@ -23,6 +44,8 @@ export function PageHeader({
   actions,
   className = "",
   description,
+  eyebrow,
+  headingRef,
   title,
   // Destructured only so the deprecated prop is never spread onto <header> as an invalid
   // DOM attribute. It intentionally changes nothing, because the design defines one
@@ -34,13 +57,22 @@ export function PageHeader({
   return (
     <header className={`flex flex-col items-stretch gap-6 sm:flex-row sm:items-start sm:justify-between ${className}`.trim()} {...props}>
       <div className="min-w-0">
+        {eyebrow ? (
+          <p className="mt-1.5 font-mono text-[9px] font-extrabold tracking-[0.06em] text-vt-muted-2 uppercase">
+            {eyebrow}
+          </p>
+        ) : null}
         {/*
          * Design: frontend/design/html/voleytrack.css:66
          * `.page-head h1{font-size:28px;font-weight:900;letter-spacing:-0.02em;margin:0;line-height:1}`.
          * Both former variants now share it, because the design defines one `.page-head`
          * heading and never a compact one (see `page-head` in frontend/design/html/*.html).
          */}
-        <h1 className="text-[28px] font-black leading-none tracking-[-0.02em] text-vt-text">
+        <h1
+          className="text-[28px] font-black leading-none tracking-[-0.02em] text-vt-text"
+          ref={headingRef}
+          tabIndex={headingRef ? -1 : undefined}
+        >
           {title}
         </h1>
         {/*

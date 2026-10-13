@@ -344,8 +344,12 @@ describe("core primitives", () => {
     // tournament routes render through the shared tournament frame, and the three content tabs
     // lost their own uniform-padding header and panel cards (the same content is now the
     // frame's card and each panel's table), so the measured total moved to 70 across 28
-    // production files and the floors move to those values.
-    expect(cards.length).toBeGreaterThanOrEqual(81);
+    // production files and the floors move to those values. T25 then aligned the planillero, which
+    // replaced the control-room screen's four uniform-padding Cards with two structural ones (the
+    // empty state's card and the setup card), so the measured total moved 81 → 79 across the same 35
+    // production files and the total floor moves with it, while the legacy form stays at its measured
+    // 24/8 and neither legacy ceiling moves.
+    expect(cards.length).toBeGreaterThanOrEqual(79);
     expect(new Set(cards.map(({ file }) => file)).size).toBeGreaterThanOrEqual(35);
 
     // A JSX spread could inject `padded={false}` (or a shadowing prop) behind the
@@ -1006,5 +1010,37 @@ describe("core primitives", () => {
     expect(compact).not.toContain("text-[32px]");
     expect(compact).not.toContain('variant="compact"');
     expect(compact).toBe(standard);
+  });
+
+  it("renders the design's opt-in match-source eyebrow and headings keep no focus target by default", () => {
+    const plain = renderToStaticMarkup(<PageHeader title="Partidos" />);
+    const withEyebrow = renderToStaticMarkup(
+      <PageHeader
+        description="Torneo · fecha"
+        eyebrow="Preparación del partido"
+        headingRef={{ current: null }}
+        title="Setup"
+      />,
+    );
+
+    // The default header is unchanged: no eyebrow paragraph and no tabindex on the h1, so the
+    // 30 screens that render one keep the attribute-free heading core.test.tsx pins elsewhere.
+    expect(plain).not.toContain("tabindex");
+    expect(plain).not.toContain("match-source");
+
+    // Design source: frontend/design/html/voleytrack-admin.css:201
+    //   .match-source{font-family:var(--font-mono);font-size:9px;font-weight:800;
+    //                 letter-spacing:.06em;text-transform:uppercase;color:var(--muted-2)}
+    // and voleytrack-planillero.html:25, where the eyebrow paragraph sits ABOVE the h1 inside the
+    // same `.page-head` column, with `.page-head p{margin:6px 0 0}` (voleytrack-admin.css:70)
+    // giving it the same 6px offset as the description below.
+    expect(withEyebrow).toMatch(
+      /<p class="[^"]*mt-1\.5[^"]*font-mono[^"]*text-\[9px\][^"]*font-extrabold[^"]*tracking-\[0\.06em\][^"]*text-vt-muted-2[^"]*uppercase[^"]*">Preparación del partido<\/p>/,
+    );
+    expect(withEyebrow.indexOf("Preparación del partido")).toBeLessThan(withEyebrow.indexOf("<h1"));
+
+    // A heading is a programmatic focus target only when the caller supplies a ref, because the
+    // design's planillero focuses this exact h1 (`tabindex="-1"`, voleytrack-planillero.html:25).
+    expect(withEyebrow).toMatch(/<h1 class="[^"]*text-\[28px\][^"]*"[^>]*tabindex="-1"[^>]*>Setup<\/h1>/);
   });
 });
