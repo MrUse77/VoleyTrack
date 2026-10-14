@@ -34,7 +34,8 @@ class SetControllerTest {
 		OpcionesPuntoDTO dto = new OpcionesPuntoDTO(
 				equipoId,
 				"Club A",
-				List.of(new OpcionesPuntoDTO.JugadorOpcionDTO(jugadorId, "Jugador", "Uno", 1, true)));
+				List.of(new OpcionesPuntoDTO.JugadorOpcionDTO(jugadorId, "Jugador", "Uno", 1, true)),
+				List.of("SAQUE", "ATAQUE", "BLOQUEO", "DEFENSA", "RECEPCION", "ERROR_NO_FORZADO", "ERROR_SAQUE"));
 		when(gestorPartidoPort.cargarOpcionesPunto(setId, equipoId)).thenReturn(dto);
 
 		mockMvc.perform(get("/api/sets/{setId}/equipos/{equipoId}/opciones-punto", setId, equipoId))

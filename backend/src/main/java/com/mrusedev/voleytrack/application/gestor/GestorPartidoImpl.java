@@ -344,7 +344,8 @@ public class GestorPartidoImpl implements GestorPartidoPort {
               .toList();
     }
 
-    return new OpcionesPuntoDTO(equipo.getId(), equipo.getNombreClub(), jugadores);
+    List<String> fundamentos = TipoFundamento.getFundamentos();
+    return new OpcionesPuntoDTO(equipo.getId(), equipo.getNombreClub(), jugadores, fundamentos);
   }
 
   // ── RF-10: Confirmar punto ──
