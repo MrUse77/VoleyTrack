@@ -1,6 +1,7 @@
 package com.mrusedev.voleytrack.adapter.in.websocket;
 
 import com.mrusedev.voleytrack.adapter.websocket.PartidoSessionRegistry;
+import com.mrusedev.voleytrack.adapter.websocket.PizarraBienvenida;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -17,14 +18,21 @@ import java.util.UUID;
 public class PartidoWebSocketHandler extends TextWebSocketHandler {
 	private static final Logger log = LoggerFactory.getLogger(PartidoWebSocketHandler.class);
 	private final  PartidoSessionRegistry registry;
-	public PartidoWebSocketHandler(PartidoSessionRegistry registry){
+	private final PizarraBienvenida bienvenida;
+
+	public PartidoWebSocketHandler(PartidoSessionRegistry registry, PizarraBienvenida bienvenida) {
 		this.registry = registry;
+		this.bienvenida = bienvenida;
 	}
 
 	@Override
 	public void afterConnectionEstablished(WebSocketSession sesion) throws Exception {
 		Optional<UUID> partidoId = partidoIdDe(sesion);
 		if (partidoId.isEmpty()) {
+			sesion.close(CloseStatus.BAD_DATA);
+			return;
+		}
+		if(!bienvenida.enviarEstadoInicial(partidoId.get(), sesion)) {
 			sesion.close(CloseStatus.BAD_DATA);
 			return;
 		}
