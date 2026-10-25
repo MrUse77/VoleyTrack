@@ -1,6 +1,6 @@
 package com.mrusedev.voleytrack.adapter.in.web;
 
-import com.mrusedev.voleytrack.application.dto.JugadorDTO;
+import com.mrusedev.voleytrack.application.dto.out.JugadorDTO;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import java.util.List;
 import java.util.UUID;

@@ -1,9 +1,9 @@
 package com.mrusedev.voleytrack.adapter.in.web;
 
-import com.mrusedev.voleytrack.application.dto.AlineacionPreviewDTO;
-import com.mrusedev.voleytrack.application.dto.ConfirmacionDTO;
-import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
-import com.mrusedev.voleytrack.application.dto.JugadorEnPosicion;
+import com.mrusedev.voleytrack.application.dto.out.AlineacionPreviewDTO;
+import com.mrusedev.voleytrack.application.dto.out.ConfirmacionDTO;
+import com.mrusedev.voleytrack.application.dto.out.InicioSetDTO;
+import com.mrusedev.voleytrack.application.dto.in.JugadorEnPosicion;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import java.util.List;
 import java.util.UUID;

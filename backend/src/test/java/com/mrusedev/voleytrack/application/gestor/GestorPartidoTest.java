@@ -1,6 +1,7 @@
 package com.mrusedev.voleytrack.application.gestor;
 
-import com.mrusedev.voleytrack.application.dto.*;
+import com.mrusedev.voleytrack.application.dto.in.*;
+import com.mrusedev.voleytrack.application.dto.out.*;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
 import com.mrusedev.voleytrack.application.exception.ReglaDeNegocioException;
 import com.mrusedev.voleytrack.application.port.out.*;

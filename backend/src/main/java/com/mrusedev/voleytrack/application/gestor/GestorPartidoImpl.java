@@ -1,14 +1,14 @@
 package com.mrusedev.voleytrack.application.gestor;
 
-import com.mrusedev.voleytrack.application.dto.AlineacionPreviewDTO;
-import com.mrusedev.voleytrack.application.dto.ConfirmacionDTO;
-import com.mrusedev.voleytrack.application.dto.DatosInicioPartidoDTO;
-import com.mrusedev.voleytrack.application.dto.EquiposDTO;
-import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
-import com.mrusedev.voleytrack.application.dto.JugadorDTO;
-import com.mrusedev.voleytrack.application.dto.JugadorEnPosicion;
-import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
-import com.mrusedev.voleytrack.application.dto.PizarraEnVivoDTO;
+import com.mrusedev.voleytrack.application.dto.out.AlineacionPreviewDTO;
+import com.mrusedev.voleytrack.application.dto.out.ConfirmacionDTO;
+import com.mrusedev.voleytrack.application.dto.out.DatosInicioPartidoDTO;
+import com.mrusedev.voleytrack.application.dto.out.EquiposDTO;
+import com.mrusedev.voleytrack.application.dto.out.InicioSetDTO;
+import com.mrusedev.voleytrack.application.dto.out.JugadorDTO;
+import com.mrusedev.voleytrack.application.dto.in.JugadorEnPosicion;
+import com.mrusedev.voleytrack.application.dto.out.OpcionesPuntoDTO;
+import com.mrusedev.voleytrack.application.dto.out.PizarraEnVivoDTO;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
 import com.mrusedev.voleytrack.application.exception.ReglaDeNegocioException;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;

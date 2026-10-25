@@ -1,6 +1,6 @@
 package com.mrusedev.voleytrack.adapter.out.persistence;
 
-import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
+import com.mrusedev.voleytrack.application.dto.out.OpcionesPuntoDTO;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import com.mrusedev.voleytrack.application.port.out.EquipoRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.JugadorRepositoryPort;
