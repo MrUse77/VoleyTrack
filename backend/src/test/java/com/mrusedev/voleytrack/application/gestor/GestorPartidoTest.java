@@ -39,6 +39,7 @@ class GestorPartidoTest {
     @Mock private SetRepositoryPort setRepo;
     @Mock private EventoRepositoryPort eventoRepo;
     @Mock private SustitucionRepositoryPort sustitucionRepo;
+    @Mock private NotificadorPizarraPort notificadorPizarra;
     @Mock private GestorPizarraPort gestorPizarra;
 
     @InjectMocks
@@ -543,12 +544,35 @@ class GestorPartidoTest {
         when(partidoRepo.buscarPorId(partido.getId())).thenReturn(Optional.of(partido));
         when(equipoRepo.buscarPorId(equipoLocal.getId())).thenReturn(Optional.of(equipoLocal));
         when(jugadorRepo.buscarPorId(jugador.getId())).thenReturn(Optional.of(jugador));
+        PizarraEnVivoDTO pizarra =
+                new PizarraEnVivoDTO(
+                        new PizarraEnVivoDTO.EquipoPizarraDTO(
+                                equipoLocal.getId(), equipoLocal.getNombreClub()),
+                        new PizarraEnVivoDTO.EquipoPizarraDTO(
+                                equipoVisitante.getId(), equipoVisitante.getNombreClub()),
+                        0,
+                        0,
+                        new PizarraEnVivoDTO.SetActualDTO(1, false, 25, 1, 0),
+                        equipoLocal.getId(),
+                        "EN_CURSO",
+                        "EN_CURSO",
+                        List.of(
+                                new PizarraEnVivoDTO.EventoPizarraDTO(
+                                        jugador.getId(), "Jugador Test", "ATAQUE")));
+        when(gestorPizarra.obtenerPizarra(partido.getId())).thenReturn(pizarra);
 
         ConfirmacionDTO result = gestor.confirmarPunto(
                 partido.getId(), equipoLocal.getId(), jugador.getId(), "ATAQUE");
 
         assertThat(result.mensaje()).contains("Punto registrado");
         assertThat(set.getMarcador().getPuntos(partido.getLados().get(0))).isEqualTo(1);
+        verify(gestorPizarra).obtenerPizarra(partido.getId());
+        verify(notificadorPizarra).notificarCambioPizarra(
+                eq(partido.getId()),
+                argThat(cambio -> "PUNTO_REGISTRADO".equals(cambio.tipo())
+                        && cambio.evento().jugadorId().equals(jugador.getId())
+                        && cambio.evento().fundamento().equals("ATAQUE")
+                        && cambio.pizarra() == pizarra));
     }
 
     @Test
