@@ -5,6 +5,7 @@ import com.mrusedev.voleytrack.application.dto.out.PizarraEnVivoDTO;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
 import com.mrusedev.voleytrack.application.exception.ReglaDeNegocioException;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
+import com.mrusedev.voleytrack.application.port.in.GestorPizarraPort;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -27,6 +28,9 @@ class PartidoControllerTest {
 
 	@MockitoBean
 	private GestorPartidoPort gestorPartidoPort;
+
+	@MockitoBean
+	private GestorPizarraPort gestorPizarraPort;
 
 	@Test
 	void inicioDevuelveDatosDelPartido() throws Exception {
@@ -68,7 +72,7 @@ class PartidoControllerTest {
 				"EN_CURSO",
 				List.of(new PizarraEnVivoDTO.EventoPizarraDTO(
 						UUID.randomUUID(), "Jugador Local", "ATAQUE")));
-		when(gestorPartidoPort.obtenerPizarra(partidoId)).thenReturn(pizarra);
+		when(gestorPizarraPort.obtenerPizarra(partidoId)).thenReturn(pizarra);
 
 		mockMvc.perform(get("/api/partidos/{partidoId}/pizarra", partidoId))
 				.andExpect(status().isOk())
@@ -84,7 +88,7 @@ class PartidoControllerTest {
 	@Test
 	void pizarraConReglaDeNegocioDevuelve409() throws Exception {
 		UUID partidoId = UUID.randomUUID();
-		when(gestorPartidoPort.obtenerPizarra(partidoId))
+		when(gestorPizarraPort.obtenerPizarra(partidoId))
 				.thenThrow(new ReglaDeNegocioException("Regla de negocio violada"));
 
 		mockMvc.perform(get("/api/partidos/{partidoId}/pizarra", partidoId))

@@ -16,7 +16,6 @@ public interface GestorPartidoPort {
 
   DatosInicioPartidoDTO cargarDatosInicio(UUID partidoId);
 
-  PizarraEnVivoDTO obtenerPizarra(UUID partidoId);
 
   InicioSetDTO crearSet(UUID partidoId);
 

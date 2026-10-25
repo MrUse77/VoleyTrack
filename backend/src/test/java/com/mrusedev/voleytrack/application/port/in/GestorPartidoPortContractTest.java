@@ -6,7 +6,6 @@ import com.mrusedev.voleytrack.application.dto.out.EquiposDTO;
 import com.mrusedev.voleytrack.application.dto.out.InicioSetDTO;
 import com.mrusedev.voleytrack.application.dto.out.JugadorDTO;
 import com.mrusedev.voleytrack.application.dto.out.OpcionesPuntoDTO;
-import com.mrusedev.voleytrack.application.dto.out.PizarraEnVivoDTO;
 import com.mrusedev.voleytrack.application.gestor.GestorPartidoImpl;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +23,6 @@ class GestorPartidoPortContractTest {
     void publicMethodsUseApplicationContractTypesOnly() {
         assertSignature("cargarDatosInicio", com.mrusedev.voleytrack.application.dto.out.DatosInicioPartidoDTO.class,
                 UUID.class);
-        assertSignature("obtenerPizarra", PizarraEnVivoDTO.class, UUID.class);
         assertSignature("crearSet", InicioSetDTO.class, UUID.class);
         assertSignature("crearAlineacion", AlineacionPreviewDTO.class, UUID.class, UUID.class);
         Method guardarAlineacion = method("guardarAlineacion",
