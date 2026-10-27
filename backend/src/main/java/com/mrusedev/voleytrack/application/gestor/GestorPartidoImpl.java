@@ -1,17 +1,17 @@
 package com.mrusedev.voleytrack.application.gestor;
 
+import com.mrusedev.voleytrack.application.dto.in.JugadorEnPosicion;
 import com.mrusedev.voleytrack.application.dto.out.AlineacionPreviewDTO;
 import com.mrusedev.voleytrack.application.dto.out.ConfirmacionDTO;
 import com.mrusedev.voleytrack.application.dto.out.DatosInicioPartidoDTO;
 import com.mrusedev.voleytrack.application.dto.out.EquiposDTO;
 import com.mrusedev.voleytrack.application.dto.out.InicioSetDTO;
 import com.mrusedev.voleytrack.application.dto.out.JugadorDTO;
-import com.mrusedev.voleytrack.application.dto.in.JugadorEnPosicion;
 import com.mrusedev.voleytrack.application.dto.out.OpcionesPuntoDTO;
-import com.mrusedev.voleytrack.application.dto.out.PizarraEnVivoDTO;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
 import com.mrusedev.voleytrack.application.exception.ReglaDeNegocioException;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
+import com.mrusedev.voleytrack.application.port.in.GestorPizarraPort;
 import com.mrusedev.voleytrack.application.port.out.EquipoRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.EventoRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.JugadorRepositoryPort;
@@ -30,7 +30,6 @@ import com.mrusedev.voleytrack.domain.Partido;
 import com.mrusedev.voleytrack.domain.SetPartido;
 import com.mrusedev.voleytrack.domain.TipoFundamento;
 import com.mrusedev.voleytrack.domain.TipoLado;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -46,6 +45,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   private final SetRepositoryPort setRepo;
   private final EventoRepositoryPort eventoRepo;
   private final SustitucionRepositoryPort sustitucionRepo;
+  private final GestorPizarraPort gestorPizarra;
 
   public GestorPartidoImpl(
       PartidoRepositoryPort partidoRepo,
@@ -53,13 +53,15 @@ public class GestorPartidoImpl implements GestorPartidoPort {
       JugadorRepositoryPort jugadorRepo,
       SetRepositoryPort setRepo,
       EventoRepositoryPort eventoRepo,
-      SustitucionRepositoryPort sustitucionRepo) {
+      SustitucionRepositoryPort sustitucionRepo,
+      GestorPizarraPort gestorPizarra) {
     this.partidoRepo = partidoRepo;
     this.equipoRepo = equipoRepo;
     this.jugadorRepo = jugadorRepo;
     this.setRepo = setRepo;
     this.eventoRepo = eventoRepo;
     this.sustitucionRepo = sustitucionRepo;
+    this.gestorPizarra = gestorPizarra;
   }
 
   // ── RF-6/RF-7: Carga de datos de inicio ──
@@ -86,80 +88,6 @@ public class GestorPartidoImpl implements GestorPartidoPort {
         partido.getCantSets().getCantidad(),
         partido.getCantSets().setsParaGanar(),
         partido.getEstado().name());
-  }
-
-  // ── RF-11: Pizarra en vivo ──
-
-  @Override
-  public PizarraEnVivoDTO obtenerPizarra(UUID partidoId) {
-    Partido partido = buscarPartido(partidoId);
-
-    Lado ladoLocal =
-        partido.getLados().stream()
-            .filter(l -> l.getTipo() == TipoLado.LOCAL)
-            .findFirst()
-            .orElseThrow();
-    Lado ladoVisitante =
-        partido.getLados().stream()
-            .filter(l -> l.getTipo() == TipoLado.VISITANTE)
-            .findFirst()
-            .orElseThrow();
-
-    SetPartido setActual = partido.getSetActual();
-    PizarraEnVivoDTO.SetActualDTO setActualDTO =
-        setActual == null
-            ? null
-            : new PizarraEnVivoDTO.SetActualDTO(
-                setActual.getNumeroSet(),
-                setActual.isEsTieBreak(),
-                setActual.getMarcador().getLimitePuntos(),
-                setActual.getMarcador().getPuntos(setActual.getMarcador().getLadoLocal()),
-                setActual.getMarcador().getPuntos(setActual.getMarcador().getLadoVisitante()));
-
-    UUID equipoSaqueId =
-        setActual != null && setActual.getSaque() != null ? setActual.getSaque().getId() : null;
-
-    String estadoSet = setActual == null ? null : setActual.getEstado().name();
-
-    return new PizarraEnVivoDTO(
-        new PizarraEnVivoDTO.EquipoPizarraDTO(
-            ladoLocal.getEquipo().getId(), ladoLocal.getEquipo().getNombreClub()),
-        new PizarraEnVivoDTO.EquipoPizarraDTO(
-            ladoVisitante.getEquipo().getId(), ladoVisitante.getEquipo().getNombreClub()),
-        contarSetsGanados(partido, TipoLado.LOCAL),
-        contarSetsGanados(partido, TipoLado.VISITANTE),
-        setActualDTO,
-        equipoSaqueId,
-        partido.getEstado().name(),
-        estadoSet,
-        ultimosEventos(partido));
-  }
-
-  private int contarSetsGanados(Partido partido, TipoLado tipo) {
-    return (int)
-        partido.getSets().stream()
-            .filter(s -> s.getMarcador().getGanador() != null)
-            .filter(s -> s.getMarcador().getGanador().getTipo() == tipo)
-            .count();
-  }
-
-  private List<PizarraEnVivoDTO.EventoPizarraDTO> ultimosEventos(Partido partido) {
-    List<PizarraEnVivoDTO.EventoPizarraDTO> eventos = new ArrayList<>();
-    for (SetPartido set : partido.getSets()) {
-      if (set.getEventos() == null) {
-        continue;
-      }
-      for (Evento evento : set.getEventos()) {
-        Jugador jugador = evento.getJugador();
-        eventos.add(
-            new PizarraEnVivoDTO.EventoPizarraDTO(
-                jugador != null ? jugador.getId() : null,
-                jugador != null ? jugador.getNombre() + " " + jugador.getApellido() : null,
-                evento.getTipoFundamento().name()));
-      }
-    }
-    int desde = Math.max(0, eventos.size() - 10);
-    return List.copyOf(eventos.subList(desde, eventos.size()));
   }
 
   // ── RF-9: Crear set ──
@@ -379,6 +307,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
       setRepo.guardar(set, partido.getId());
       eventoRepo.guardar(evento, set.getId());
     }
+
 
     String mensaje = "Punto registrado";
     if (set != null && set.getEstado() == EstadoSet.FINALIZADO) {

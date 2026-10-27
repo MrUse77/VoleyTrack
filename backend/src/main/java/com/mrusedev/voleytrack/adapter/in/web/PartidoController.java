@@ -6,6 +6,7 @@ import com.mrusedev.voleytrack.application.dto.out.EquiposDTO;
 import com.mrusedev.voleytrack.application.dto.out.PizarraEnVivoDTO;
 import com.mrusedev.voleytrack.application.dto.in.ConfirmacionPuntoDTO;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
+import com.mrusedev.voleytrack.application.port.in.GestorPizarraPort;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class PartidoController {
 
   private final GestorPartidoPort gestorPartidoPort;
+  private final GestorPizarraPort gestorPizarraPort;
 
-  public PartidoController(GestorPartidoPort gestorPartidoPort) {
+  public PartidoController(
+      GestorPartidoPort gestorPartidoPort, GestorPizarraPort gestorPizarraPort) {
     this.gestorPartidoPort = gestorPartidoPort;
+    this.gestorPizarraPort = gestorPizarraPort;
   }
 
   @GetMapping("/{partidoId}/inicio")
@@ -43,6 +47,6 @@ public class PartidoController {
 
   @GetMapping("/{partidoId}/pizarra")
   public PizarraEnVivoDTO obtenerPizarra(@PathVariable UUID partidoId) {
-    return gestorPartidoPort.obtenerPizarra(partidoId);
+    return gestorPizarraPort.obtenerPizarra(partidoId);
   }
 }
