@@ -2,12 +2,15 @@ package com.mrusedev.voleytrack.application.gestor;
 
 import com.mrusedev.voleytrack.application.dto.in.JugadorEnPosicion;
 import com.mrusedev.voleytrack.application.dto.out.AlineacionPreviewDTO;
+import com.mrusedev.voleytrack.application.dto.out.CambioPizarraDTO;
 import com.mrusedev.voleytrack.application.dto.out.ConfirmacionDTO;
 import com.mrusedev.voleytrack.application.dto.out.DatosInicioPartidoDTO;
 import com.mrusedev.voleytrack.application.dto.out.EquiposDTO;
 import com.mrusedev.voleytrack.application.dto.out.InicioSetDTO;
 import com.mrusedev.voleytrack.application.dto.out.JugadorDTO;
 import com.mrusedev.voleytrack.application.dto.out.OpcionesPuntoDTO;
+import com.mrusedev.voleytrack.application.dto.out.PizarraEnVivoDTO;
+import com.mrusedev.voleytrack.application.dto.out.PuntoRegistradoDTO;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
 import com.mrusedev.voleytrack.application.exception.ReglaDeNegocioException;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
@@ -15,6 +18,7 @@ import com.mrusedev.voleytrack.application.port.in.GestorPizarraPort;
 import com.mrusedev.voleytrack.application.port.out.EquipoRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.EventoRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.JugadorRepositoryPort;
+import com.mrusedev.voleytrack.application.port.out.NotificadorPizarraPort;
 import com.mrusedev.voleytrack.application.port.out.PartidoRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.SetRepositoryPort;
 import com.mrusedev.voleytrack.application.port.out.SustitucionRepositoryPort;
@@ -45,6 +49,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
   private final SetRepositoryPort setRepo;
   private final EventoRepositoryPort eventoRepo;
   private final SustitucionRepositoryPort sustitucionRepo;
+  private final NotificadorPizarraPort notificadorPizarra;
   private final GestorPizarraPort gestorPizarra;
 
   public GestorPartidoImpl(
@@ -54,6 +59,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
       SetRepositoryPort setRepo,
       EventoRepositoryPort eventoRepo,
       SustitucionRepositoryPort sustitucionRepo,
+      NotificadorPizarraPort notificadorPizarra,
       GestorPizarraPort gestorPizarra) {
     this.partidoRepo = partidoRepo;
     this.equipoRepo = equipoRepo;
@@ -61,6 +67,7 @@ public class GestorPartidoImpl implements GestorPartidoPort {
     this.setRepo = setRepo;
     this.eventoRepo = eventoRepo;
     this.sustitucionRepo = sustitucionRepo;
+    this.notificadorPizarra = notificadorPizarra;
     this.gestorPizarra = gestorPizarra;
   }
 
@@ -308,6 +315,17 @@ public class GestorPartidoImpl implements GestorPartidoPort {
       eventoRepo.guardar(evento, set.getId());
     }
 
+    PizarraEnVivoDTO pizarraActualizada = gestorPizarra.obtenerPizarra(partidoId);
+    PuntoRegistradoDTO punto =
+        new PuntoRegistradoDTO(
+            equipo.getId(),
+            jugador.getId(),
+            jugador.getNombre(),
+            jugador.getApellido(),
+            fundamento.name(),
+            set != null ? set.getNumeroSet() : 0);
+    notificadorPizarra.notificarCambioPizarra(
+        partidoId, new CambioPizarraDTO("PUNTO_REGISTRADO", punto, pizarraActualizada));
 
     String mensaje = "Punto registrado";
     if (set != null && set.getEstado() == EstadoSet.FINALIZADO) {

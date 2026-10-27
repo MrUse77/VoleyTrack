@@ -18,12 +18,15 @@ com.mrusedev.voleytrack/
 │   ├── port/
 │   │   ├── in/                     ← use case interfaces
 │   │   └── out/                    ← repository interfaces
-│   └── gestor/                    ← use case implementations (GestorPartido, etc.)
+│   └── gestor/                    ← use case implementations (GestorPartido, GestorPizarra)
 ├── adapter/
 │   ├── in/
-│   │   └── web/                    ← REST controllers (PartidoController, etc.)
+│   │   ├── web/                    ← REST controllers (PartidoController, etc.)
+│   │   └── websocket/              ← WebSocket endpoint (/ws/partidos/*) + connection lifecycle
+│   ├── websocket/                  ← channel infrastructure shared by both sides: session registry, JSON contract, welcome frame
 │   └── out/
-│       └── persistence/            ← JDBC repositories, Spring Data adapters
+│       ├── persistence/            ← JDBC repositories, Spring Data adapters
+│       └── websocket/              ← live board push: `NotificadorPizarraPort` implementation
 └── VoleytrackApplication.java
 ```
 
@@ -36,6 +39,9 @@ com.mrusedev.voleytrack/
 | Domain classes share one package | All 23 entities, value objects, and enums live in `domain/` with zero cross-package imports. |
 | Ports define contracts | `application/port/in/` for use cases, `application/port/out/` for infrastructure dependencies. |
 | Adapters implement ports | `adapter/in/web/` exposes REST, `adapter/out/persistence/` talks to the database. |
+| Shared channel infrastructure lives in `adapter/websocket/` | The session registry, the wire JSON and the welcome frame are used by the entry point and the publisher alike, and they are not port implementations. Keeping them in a neutral sibling package stops `adapter/in` from importing `adapter/out` (and the reverse); both sides depend downwards instead. Never put framework types such as `WebSocketSession` in `application/port/in`. |
+| Projections are coined by an expert object | `GestorPizarra` is the Information Expert for the live-board projection (RF-13/RF-14): it builds `PizarraEnVivoDTO` and never sends or persists it. |
+| Push side effects run after commit | `NotificadorPizarraPortImpl` registers a `TransactionSynchronization` and publishes on `afterCommit`: a rolled-back point is never broadcast. |
 | Root application class stays put | `com.mrusedev.voleytrack.VoleytrackApplication` remains at the root package. |
 
 ## Data flow
@@ -45,7 +51,11 @@ adapter/in/web → application/port/in → application/gestor → domain
                                           │
                                           ▼
                                    application/port/out → adapter/out/persistence
+
+application/gestor → application/port/out (NotificadorPizarraPort) → adapter/out/websocket → adapter/in/websocket sessions
 ```
+
+**Snapshot invariant:** every WebSocket frame carries the full `PizarraEnVivoDTO`, never a delta. A client's board is a snapshot that converges to the database state, so lost frames, reconnects, and restarts heal on the next snapshot or `GET /partidos/{id}/pizarra` — no event replay or compensation messages.
 
 ## Domain model (23 classes)
 
