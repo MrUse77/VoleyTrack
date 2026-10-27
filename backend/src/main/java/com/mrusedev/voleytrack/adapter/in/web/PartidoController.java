@@ -1,9 +1,9 @@
 package com.mrusedev.voleytrack.adapter.in.web;
 
-import com.mrusedev.voleytrack.application.dto.ConfirmacionDTO;
-import com.mrusedev.voleytrack.application.dto.DatosInicioPartidoDTO;
-import com.mrusedev.voleytrack.application.dto.EquiposDTO;
-import com.mrusedev.voleytrack.application.dto.PizarraEnVivoDTO;
+import com.mrusedev.voleytrack.application.dto.out.ConfirmacionDTO;
+import com.mrusedev.voleytrack.application.dto.out.DatosInicioPartidoDTO;
+import com.mrusedev.voleytrack.application.dto.out.EquiposDTO;
+import com.mrusedev.voleytrack.application.dto.out.PizarraEnVivoDTO;
 import com.mrusedev.voleytrack.application.dto.in.ConfirmacionPuntoDTO;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import java.util.UUID;

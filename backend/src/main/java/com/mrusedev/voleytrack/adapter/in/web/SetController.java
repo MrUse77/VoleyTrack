@@ -1,6 +1,6 @@
 package com.mrusedev.voleytrack.adapter.in.web;
 
-import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
+import com.mrusedev.voleytrack.application.dto.out.OpcionesPuntoDTO;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;

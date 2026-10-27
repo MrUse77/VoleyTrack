@@ -1,12 +1,12 @@
 package com.mrusedev.voleytrack.application.port.in;
 
-import com.mrusedev.voleytrack.application.dto.AlineacionPreviewDTO;
-import com.mrusedev.voleytrack.application.dto.ConfirmacionDTO;
-import com.mrusedev.voleytrack.application.dto.EquiposDTO;
-import com.mrusedev.voleytrack.application.dto.InicioSetDTO;
-import com.mrusedev.voleytrack.application.dto.JugadorDTO;
-import com.mrusedev.voleytrack.application.dto.OpcionesPuntoDTO;
-import com.mrusedev.voleytrack.application.dto.PizarraEnVivoDTO;
+import com.mrusedev.voleytrack.application.dto.out.AlineacionPreviewDTO;
+import com.mrusedev.voleytrack.application.dto.out.ConfirmacionDTO;
+import com.mrusedev.voleytrack.application.dto.out.EquiposDTO;
+import com.mrusedev.voleytrack.application.dto.out.InicioSetDTO;
+import com.mrusedev.voleytrack.application.dto.out.JugadorDTO;
+import com.mrusedev.voleytrack.application.dto.out.OpcionesPuntoDTO;
+import com.mrusedev.voleytrack.application.dto.out.PizarraEnVivoDTO;
 import com.mrusedev.voleytrack.application.gestor.GestorPartidoImpl;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +22,7 @@ class GestorPartidoPortContractTest {
 
     @Test
     void publicMethodsUseApplicationContractTypesOnly() {
-        assertSignature("cargarDatosInicio", com.mrusedev.voleytrack.application.dto.DatosInicioPartidoDTO.class,
+        assertSignature("cargarDatosInicio", com.mrusedev.voleytrack.application.dto.out.DatosInicioPartidoDTO.class,
                 UUID.class);
         assertSignature("obtenerPizarra", PizarraEnVivoDTO.class, UUID.class);
         assertSignature("crearSet", InicioSetDTO.class, UUID.class);
@@ -31,11 +31,11 @@ class GestorPartidoPortContractTest {
                 UUID.class, UUID.class, UUID.class, List.class);
         assertThat(guardarAlineacion.getReturnType()).isEqualTo(AlineacionPreviewDTO.class);
         assertThat(guardarAlineacion.getGenericParameterTypes()[3].getTypeName())
-                .isEqualTo("java.util.List<com.mrusedev.voleytrack.application.dto.JugadorEnPosicion>");
+                .isEqualTo("java.util.List<com.mrusedev.voleytrack.application.dto.in.JugadorEnPosicion>");
         Method jugadoresDisponibles = method("cargarJugadoresDisponibles", UUID.class);
         assertThat(jugadoresDisponibles.getReturnType()).isEqualTo(List.class);
         assertThat(jugadoresDisponibles.getGenericReturnType().getTypeName())
-                .isEqualTo("java.util.List<com.mrusedev.voleytrack.application.dto.JugadorDTO>");
+                .isEqualTo("java.util.List<com.mrusedev.voleytrack.application.dto.out.JugadorDTO>");
         assertSignature("agregarJugadorAAlineacion", AlineacionPreviewDTO.class,
                 UUID.class, UUID.class, UUID.class, int.class);
         assertSignature("seleccionarEquipoSaqueInicial", void.class, UUID.class, UUID.class,

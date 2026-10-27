@@ -1,7 +1,7 @@
 package com.mrusedev.voleytrack.adapter.in.web;
 
-import com.mrusedev.voleytrack.application.dto.DatosInicioPartidoDTO;
-import com.mrusedev.voleytrack.application.dto.PizarraEnVivoDTO;
+import com.mrusedev.voleytrack.application.dto.out.DatosInicioPartidoDTO;
+import com.mrusedev.voleytrack.application.dto.out.PizarraEnVivoDTO;
 import com.mrusedev.voleytrack.application.exception.RecursoNoEncontradoException;
 import com.mrusedev.voleytrack.application.exception.ReglaDeNegocioException;
 import com.mrusedev.voleytrack.application.port.in.GestorPartidoPort;

@@ -1,4 +1,4 @@
-package com.mrusedev.voleytrack.application.dto;
+package com.mrusedev.voleytrack.application.dto.out;
 
 import java.util.UUID;
 
